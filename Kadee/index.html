@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Kadee">
+    <link rel="manifest" href="manifest.json">
+    <title>Kadee</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Outfit, -apple-system, sans-serif; background: #faf8f4; }
+        #root { min-height: 100vh; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="text/babel">
+        const DEFAULT_CATEGORIES = ['Fruits & Légumes', 'Produits laitiers et œufs', 'Viande et poisson', 'Charcuterie', 'Pâtes et riz', 'Bocaux et conserves', 'Boulangerie', 'Petit déjeuner et café', 'Pâtisseries et sucreries', 'Apéro et snacks', 'Surgelés', 'Boissons', 'Animaux', 'Hygiène & Nettoyage', 'Divers'];
+
+        const getCategoryColor = (category) => {
+          const colors = ['#3d5848','#5b9db8','#d97560','#e8a947','#c85d8f','#4a8a6a','#6b5b95','#88b04b','#f7cac9','#92a8d1','#b5ead7','#ffdac1','#e2a76f','#a8d8d8','#aa96da','#fcbad3','#9ac5c5','#d4af37'];
+          let hash = 0;
+          for (let i = 0; i < category.length; i++) {
+            hash = ((hash << 5) - hash) + category.charCodeAt(i);
+          }
+          return colors[Math.abs(hash) % colors.length];
+        };
+
+        function Kadee() {
+          const [items, setItems] = React.useState([]);
+          const [templates, setTemplates] = React.useState([]);
+          const [history, setHistory] = React.useState([]);
+          const [categories, setCategories] = React.useState(DEFAULT_CATEGORIES);
+          const [expenses, setExpenses] = React.useState([]);
+          const [darkMode, setDarkMode] = React.useState(false);
+          const [view, setView] = React.useState('inventory');
+          const [shoppingMode, setShoppingMode] = React.useState(false);
+          const [newItem, setNewItem] = React.useState('');
+          const [newCategory, setNewCategory] = React.useState('Fruits & Légumes');
+          const [shoppingItems, setShoppingItems] = React.useState({});
+          const [shoppingAmount, setShoppingAmount] = React.useState('');
+          const [menuOpen, setMenuOpen] = React.useState(false);
+          const [showHistory, setShowHistory] = React.useState(false);
+          const [showStats, setShowStats] = React.useState(false);
+          const [showCategories, setShowCategories] = React.useState(false);
+          const [showShare, setShowShare] = React.useState(false);
+          const [expandedCategories, setExpandedCategories] = React.useState({});
+          const [loyaltyCards, setLoyaltyCards] = React.useState([]);
+          const [showLoyaltyCards, setShowLoyaltyCards] = React.useState(false);
+          const [showExpenses, setShowExpenses] = React.useState(false);
+          const [justAddedExpense, setJustAddedExpense] = React.useState(false);
+          const [hasLoaded, setHasLoaded] = React.useState(false);
+
+          const bgColor = darkMode ? '#1a1a1a' : '#f8f7f4';
+          const bgGradient = darkMode ? 'linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%)' : 'linear-gradient(180deg, #f8f7f4 0%, #ede6df 100%)';
+          const textColor = darkMode ? '#f0f0f0' : '#2c2c2c';
+          const cardBg = darkMode ? '#2d2d2d' : 'white';
+          const cardBorder = darkMode ? '#444' : '#e8ddd2';
+          const inputBg = darkMode ? '#3d3d3d' : '#fafaf8';
+
+          React.useEffect(() => {
+            const saved = localStorage.getItem('kadee_data');
+            if (saved) {
+              try {
+                const data = JSON.parse(saved);
+                setItems(data.items || []);
+                setTemplates(data.templates || []);
+                setHistory(data.history || []);
+                setCategories(data.categories || DEFAULT_CATEGORIES);
+                setExpenses(data.expenses || []);
+                setLoyaltyCards(data.loyaltyCards || []);
+              } catch (e) {
+                console.error('Erreur:', e);
+              }
+            }
+            setHasLoaded(true);
+          }, []);
+
+          React.useEffect(() => {
+            if (hasLoaded) {
+              localStorage.setItem('kadee_data', JSON.stringify({ items, templates, history, categories, expenses, loyaltyCards }));
+            }
+          }, [items, templates, history, categories, expenses, loyaltyCards, hasLoaded]);
+
+          const addItem = () => {
+            if (newItem) {
+              setItems([...items, { id: Date.now(), name: newItem, category: newCategory, favorite: false }]);
+              setNewItem('');
+            }
+          };
+
+          const addExpense = () => {
+            if (shoppingAmount && !isNaN(shoppingAmount)) {
+              setExpenses([...expenses, { id: Date.now(), amount: parseFloat(shoppingAmount), date: new Date().toLocaleDateString('fr-FR'), timestamp: Date.now() }]);
+              setShoppingAmount('');
+              setJustAddedExpense(true);
+              setTimeout(() => setJustAddedExpense(false), 1500);
+            }
+          };
+
+          const finalizeShopping = () => {
+            const itemsToRemove = Object.entries(shoppingItems).filter(([_, data]) => data.status === 'inCart').map(([id]) => parseInt(id));
+            if (shoppingAmount && !isNaN(shoppingAmount)) {
+              setExpenses([...expenses, { id: Date.now(), amount: parseFloat(shoppingAmount), date: new Date().toLocaleDateString('fr-FR'), timestamp: Date.now() }]);
+            }
+            setItems(items.filter(item => !itemsToRemove.includes(item.id)));
+            setShoppingMode(false);
+            setShoppingItems({});
+            setShoppingAmount('');
+          };
+
+          const getWeekExpenses = () => {
+            const now = Date.now();
+            const week = 7 * 24 * 60 * 60 * 1000;
+            return expenses.filter(e => now - e.timestamp < week).reduce((sum, e) => sum + e.amount, 0).toFixed(2);
+          };
+
+          const getMonthExpenses = () => {
+            const now = new Date();
+            return expenses.filter(e => {
+              const date = new Date(e.timestamp);
+              return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+            }).reduce((sum, e) => sum + e.amount, 0).toFixed(2);
+          };
+
+          const getTotalExpenses = () => {
+            return expenses.reduce((sum, e) => sum + e.amount, 0).toFixed(2);
+          };
+
+          // PAGE PRINCIPALE
+          return (
+            <div style={{ background: bgGradient, color: textColor, minHeight: '100vh', padding: '2rem' }}>
+              <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+                <h1 style={{ fontSize: '2.5rem', textAlign: 'center', color: '#3d5848', marginBottom: '2rem', fontWeight: 700 }}>🛒 Kadee - Les courses faciles</h1>
+
+                <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <button onClick={() => { setView('inventory'); setShoppingMode(false); }} style={{ padding: '0.75rem 1.5rem', background: view === 'inventory' && !shoppingMode ? '#3d5848' : cardBg, color: view === 'inventory' && !shoppingMode ? 'white' : textColor, border: `2px solid ${view === 'inventory' && !shoppingMode ? '#3d5848' : cardBorder}`, borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>📋 Inventaire</button>
+                  <button onClick={() => setView('products')} style={{ padding: '0.75rem 1.5rem', background: view === 'products' ? '#3d5848' : cardBg, color: view === 'products' ? 'white' : textColor, border: `2px solid ${view === 'products' ? '#3d5848' : cardBorder}`, borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>📦 Mes produits</button>
+                  <button onClick={() => setView('expenses')} style={{ padding: '0.75rem 1.5rem', background: view === 'expenses' ? '#3d5848' : cardBg, color: view === 'expenses' ? 'white' : textColor, border: `2px solid ${view === 'expenses' ? '#3d5848' : cardBorder}`, borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>💰 Dépenses</button>
+                  <button onClick={() => setDarkMode(!darkMode)} style={{ padding: '0.75rem 1.5rem', background: cardBg, color: textColor, border: `2px solid ${cardBorder}`, borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>{darkMode ? '☀️' : '🌙'}</button>
+                </div>
+
+                {view === 'inventory' && (
+                  <div>
+                    <div style={{ background: cardBg, padding: '2rem', borderRadius: '12px', marginBottom: '2rem', border: `1px solid ${cardBorder}` }}>
+                      <h2 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 600 }}>Ajouter un produit</h2>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <input type="text" placeholder="Produit" value={newItem} onChange={(e) => setNewItem(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && addItem()} style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', background: inputBg, color: textColor, fontSize: '1rem' }} />
+                        <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)} style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', background: inputBg, color: textColor, fontSize: '1rem' }}>
+                          {categories.map(cat => <option key={cat}>{cat}</option>)}
+                        </select>
+                        <button onClick={addItem} style={{ padding: '0.9rem', background: 'linear-gradient(135deg, #9db8a0 0%, #8bad93 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '1rem' }}>+ Ajouter</button>
+                      </div>
+                    </div>
+
+                    <div style={{ background: cardBg, padding: '2rem', borderRadius: '12px', border: `1px solid ${cardBorder}` }}>
+                      <h2 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 600 }}>Inventaire ({items.length})</h2>
+                      {items.length === 0 ? <p style={{ color: '#999' }}>Aucun produit</p> : (
+                        <div style={{ display: 'grid', gap: '0.75rem' }}>
+                          {items.map(item => (
+                            <div key={item.id} style={{ padding: '0.75rem', background: inputBg, borderRadius: '8px', border: `1px solid ${cardBorder}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div>
+                                <div style={{ fontWeight: 500 }}>{item.name}</div>
+                                <div style={{ fontSize: '0.8rem', color: getCategoryColor(item.category) }}>• {item.category}</div>
+                              </div>
+                              <button onClick={() => setItems(items.filter(i => i.id !== item.id))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#d97560', fontSize: '1.2rem' }}>×</button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {view === 'products' && (
+                  <div style={{ background: cardBg, padding: '2rem', borderRadius: '12px', border: `1px solid ${cardBorder}` }}>
+                    <h2 style={{ marginBottom: '1.5rem', fontSize: '1.1rem', fontWeight: 600 }}>Mes produits par catégorie</h2>
+                    {categories.length === 0 ? <p style={{ color: '#999' }}>Aucune catégorie</p> : (
+                      <div style={{ display: 'grid', gap: '1rem' }}>
+                        {categories.map(cat => {
+                          const itemsInCat = items.filter(i => i.category === cat);
+                          return itemsInCat.length > 0 ? (
+                            <div key={cat}>
+                              <div onClick={() => setExpandedCategories({...expandedCategories, [cat]: !expandedCategories[cat]})} style={{ padding: '1rem', background: inputBg, borderRadius: '8px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                  <span style={{ display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%', background: getCategoryColor(cat), marginRight: '0.5rem' }}></span>
+                                  <span style={{ color: '#3d5848', fontWeight: 600 }}>{cat}</span>
+                                </div>
+                                <div style={{ fontSize: '0.8rem', color: '#999' }}>{itemsInCat.length} produits</div>
+                              </div>
+                              {expandedCategories[cat] && (
+                                <div style={{ paddingTop: '0.75rem', display: 'grid', gap: '0.5rem', marginLeft: '1rem' }}>
+                                  {itemsInCat.map(item => <div key={item.id} style={{ padding: '0.5rem', fontSize: '0.9rem', color: textColor }}>• {item.name}</div>)}
+                                </div>
+                              )}
+                            </div>
+                          ) : null;
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {view === 'expenses' && (
+                  <div>
+                    <div style={{ background: cardBg, padding: '2rem', borderRadius: '12px', marginBottom: '2rem', border: `1px solid ${cardBorder}` }}>
+                      <h2 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 600 }}>Ajouter une dépense</h2>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <input type="number" placeholder="Montant (€)" value={shoppingAmount} onChange={(e) => setShoppingAmount(e.target.value)} step="0.01" min="0" style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', background: inputBg, color: textColor, fontSize: '1rem' }} />
+                        <button onClick={addExpense} style={{ padding: '0.9rem', background: justAddedExpense ? '#9db8a0' : 'linear-gradient(135deg, #9db8a0 0%, #8bad93 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '1rem', transition: 'all 0.3s' }}>{justAddedExpense ? '✓ Ajouté' : '+ Ajouter'}</button>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+                      <div style={{ background: cardBg, padding: '1.5rem', borderRadius: '10px', border: `1px solid ${cardBorder}`, textAlign: 'center' }}>
+                        <div style={{ fontSize: '0.85rem', color: '#999', marginBottom: '0.5rem' }}>Cette semaine</div>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 600, color: '#5b9db8' }}>{getWeekExpenses()}€</div>
+                      </div>
+                      <div style={{ background: cardBg, padding: '1.5rem', borderRadius: '10px', border: `1px solid ${cardBorder}`, textAlign: 'center' }}>
+                        <div style={{ fontSize: '0.85rem', color: '#999', marginBottom: '0.5rem' }}>Ce mois</div>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 600, color: '#e8a947' }}>{getMonthExpenses()}€</div>
+                      </div>
+                      <div style={{ background: cardBg, padding: '1.5rem', borderRadius: '10px', border: `1px solid ${cardBorder}`, textAlign: 'center' }}>
+                        <div style={{ fontSize: '0.85rem', color: '#999', marginBottom: '0.5rem' }}>Total</div>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 600, color: '#3d5848' }}>{getTotalExpenses()}€</div>
+                      </div>
+                    </div>
+
+                    {expenses.length > 0 && (
+                      <div style={{ background: cardBg, padding: '2rem', borderRadius: '12px', border: `1px solid ${cardBorder}` }}>
+                        <h3 style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: 600 }}>Historique ({expenses.length})</h3>
+                        <div style={{ display: 'grid', gap: '0.75rem' }}>
+                          {expenses.slice().reverse().map(exp => (
+                            <div key={exp.id} style={{ padding: '0.75rem', background: inputBg, borderRadius: '8px', border: `1px solid ${cardBorder}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div>
+                                <div style={{ fontWeight: 500 }}>{exp.amount.toFixed(2)}€</div>
+                                <div style={{ fontSize: '0.8rem', color: '#999' }}>{exp.date}</div>
+                              </div>
+                              <button onClick={() => setExpenses(expenses.filter(e => e.id !== exp.id))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#d97560', fontSize: '1.2rem' }}>×</button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Kadee />);
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js').catch(() => {});
+        }
+    </script>
+</body>
+</html>

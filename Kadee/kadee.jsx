@@ -1,0 +1,1533 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+
+const DEFAULT_CATEGORIES = [
+  'Fruits & Légumes', 'Produits laitiers et œufs', 'Viande et poisson', 'Charcuterie', 
+  'Pâtes et riz', 'Bocaux et conserves', 'Boulangerie', 'Petit déjeuner et café', 
+  'Pâtisseries et sucreries', 'Apéro et snacks', 'Surgelés', 'Boissons', 'Animaux', 'Hygiène & Nettoyage', 'Divers'
+];
+
+const UNITS = ['kilogramme', 'litre', 'pièces', 'paquet', 'boîte', 'bouteille', 'pot'];
+
+const getAutoCategoryFromName = (name) => {
+  const lowerName = name.toLowerCase();
+  if (lowerName.includes('pain') || lowerName.includes('croissant')) return 'Boulangerie';
+  if (lowerName.includes('lait') || lowerName.includes('yaourt') || lowerName.includes('fromage')) return 'Produits laitiers et œufs';
+  if (lowerName.includes('tomate') || lowerName.includes('carotte') || lowerName.includes('pomme')) return 'Fruits & Légumes';
+  if (lowerName.includes('café') || lowerName.includes('thé')) return 'Petit déjeuner et café';
+  return 'Fruits & Légumes';
+};
+
+export default function Kadee() {
+  const [darkMode, setDarkMode] = useState(false);
+  const [view, setView] = useState('inventory');
+  const [shoppingMode, setShoppingMode] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [selectedHistoryItem, setSelectedHistoryItem] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [showStats, setShowStats] = useState(false);
+  const [showCategories, setShowCategories] = useState(false);
+  const [confirmResetHistory, setConfirmResetHistory] = useState(false);
+  const [showShare, setShowShare] = useState(false);
+  const [justCopied, setJustCopied] = useState(false);
+  const [showProductStats, setShowProductStats] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState({});
+  const [loyaltyCards, setLoyaltyCards] = useState([]);
+  const [showLoyaltyCards, setShowLoyaltyCards] = useState(false);
+  const [expenses, setExpenses] = useState([]);
+  const [showExpenses, setShowExpenses] = useState(false);
+  const [shoppingAmount, setShoppingAmount] = useState('');
+  const [justAddedExpense, setJustAddedExpense] = useState(false);
+  const [selectedProductStats, setSelectedProductStats] = useState(null);
+  const [statsTimeframe, setStatsTimeframe] = useState('day'); // 'day', 'week', 'month', 'year'
+  const textareaRef = React.useRef(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [draggedItem, setDraggedItem] = useState(null);
+  const [dragOverItem, setDragOverItem] = useState(null);
+
+  const [items, setItems] = useState([]);
+  const [templates, setTemplates] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
+
+  const [newItem, setNewItem] = useState('');
+  const [newItemNote, setNewItemNote] = useState('');
+  const [newCategory, setNewCategory] = useState('Fruits & Légumes');
+  const [newQuantity, setNewQuantity] = useState('1');
+  const [newUnit, setNewUnit] = useState('kilogramme');
+
+  const [newTemplate, setNewTemplate] = useState('');
+  const [newTemplateNote, setNewTemplateNote] = useState('');
+  const [newTemplateCategory, setNewTemplateCategory] = useState('Fruits & Légumes');
+  const [newTemplateUnit, setNewTemplateUnit] = useState('kilogramme');
+
+  const [newCategoryName, setNewCategoryName] = useState('');
+
+  const [history_actions, setHistoryActions] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+
+  const [shoppingItems, setShoppingItems] = useState({});
+  const [quickAddQuantities, setQuickAddQuantities] = useState({});
+  const [justAdded, setJustAdded] = useState(null);
+  const [justAddedItem, setJustAddedItem] = useState(false);
+  const [justAddedTemplate, setJustAddedTemplate] = useState(false);
+  const [justAddedCategory, setJustAddedCategory] = useState(false);
+
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const saveTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('kadee_data');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        const items = (data.items || []).map(item => ({
+          ...item,
+          favorite: item.favorite ?? false
+        }));
+        const templates = (data.templates || []).map(t => ({
+          ...t,
+          favorite: t.favorite ?? false
+        }));
+        setItems(items);
+        setTemplates(templates);
+        setHistory(data.history || []);
+        setCategories(data.categories || DEFAULT_CATEGORIES);
+        setLoyaltyCards(data.loyaltyCards || []);
+        setExpenses(data.expenses || []);
+        setHistoryActions([{ items }]);
+        setHistoryIndex(0);
+      } catch (e) {
+        console.error('Erreur chargement données:', e);
+      }
+    }
+    setHasLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    // N'enregistrer que si les données ont été chargées
+    if (!hasLoaded) return;
+    
+    // Débounce pour éviter de sauvegarder trop souvent
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    
+    saveTimeoutRef.current = setTimeout(() => {
+      localStorage.setItem('kadee_data', JSON.stringify({ items, templates, history, categories, loyaltyCards, expenses }));
+    }, 500);
+    
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [items, templates, history, categories, loyaltyCards, expenses, hasLoaded]);
+
+  // Créer une liste partageable formatée
+  const createShareableList = () => {
+    const groupedItems = {};
+    items.forEach(item => {
+      if (!groupedItems[item.category]) groupedItems[item.category] = [];
+      groupedItems[item.category].push(item);
+    });
+
+    let text = 'LISTE DE COURSES - KADEE\n\n';
+    
+    Object.entries(groupedItems).forEach(([category, catItems]) => {
+      text += `${category.toUpperCase()}\n`;
+      catItems.forEach(item => {
+        text += `☐ ${item.name} (${item.quantity} ${item.unit})`;
+        if (item.note) text += ` - ${item.note}`;
+        text += '\n';
+      });
+      text += '\n';
+    });
+    
+    text += `---\n${items.length} produit${items.length > 1 ? 's' : ''} • ${new Date().toLocaleDateString('fr-FR')}`;
+    
+    return text;
+  };
+
+  // Copier la liste dans le presse-papiers
+  const copyListToClipboard = () => {
+    const text = createShareableList();
+    
+    // Créer un textarea caché (support des newlines)
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    
+    // Sélectionner et copier
+    textarea.select();
+    textarea.setSelectionRange(0, 99999);
+    
+    try {
+      document.execCommand('copy');
+      setJustCopied(true);
+      setTimeout(() => setJustCopied(false), 2000);
+    } catch (err) {
+      alert('Erreur: impossible de copier');
+    }
+    
+    // Nettoyer
+    document.body.removeChild(textarea);
+  };
+
+  const getCategoryColor = (category) => {
+    // Palette étendue de couleurs variées
+    const colors = [
+      '#3d5848', // vert sage
+      '#5b9db8', // bleu
+      '#d97560', // terracotta
+      '#e8a947', // orange
+      '#c85d8f', // rose
+      '#4a8a6a', // vert clair
+      '#6b5b95', // violet
+      '#88b04b', // vert citron
+      '#f7cac9', // rose poudré
+      '#92a8d1', // bleu ciel
+      '#b5ead7', // menthe
+      '#ffdac1', // pêche
+      '#e2a76f', // bronze
+      '#a8d8d8', // turquoise
+      '#aa96da', // lavande
+      '#fcbad3', // rose clair
+      '#9ac5c5', // vert eau
+      '#d4af37', // or
+    ];
+    
+    // Hash amélioré basé sur plusieurs caractères
+    let hash = 0;
+    for (let i = 0; i < category.length; i++) {
+      hash = ((hash << 5) - hash) + category.charCodeAt(i);
+      hash = hash & hash; // Conversion en entier 32bit
+    }
+    
+    return colors[Math.abs(hash) % colors.length];
+  };
+
+  const isTemplateInInventory = (templateName) => {
+    return items.some(item => item.name.toLowerCase().trim() === templateName.toLowerCase().trim());
+  };
+
+  const addAction = (newState) => {
+    const newHistory = history_actions.slice(0, historyIndex + 1);
+    newHistory.push(newState);
+    setHistoryActions(newHistory);
+    setHistoryIndex(newHistory.length - 1);
+  };
+
+  const undo = () => {
+    if (historyIndex > 0) {
+      setHistoryIndex(historyIndex - 1);
+      const state = history_actions[historyIndex - 1];
+      setItems(state.items);
+    }
+  };
+
+  const redo = () => {
+    if (historyIndex < history_actions.length - 1) {
+      setHistoryIndex(historyIndex + 1);
+      const state = history_actions[historyIndex + 1];
+      setItems(state.items);
+    }
+  };
+
+  const addItem = () => {
+    if (!newItem.trim()) return;
+    const itemName = newItem.trim();
+    const matchingTemplate = templates.find(t => t.name.toLowerCase().trim() === itemName.toLowerCase());
+    const category = matchingTemplate?.category || newCategory || getAutoCategoryFromName(itemName);
+
+    const newItems = [...items, {
+      id: Date.now(),
+      name: itemName,
+      category: category,
+      quantity: parseFloat(newQuantity) || 1,
+      unit: newUnit,
+      note: newItemNote,
+      favorite: matchingTemplate?.favorite ?? false
+    }];
+
+    setItems(newItems);
+    addAction({ items: newItems });
+
+    setJustAddedItem(true);
+    setTimeout(() => setJustAddedItem(false), 1500);
+
+    setNewItem('');
+    setNewItemNote('');
+    setNewQuantity('1');
+    setNewUnit('kilogramme');
+    setNewCategory(getAutoCategoryFromName(''));
+  };
+
+  const deleteItem = (id) => {
+    const newItems = items.filter(item => item.id !== id);
+    setItems(newItems);
+    addAction({ items: newItems });
+  };
+
+  const toggleFavorite = (id) => {
+    const newItems = items.map(item => 
+      item.id === id ? { ...item, favorite: !item.favorite } : item
+    );
+    setItems(newItems);
+    addAction({ items: newItems });
+  };
+
+  const reorderItems = (fromId, toId) => {
+    if (fromId === toId) return;
+    
+    const fromIndex = items.findIndex(i => i.id === fromId);
+    const toIndex = items.findIndex(i => i.id === toId);
+    
+    if (fromIndex === -1 || toIndex === -1) return;
+    
+    const newItems = [...items];
+    const [movedItem] = newItems.splice(fromIndex, 1);
+    newItems.splice(toIndex, 0, movedItem);
+    
+    setItems(newItems);
+    addAction({ items: newItems });
+  };
+
+  const addTemplate = () => {
+    if (!newTemplate.trim()) return;
+    const templateName = newTemplate.trim();
+    const category = newTemplateCategory || getAutoCategoryFromName(templateName);
+    setTemplates([...templates, {
+      id: Date.now(),
+      name: templateName,
+      category: category,
+      unit: newTemplateUnit,
+      note: newTemplateNote,
+      favorite: false
+    }]);
+
+    setJustAddedTemplate(true);
+    setTimeout(() => setJustAddedTemplate(false), 1500);
+
+    setNewTemplate('');
+    setNewTemplateNote('');
+    setNewTemplateUnit('kilogramme');
+    setNewTemplateCategory(getAutoCategoryFromName(''));
+  };
+
+  const deleteTemplate = (id) => {
+    setTemplates(templates.filter(t => t.id !== id));
+  };
+
+  const toggleTemplateFavorite = (id) => {
+    setTemplates(templates.map(t => 
+      t.id === id ? { ...t, favorite: !t.favorite } : t
+    ));
+  };
+
+  const quickAddFromTemplate = (template) => {
+    const quantity = parseFloat(quickAddQuantities[template.id]) || 1;
+    
+    const existingItem = items.find(item => item.name.toLowerCase().trim() === template.name.toLowerCase().trim());
+    
+    let newItems;
+    if (existingItem) {
+      newItems = items.map(item =>
+        item.id === existingItem.id 
+          ? { ...item, quantity: item.quantity + quantity }
+          : item
+      );
+    } else {
+      newItems = [...items, {
+        id: Date.now(),
+        name: template.name,
+        category: template.category,
+        quantity: quantity,
+        unit: template.unit,
+        note: template.note,
+        favorite: template.favorite ?? false
+      }];
+    }
+    
+    setItems(newItems);
+    addAction({ items: newItems });
+
+    setJustAdded(template.id);
+    setTimeout(() => setJustAdded(null), 1500);
+
+    setQuickAddQuantities(prev => {
+      const updated = { ...prev };
+      delete updated[template.id];
+      return updated;
+    });
+  };
+
+  const addCategory = () => {
+    if (!newCategoryName.trim()) return;
+    if (!categories.includes(newCategoryName)) {
+      setCategories([...categories, newCategoryName]);
+    }
+
+    setJustAddedCategory(true);
+    setTimeout(() => setJustAddedCategory(false), 1500);
+
+    setNewCategoryName('');
+  };
+
+  const deleteCategory = (cat) => {
+    setCategories(categories.filter(c => c !== cat));
+  };
+
+  const startShopping = () => {
+    if (items.length === 0) {
+      alert('Ajoute d\'abord des produits');
+      return;
+    }
+    const itemsMap = {};
+    items.forEach(item => {
+      itemsMap[item.id] = { status: 'pending', item };
+    });
+    setShoppingItems(itemsMap);
+    setShoppingMode(true);
+  };
+
+  const updateItemStatus = (id, status) => {
+    setShoppingItems(prev => ({
+      ...prev,
+      [id]: { ...prev[id], status }
+    }));
+  };
+
+  const finalizeShopping = () => {
+    const itemsInCart = Object.entries(shoppingItems)
+      .filter(([_, data]) => data.status === 'inCart')
+      .map(([id]) => parseInt(id));
+
+    const purchasedItems = Object.values(shoppingItems)
+      .filter(data => data.status === 'inCart')
+      .map(data => data.item);
+
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    const dateStr = `${day}/${month}/${year}`;
+    
+    setHistory([{
+      id: Date.now(),
+      date: dateStr,
+      items: purchasedItems
+    }, ...history]);
+
+    // Ajouter le montant à expenses si saisi
+    if (shoppingAmount && !isNaN(shoppingAmount)) {
+      const newExpense = {
+        id: Date.now() + 1,
+        amount: parseFloat(shoppingAmount),
+        date: dateStr,
+        timestamp: Date.now()
+      };
+      setExpenses([...expenses, newExpense]);
+    }
+
+    const newItems = items.filter(item => !itemsInCart.includes(item.id));
+    setItems(newItems);
+    addAction({ items: newItems });
+    
+    setShoppingMode(false);
+    setShoppingItems({});
+    setShoppingAmount('');
+  };
+
+  const restoreFromHistory = (historyItem) => {
+    const newItems = [...items];
+    historyItem.items.forEach(item => {
+      newItems.push({
+        ...item,
+        id: Date.now() + Math.random()
+      });
+    });
+    setItems(newItems);
+    addAction({ items: newItems });
+    setShowHistory(false);
+    setSelectedHistoryItem(null);
+    setMenuOpen(false);
+  };
+
+  const deleteFromHistory = (id) => {
+    setHistory(prev => prev.filter(item => item.id !== id));
+  };
+
+
+
+  const getStats = () => {
+    const stats = {};
+    history.forEach(entry => {
+      entry.items.forEach(item => {
+        if (!stats[item.name]) {
+          stats[item.name] = { count: 0, lastDate: null };
+        }
+        stats[item.name].count++;
+        stats[item.name].lastDate = entry.date;
+      });
+    });
+    return Object.entries(stats).sort((a, b) => b[1].count - a[1].count);
+  };
+
+  // Calculer les stats d'un produit spécifique par timeframe
+  const getProductStats = (productName, timeframe) => {
+    if (!productName) return [];
+    
+    const now = new Date();
+    const data = {};
+    
+    // Créer les labels selon le timeframe
+    if (timeframe === 'day') {
+      // Derniers 14 jours
+      for (let i = 13; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        const dayLabel = date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+        data[dayLabel] = 0;
+      }
+    } else if (timeframe === 'week') {
+      // Dernières 8 semaines
+      for (let i = 7; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - (date.getDay() || 7) - i * 7);
+        const weekEnd = new Date(date);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        const weekLabel = `${date.getDate()}-${weekEnd.getDate()} ${date.toLocaleDateString('fr-FR', { month: 'short' })}`;
+        data[weekLabel] = 0;
+      }
+    } else if (timeframe === 'month') {
+      // Derniers 12 mois
+      for (let i = 11; i >= 0; i--) {
+        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthLabel = date.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' });
+        data[monthLabel] = 0;
+      }
+    } else if (timeframe === 'year') {
+      // Dernières 5 années
+      for (let i = 4; i >= 0; i--) {
+        const year = now.getFullYear() - i;
+        data[year.toString()] = 0;
+      }
+    }
+    
+    // Compter les achats du produit
+    history.forEach(entry => {
+      const dateParts = entry.date.split('/');
+      if (dateParts.length !== 3) return;
+      
+      const entryDate = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
+      
+      let label = '';
+      if (timeframe === 'day') {
+        label = entryDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+      } else if (timeframe === 'week') {
+        const weekStart = new Date(entryDate);
+        weekStart.setDate(weekStart.getDate() - (weekStart.getDay() || 7));
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        label = `${weekStart.getDate()}-${weekEnd.getDate()} ${weekStart.toLocaleDateString('fr-FR', { month: 'short' })}`;
+      } else if (timeframe === 'month') {
+        label = entryDate.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' });
+      } else if (timeframe === 'year') {
+        label = entryDate.getFullYear().toString();
+      }
+      
+      // Additionner les QUANTITÉS du produit (pas juste le compte)
+      const totalQuantity = entry.items
+        .filter(item => item.name.toLowerCase() === productName.toLowerCase())
+        .reduce((sum, item) => sum + (item.quantity || 1), 0);
+      
+      if (label && data.hasOwnProperty(label)) {
+        data[label] += totalQuantity;
+      }
+    });
+    
+    return Object.entries(data).map(([label, count]) => ({ label, count }));
+  };
+
+  const getFilteredItems = () => {
+    return items.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  };
+
+  const groupedItems = {};
+  getFilteredItems().forEach(item => {
+    if (!groupedItems[item.category]) groupedItems[item.category] = [];
+    groupedItems[item.category].push(item);
+  });
+
+  const groupedTemplates = {};
+  templates.filter(t => !t.favorite).forEach(template => {
+    if (!groupedTemplates[template.category]) groupedTemplates[template.category] = [];
+    groupedTemplates[template.category].push(template);
+  });
+
+  const favoriteTemplates = templates.filter(t => t.favorite);
+  const favoriteItems = getFilteredItems().filter(item => item.favorite);
+
+  const shoppingItemsList = Object.values(shoppingItems);
+  const itemsInCart = shoppingItemsList.filter(i => i.status === 'inCart').length;
+  const itemsRemaining = shoppingItemsList.filter(i => i.status === 'pending').length;
+  const itemsUnavailable = shoppingItemsList.filter(i => i.status === 'unavailable').length;
+
+  const bgColor = darkMode ? '#1a1a1a' : '#f8f7f4';
+  const bgGradient = darkMode ? 'linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%)' : 'linear-gradient(180deg, #f8f7f4 0%, #ede6df 100%)';
+  const textColor = darkMode ? '#f0f0f0' : '#2c2c2c';
+  const cardBg = darkMode ? '#2d2d2d' : 'white';
+  const cardBorder = darkMode ? '#444' : '#e8ddd2';
+  const inputBg = darkMode ? '#3d3d3d' : '#fafaf8';
+
+  const styles = `
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@900&display=swap');
+    
+    body {
+      overflow-x: hidden;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 0.8; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.15); }
+    }
+    
+    .item-animated {
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    .drag-over {
+      background: rgba(157, 184, 160, 0.1) !important;
+      border: 2px dashed #9db8a0 !important;
+    }
+  `;
+
+  // PAGE STATS DÉTAILLÉES D'UN PRODUIT
+  if (showProductStats && selectedProductStats) {
+    const statsData = getProductStats(selectedProductStats, statsTimeframe);
+    
+    return (
+      <div style={{ minHeight: '100vh', background: bgGradient, fontFamily: '"Outfit", "Segoe UI", sans-serif', padding: '2rem', color: textColor }}>
+        <style>{styles}</style>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h1 style={{ fontSize: '2rem', margin: 0, color: '#3d5848', fontWeight: 600 }}>📊 {selectedProductStats}</h1>
+            <button onClick={() => { setShowProductStats(false); setSelectedProductStats(null); }} style={{ background: cardBg, border: `1px solid ${cardBorder}`, padding: '0.75rem', borderRadius: '10px', cursor: 'pointer', fontSize: '1.5rem', color: textColor }}>×</button>
+          </div>
+
+          <div style={{ background: cardBg, borderRadius: '12px', padding: '2rem', border: `1px solid ${cardBorder}`, marginBottom: '2rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
+              <button onClick={() => setStatsTimeframe('day')} style={{ padding: '0.6rem 1.2rem', background: statsTimeframe === 'day' ? 'linear-gradient(135deg, #4a8a6a 0%, #3d7159 100%)' : inputBg, color: statsTimeframe === 'day' ? 'white' : textColor, border: statsTimeframe === 'day' ? 'none' : `1px solid ${cardBorder}`, borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, transition: 'all 0.3s' }}>Jour</button>
+              <button onClick={() => setStatsTimeframe('week')} style={{ padding: '0.6rem 1.2rem', background: statsTimeframe === 'week' ? 'linear-gradient(135deg, #4a8a6a 0%, #3d7159 100%)' : inputBg, color: statsTimeframe === 'week' ? 'white' : textColor, border: statsTimeframe === 'week' ? 'none' : `1px solid ${cardBorder}`, borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, transition: 'all 0.3s' }}>Semaine</button>
+              <button onClick={() => setStatsTimeframe('month')} style={{ padding: '0.6rem 1.2rem', background: statsTimeframe === 'month' ? 'linear-gradient(135deg, #4a8a6a 0%, #3d7159 100%)' : inputBg, color: statsTimeframe === 'month' ? 'white' : textColor, border: statsTimeframe === 'month' ? 'none' : `1px solid ${cardBorder}`, borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, transition: 'all 0.3s' }}>Mois</button>
+              <button onClick={() => setStatsTimeframe('year')} style={{ padding: '0.6rem 1.2rem', background: statsTimeframe === 'year' ? 'linear-gradient(135deg, #4a8a6a 0%, #3d7159 100%)' : inputBg, color: statsTimeframe === 'year' ? 'white' : textColor, border: statsTimeframe === 'year' ? 'none' : `1px solid ${cardBorder}`, borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, transition: 'all 0.3s' }}>Année</button>
+            </div>
+
+            {statsData.length > 0 && statsData.some(d => d.count > 0) ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={statsData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={cardBorder} />
+                  <XAxis dataKey="label" stroke={textColor} style={{ fontSize: '0.85rem' }} />
+                  <YAxis stroke={textColor} style={{ fontSize: '0.85rem' }} />
+                  <Tooltip 
+                    contentStyle={{ background: inputBg, border: `1px solid ${cardBorder}`, borderRadius: '8px', color: textColor }}
+                    labelStyle={{ color: textColor }}
+                  />
+                  <Bar dataKey="count" fill="#4a8a6a" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '2rem', color: '#999' }}>
+                <p>Aucun achat enregistré pour cette période</p>
+              </div>
+            )}
+          </div>
+
+          <div style={{ background: cardBg, borderRadius: '12px', padding: '1.5rem', border: `1px solid ${cardBorder}` }}>
+            <h3 style={{ margin: '0 0 1rem 0', fontSize: '0.95rem', fontWeight: 600, color: textColor }}>Résumé</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
+              <div style={{ background: inputBg, padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
+                <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.3rem' }}>Total achats</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#4a8a6a' }}>{statsData.reduce((sum, d) => sum + d.count, 0)}</div>
+              </div>
+              <div style={{ background: inputBg, padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
+                <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.3rem' }}>Moyenne</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#5b9db8' }}>{(statsData.reduce((sum, d) => sum + d.count, 0) / Math.max(statsData.length, 1)).toFixed(1)}</div>
+              </div>
+              <div style={{ background: inputBg, padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
+                <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.3rem' }}>Pic</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#d97560' }}>{Math.max(...statsData.map(d => d.count), 0)}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // PAGE PARTAGER
+  if (showShare) {
+    const shareText = createShareableList();
+    return (
+      <div style={{ minHeight: '100vh', background: bgGradient, fontFamily: '"Outfit", "Segoe UI", sans-serif', padding: '2rem', color: textColor }}>
+        <style>{styles}</style>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h1 style={{ fontSize: '2rem', margin: 0, color: '#3d5848', fontWeight: 600 }}>Partager ta liste</h1>
+            <button onClick={() => setShowShare(false)} style={{ background: cardBg, border: `1px solid ${cardBorder}`, padding: '0.75rem', borderRadius: '10px', cursor: 'pointer', fontSize: '1.5rem', color: textColor }}>×</button>
+          </div>
+
+          <div style={{ background: cardBg, borderRadius: '12px', padding: '2rem', border: `1px solid ${cardBorder}`, marginBottom: '1.5rem', animation: 'slideInLeft 0.3s' }}>
+            <p style={{ color: '#999', marginBottom: '1.5rem', fontSize: '0.95rem', textAlign: 'center' }}>Copie ta liste d'un clic ✨</p>
+            
+            <button 
+              onClick={copyListToClipboard} 
+              style={{ 
+                width: '100%', 
+                padding: '1.2rem', 
+                background: justCopied ? '#9db8a0' : 'linear-gradient(135deg, #4a8a6a 0%, #3d7159 100%)', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '12px', 
+                cursor: 'pointer', 
+                fontSize: '1rem', 
+                fontWeight: 600, 
+                transition: 'all 0.3s ease',
+                transform: justCopied ? 'scale(1.02)' : 'scale(1)',
+                marginBottom: '2rem',
+                boxShadow: justCopied ? 'none' : '0 4px 12px rgba(74, 138, 106, 0.25)'
+              }}
+            >
+              {justCopied ? '✓ Copié !' : '📋 Copier la liste'}
+            </button>
+
+            <h3 style={{ margin: '0 0 1rem 0', fontSize: '0.95rem', fontWeight: 600, color: textColor }}>Aperçu :</h3>
+            <textarea 
+              ref={textareaRef}
+              value={shareText}
+              readOnly
+              style={{ 
+                width: '100%', 
+                background: inputBg, 
+                padding: '1.5rem', 
+                borderRadius: '10px', 
+                border: `1px solid ${cardBorder}`, 
+                fontFamily: 'monospace', 
+                fontSize: '0.85rem', 
+                lineHeight: '1.6', 
+                color: textColor, 
+                maxHeight: '300px',
+                overflowY: 'auto',
+                resize: 'none',
+                boxSizing: 'border-box'
+              }}
+            />
+          </div>
+
+          <p style={{ color: '#999', fontSize: '0.9rem', textAlign: 'center', lineHeight: '1.6' }}>
+            📋 Après avoir copié, tu peux coller ta liste directement dans <strong>SMS</strong>, <strong>WhatsApp</strong>, <strong>Email</strong> ou n'importe où !
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+    // PAGE HISTORIQUE
+  if (showHistory) {
+    return (
+      <div style={{ minHeight: '100vh', background: bgGradient, fontFamily: '"Outfit", "Segoe UI", sans-serif', padding: '2rem', color: textColor }}>
+        <style>{styles}</style>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h1 style={{ fontSize: '2rem', margin: 0, color: '#3d5848', fontWeight: 600 }}>Historique</h1>
+            <button onClick={() => setShowHistory(false)} style={{ background: cardBg, border: `1px solid ${cardBorder}`, padding: '0.75rem', borderRadius: '10px', cursor: 'pointer', fontSize: '1.5rem', color: textColor }}>×</button>
+          </div>
+
+          {selectedHistoryItem ? (
+            <div style={{ background: cardBg, borderRadius: '12px', padding: '2rem', border: `1px solid ${cardBorder}`, animation: 'fadeIn 0.3s' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <h2 style={{ margin: 0, fontSize: '1.5rem', color: '#3d5848' }}>{selectedHistoryItem.date}</h2>
+                <button onClick={() => setSelectedHistoryItem(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.5rem', color: textColor }}>←</button>
+              </div>
+              <div style={{ display: 'grid', gap: '0.75rem', marginBottom: '2rem' }}>
+                {selectedHistoryItem.items.map((item, idx) => (
+                  <div key={idx} style={{ background: inputBg, padding: '1rem', borderRadius: '10px', border: `1px solid ${cardBorder}`, animation: 'slideInLeft 0.3s ease-out' }}>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 500 }}>{item.name}</div>
+                    <div style={{ fontSize: '0.8rem', color: '#999', marginTop: '0.3rem' }}>{item.quantity} {item.unit}</div>
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => restoreFromHistory(selectedHistoryItem)} style={{ width: '100%', padding: '0.9rem', background: '#9db8a0', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem', transition: 'all 0.3s' }}>Restaurer cette liste</button>
+              <button onClick={() => { deleteFromHistory(selectedHistoryItem.id); setSelectedHistoryItem(null); }} style={{ width: '100%', padding: '0.9rem', background: '#d97560', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600 }}>Supprimer</button>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gap: '1rem' }}>
+              {history.length > 0 ? (
+                history.map((entry, idx) => (
+                  <div key={entry.id} onClick={() => setSelectedHistoryItem(entry)} style={{ background: cardBg, padding: '1.5rem', borderRadius: '10px', border: `1px solid ${cardBorder}`, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.3s', animation: `slideInLeft ${0.2 + idx * 0.05}s` }}>
+                    <div>
+                      <div style={{ fontWeight: 600, marginBottom: '0.3rem' }}>{entry.date}</div>
+                      <div style={{ fontSize: '0.85rem', color: '#999' }}>{entry.items.length} produit{entry.items.length > 1 ? 's' : ''}</div>
+                    </div>
+                    <div style={{ fontSize: '1.5rem' }}>→</div>
+                  </div>
+                ))
+              ) : (
+                <p style={{ textAlign: 'center', color: '#999' }}>Aucun historique</p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // PAGE STATS
+  if (showStats) {
+    const stats = getStats();
+    return (
+      <div style={{ minHeight: '100vh', background: bgGradient, fontFamily: '"Outfit", "Segoe UI", sans-serif', padding: '2rem', color: textColor }}>
+        <style>{styles}</style>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h1 style={{ fontSize: '2rem', margin: 0, color: '#3d5848', fontWeight: 600 }}>Statistiques</h1>
+            <button onClick={() => setShowStats(false)} style={{ background: cardBg, border: `1px solid ${cardBorder}`, padding: '0.75rem', borderRadius: '10px', cursor: 'pointer', fontSize: '1.5rem', color: textColor }}>×</button>
+          </div>
+          <div style={{ background: cardBg, borderRadius: '12px', padding: '2rem', border: `1px solid ${cardBorder}` }}>
+            {stats.length > 0 ? (
+              <div style={{ display: 'grid', gap: '1rem' }}>
+                {stats.map(([name, data], idx) => (
+                  <div key={name} style={{ background: inputBg, padding: '1rem', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', animation: `slideInLeft ${0.1 + idx * 0.05}s` }}>
+                    <div>
+                      <div style={{ fontWeight: 600 }}>{name}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#999', marginTop: '0.3rem' }}>Acheté {data.count} fois</div>
+                    </div>
+                    <div style={{ textAlign: 'right', color: '#999', fontSize: '0.85rem' }}>Dernière: {data.lastDate}</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p style={{ textAlign: 'center', color: '#999' }}>Aucune statistique disponible</p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // PAGE DÉPENSES
+  if (showExpenses) {
+    const addExpense = () => {
+      if (shoppingAmount && !isNaN(shoppingAmount)) {
+        const newExpense = {
+          id: Date.now(),
+          amount: parseFloat(shoppingAmount),
+          date: new Date().toLocaleDateString('fr-FR'),
+          timestamp: Date.now()
+        };
+        setExpenses([...expenses, newExpense]);
+        setShoppingAmount('');
+        setJustAddedExpense(true);
+        setTimeout(() => setJustAddedExpense(false), 1500);
+      }
+    };
+
+    const deleteExpense = (id) => {
+      setExpenses(expenses.filter(e => e.id !== id));
+    };
+
+    const getWeekStats = () => {
+      const now = Date.now();
+      const week = 7 * 24 * 60 * 60 * 1000;
+      const weekExpenses = expenses.filter(e => now - e.timestamp < week);
+      return weekExpenses.reduce((sum, e) => sum + e.amount, 0).toFixed(2);
+    };
+
+    const getMonthStats = () => {
+      const now = new Date();
+      const monthExpenses = expenses.filter(e => {
+        const date = new Date(e.timestamp);
+        return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+      });
+      return monthExpenses.reduce((sum, e) => sum + e.amount, 0).toFixed(2);
+    };
+
+    const getYearStats = () => {
+      const now = new Date();
+      const yearExpenses = expenses.filter(e => {
+        const date = new Date(e.timestamp);
+        return date.getFullYear() === now.getFullYear();
+      });
+      return yearExpenses.reduce((sum, e) => sum + e.amount, 0).toFixed(2);
+    };
+
+    const getTotalAverage = () => {
+      if (expenses.length === 0) return '0.00';
+      const total = expenses.reduce((sum, e) => sum + e.amount, 0);
+      return (total / expenses.length).toFixed(2);
+    };
+
+    const getLast7Days = () => {
+      const now = Date.now();
+      const days = [];
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(now - i * 24 * 60 * 60 * 1000);
+        const dateStr = date.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit' });
+        const dayExpenses = expenses.filter(e => new Date(e.timestamp).toLocaleDateString('fr-FR') === date.toLocaleDateString('fr-FR'));
+        const amount = dayExpenses.reduce((sum, e) => sum + e.amount, 0);
+        days.push({ date: dateStr, amount });
+      }
+      return days;
+    };
+
+    const chartData = getLast7Days();
+
+    return (
+      <div style={{ minHeight: '100vh', background: bgGradient, fontFamily: '"Outfit", "Segoe UI", sans-serif', padding: '2rem', color: textColor }}>
+        <style>{styles}</style>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h1 style={{ fontSize: '2rem', margin: 0, color: '#3d5848', fontWeight: 600 }}>Dépenses</h1>
+            <button onClick={() => setShowExpenses(false)} style={{ background: 'none', border: 'none', fontSize: '2rem', cursor: 'pointer', color: '#3d5848' }}>×</button>
+          </div>
+
+          <div style={{ background: cardBg, borderRadius: '12px', padding: '2rem', marginBottom: '2rem', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)', border: `1px solid ${cardBorder}` }}>
+            <h3 style={{ margin: '0 0 1.5rem 0', fontSize: '1rem', fontWeight: 600, color: textColor }}>Ajouter une dépense</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <input type="number" placeholder="Montant (€)" value={shoppingAmount} onChange={(e) => setShoppingAmount(e.target.value)} step="0.01" min="0" style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, transition: 'all 0.3s' }} />
+              <button onClick={addExpense} style={{ width: '100%', padding: '0.9rem', background: justAddedExpense ? '#9db8a0' : 'linear-gradient(135deg, #9db8a0 0%, #8bad93 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, transition: 'all 0.3s ease', transform: justAddedExpense ? 'scale(1.02)' : 'scale(1)', boxShadow: '0 4px 12px rgba(157, 184, 160, 0.25)' }}>{justAddedExpense ? '✓ Ajouté' : '+ Ajouter'}</button>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+            <div style={{ background: cardBg, padding: '1.5rem', borderRadius: '10px', border: `1px solid ${cardBorder}`, textAlign: 'center' }}>
+              <div style={{ fontSize: '0.85rem', color: '#999', marginBottom: '0.5rem' }}>Cette semaine</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 600, color: '#5b9db8' }}>{getWeekStats()}€</div>
+            </div>
+            <div style={{ background: cardBg, padding: '1.5rem', borderRadius: '10px', border: `1px solid ${cardBorder}`, textAlign: 'center' }}>
+              <div style={{ fontSize: '0.85rem', color: '#999', marginBottom: '0.5rem' }}>Ce mois</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 600, color: '#e8a947' }}>{getMonthStats()}€</div>
+            </div>
+            <div style={{ background: cardBg, padding: '1.5rem', borderRadius: '10px', border: `1px solid ${cardBorder}`, textAlign: 'center' }}>
+              <div style={{ fontSize: '0.85rem', color: '#999', marginBottom: '0.5rem' }}>Cette année</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 600, color: '#3d5848' }}>{getYearStats()}€</div>
+            </div>
+            <div style={{ background: cardBg, padding: '1.5rem', borderRadius: '10px', border: `1px solid ${cardBorder}`, textAlign: 'center' }}>
+              <div style={{ fontSize: '0.85rem', color: '#999', marginBottom: '0.5rem' }}>Moyenne</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 600, color: '#c85d8f' }}>{getTotalAverage()}€</div>
+            </div>
+          </div>
+
+          {chartData.some(d => d.amount > 0) && (
+            <div style={{ background: cardBg, borderRadius: '12px', padding: '1.5rem', marginBottom: '2rem', border: `1px solid ${cardBorder}` }}>
+              <h3 style={{ margin: '0 0 1rem 0', fontSize: '0.95rem', fontWeight: 600 }}>Derniers 7 jours</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={cardBorder} />
+                  <XAxis dataKey="date" stroke={textColor} />
+                  <YAxis stroke={textColor} />
+                  <Tooltip contentStyle={{ background: cardBg, border: `1px solid ${cardBorder}` }} />
+                  <Bar dataKey="amount" fill="#5b9db8" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          {expenses.length > 0 && (
+            <div style={{ background: cardBg, borderRadius: '12px', padding: '1.5rem', border: `1px solid ${cardBorder}` }}>
+              <h3 style={{ margin: '0 0 1rem 0', fontSize: '0.95rem', fontWeight: 600 }}>Historique</h3>
+              <div style={{ display: 'grid', gap: '0.75rem' }}>
+                {expenses.slice().reverse().map(expense => (
+                  <div key={expense.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', background: darkMode ? '#2d2d2d' : '#f9f9f9', borderRadius: '8px', border: `1px solid ${cardBorder}` }}>
+                    <div>
+                      <div style={{ fontWeight: 500 }}>{expense.amount.toFixed(2)}€</div>
+                      <div style={{ fontSize: '0.8rem', color: '#999' }}>{expense.date}</div>
+                    </div>
+                    <button onClick={() => deleteExpense(expense.id)} style={{ background: '#f5f0e8', border: `1px solid ${cardBorder}`, padding: '0.5rem', borderRadius: '6px', cursor: 'pointer', fontSize: '1rem', color: '#d97560' }}>×</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {expenses.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#999' }}>
+              <p style={{ fontSize: '1rem', margin: 0 }}>Aucune dépense enregistrée</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // PAGE CARTES DE FIDÉLITÉ
+  if (showLoyaltyCards) {
+    const groupedByStore = {};
+    loyaltyCards.forEach(card => {
+      if (!groupedByStore[card.store]) {
+        groupedByStore[card.store] = [];
+      }
+      groupedByStore[card.store].push(card);
+    });
+
+    const handleAddCard = (e) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const newCard = {
+            id: Date.now(),
+            store: prompt('Nom du magasin:') || 'Sans nom',
+            image: event.target.result,
+            date: new Date().toLocaleDateString('fr-FR')
+          };
+          setLoyaltyCards([...loyaltyCards, newCard]);
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+
+    const deleteCard = (id) => {
+      setLoyaltyCards(loyaltyCards.filter(card => card.id !== id));
+    };
+
+    return (
+      <div style={{ minHeight: '100vh', background: bgGradient, fontFamily: '"Outfit", "Segoe UI", sans-serif', padding: '2rem', color: textColor }}>
+        <style>{styles}</style>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h1 style={{ fontSize: '2rem', margin: 0, color: '#3d5848', fontWeight: 600, textAlign: 'center' }}>Cartes de fidélité</h1>
+            <button onClick={() => setShowLoyaltyCards(false)} style={{ background: 'none', border: 'none', fontSize: '2rem', cursor: 'pointer', color: '#3d5848' }}>×</button>
+          </div>
+
+          <div style={{ background: cardBg, borderRadius: '12px', padding: '2rem', marginBottom: '2rem', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)', border: `1px solid ${cardBorder}` }}>
+            <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 600, color: textColor }}>Ajouter une carte</h3>
+            <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '1rem 2rem', background: 'linear-gradient(135deg, #9db8a0 0%, #8bad93 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, transition: 'all 0.3s' }}>
+              <span style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>📸</span>
+              <span style={{ textAlign: 'center' }}>Photographier<br />une carte</span>
+              <input type="file" accept="image/*" capture="environment" onChange={handleAddCard} style={{ display: 'none' }} />
+            </label>
+          </div>
+
+          {Object.keys(groupedByStore).length > 0 ? (
+            Object.entries(groupedByStore).map(([store, cards]) => (
+              <div key={store} style={{ marginBottom: '2rem' }}>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: 600, color: '#3d5848', marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: `2px solid #e8a947` }}>🏪 {store}</h2>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '1rem' }}>
+                  {cards.map(card => (
+                    <div key={card.id} style={{ position: 'relative', borderRadius: '10px', overflow: 'hidden', border: `1px solid ${cardBorder}`, cursor: 'pointer', transition: 'all 0.3s' }}>
+                      <img src={card.image} alt={store} style={{ width: '100%', height: '200px', objectFit: 'cover', display: 'block' }} />
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0, 0, 0, 0.7)', color: 'white', padding: '0.5rem', fontSize: '0.75rem', textAlign: 'center' }}>
+                        {card.date}
+                      </div>
+                      <button onClick={() => deleteCard(card.id)} style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'rgba(255, 0, 0, 0.8)', color: 'white', border: 'none', borderRadius: '50%', width: '30px', height: '30px', cursor: 'pointer', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#999' }}>
+              <p style={{ fontSize: '1rem', margin: 0 }}>Aucune carte enregistrée</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // PAGE CATEGORIES
+  if (showCategories) {
+    return (
+      <div style={{ minHeight: '100vh', background: bgGradient, fontFamily: '"Outfit", "Segoe UI", sans-serif', padding: '2rem', color: textColor }}>
+        <style>{styles}</style>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h1 style={{ fontSize: '2rem', margin: 0, color: '#3d5848', fontWeight: 600 }}>Catégories</h1>
+            <button onClick={() => setShowCategories(false)} style={{ background: cardBg, border: `1px solid ${cardBorder}`, padding: '0.75rem', borderRadius: '10px', cursor: 'pointer', fontSize: '1.5rem', color: textColor }}>×</button>
+          </div>
+
+          <div style={{ background: cardBg, borderRadius: '12px', padding: '2rem', marginBottom: '2rem', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)', border: `1px solid ${cardBorder}` }}>
+            <h3 style={{ margin: '0 0 1.5rem 0', fontSize: '1rem', fontWeight: 600, color: textColor }}>Ajouter une catégorie</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <input type="text" placeholder="Nouvelle catégorie..." value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, transition: 'all 0.3s' }} />
+              <button onClick={addCategory} style={{ width: '100%', padding: '0.85rem 2rem', background: justAddedCategory ? '#9db8a0' : 'linear-gradient(135deg, #9db8a0 0%, #8bad93 100%)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, borderRadius: '8px', transition: 'all 0.3s ease', transform: justAddedCategory ? 'scale(1.02)' : 'scale(1)' }}>{justAddedCategory ? '✓ Ajouté' : 'Ajouter'}</button>
+            </div>
+          </div>
+
+          <div style={{ background: cardBg, borderRadius: '12px', padding: '2rem', border: `1px solid ${cardBorder}` }}>
+            <h3 style={{ margin: '0 0 1.5rem 0', fontSize: '1rem', fontWeight: 600, color: textColor }}>Catégories ({categories.length})</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {categories.map((cat) => (
+                <div key={cat} style={{ background: inputBg, padding: '1rem', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: `1px solid ${cardBorder}`, animation: 'slideInLeft 0.3s' }}>
+                  <div style={{ fontWeight: 500, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ width: '10px', height: '10px', borderRadius: '3px', background: getCategoryColor(cat) }}></span>
+                    {cat}
+                  </div>
+                  <button onClick={() => deleteCategory(cat)} style={{ background: '#f5f0e8', border: `1px solid ${cardBorder}`, padding: '0.6rem', borderRadius: '8px', cursor: 'pointer', fontSize: '1.1rem', color: '#d97560', transition: 'all 0.3s' }}>×</button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ background: cardBg, borderRadius: '12px', padding: '2rem', marginTop: '2rem', border: `2px solid #d97560` }}>
+            <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 600, color: '#d97560' }}>⚠️ Zone de danger</h3>
+            <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.9rem', color: '#999', lineHeight: 1.5 }}>Réinitialise complètement l'historique des achats. Cette action ne peut pas être annulée.</p>
+            
+            {!confirmResetHistory ? (
+              <button onClick={() => setConfirmResetHistory(true)} style={{ width: '100%', padding: '0.85rem', background: '#d97560', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, transition: 'all 0.3s' }}>🗑️ Réinitialiser l'historique</button>
+            ) : (
+              <div style={{ background: inputBg, padding: '1rem', borderRadius: '8px', border: `2px solid #d97560` }}>
+                <p style={{ margin: '0 0 1rem 0', fontSize: '0.9rem', fontWeight: 600, color: '#d97560' }}>Êtes-vous vraiment sûr ?</p>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  <button onClick={() => { setHistory([]); setConfirmResetHistory(false); }} style={{ flex: 1, padding: '0.75rem', background: '#d97560', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, transition: 'all 0.3s' }}>Oui, supprimer</button>
+                  <button onClick={() => setConfirmResetHistory(false)} style={{ flex: 1, padding: '0.75rem', background: inputBg, color: textColor, border: `1px solid ${cardBorder}`, borderRadius: '6px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, transition: 'all 0.3s' }}>Annuler</button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // MODE SHOPPING
+  if (shoppingMode) {
+    return (
+      <div style={{ minHeight: '100vh', background: bgGradient, fontFamily: '"Outfit", "Segoe UI", sans-serif', padding: '2rem', color: textColor }}>
+        <style>{styles}</style>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+            <h1 style={{ fontSize: '2rem', margin: 0, color: '#3d5848', fontWeight: 600 }}>Courses</h1>
+            <button onClick={() => setShoppingMode(false)} style={{ background: cardBg, border: `1px solid ${cardBorder}`, padding: '0.75rem', borderRadius: '10px', cursor: 'pointer', fontSize: '1.5rem', color: textColor }}>×</button>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+            <div style={{ background: 'linear-gradient(135deg, #fff5f0 0%, #ffe8e0 100%)', borderRadius: '12px', padding: '1.5rem', textAlign: 'center', border: '1px solid #f0d4c4', animation: 'fadeIn 0.3s' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 700, color: '#d97560', marginBottom: '0.5rem' }}>{itemsRemaining}</div>
+              <div style={{ fontSize: '0.8rem', color: '#8b5a3c' }}>à faire</div>
+            </div>
+            <div style={{ background: 'linear-gradient(135deg, #f0f8f5 0%, #e0f0eb 100%)', borderRadius: '12px', padding: '1.5rem', textAlign: 'center', border: '1px solid #c8e0d8', animation: 'fadeIn 0.3s' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 700, color: '#e8a947', marginBottom: '0.5rem' }}>{itemsInCart}</div>
+              <div style={{ fontSize: '0.8rem', color: '#9b7d3a' }}>caddie</div>
+            </div>
+            <div style={{ background: 'linear-gradient(135deg, #f5f0f8 0%, #f0e8f5 100%)', borderRadius: '12px', padding: '1.5rem', textAlign: 'center', border: '1px solid #e8d4f0', animation: 'fadeIn 0.3s' }}>
+              <div style={{ fontSize: '2rem', fontWeight: 700, color: '#c85d8f', marginBottom: '0.5rem' }}>{itemsUnavailable}</div>
+              <div style={{ fontSize: '0.8rem', color: '#8b5a7d' }}>indispo</div>
+            </div>
+          </div>
+
+          {itemsRemaining > 0 && (
+            <div style={{ background: cardBg, borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem', border: `1px solid ${cardBorder}`, animation: 'slideInLeft 0.3s' }}>
+              <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 600, color: textColor }}>À faire</h3>
+              <div style={{ display: 'grid', gap: '0.75rem' }}>
+                {Object.entries(shoppingItems).filter(([_, data]) => data.status === 'pending').map(([id, data], idx) => (
+                  <div key={id} style={{ background: inputBg, padding: '1rem', borderRadius: '10px', border: `1px solid ${cardBorder}`, display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', animation: `slideInLeft ${0.1 + idx * 0.05}s` }}>
+                    <div style={{ flex: 1, minWidth: '150px' }}>
+                      <div style={{ fontSize: '0.95rem', fontWeight: 500 }}>{data.item.name}</div>
+                      {data.item.note && <div style={{ fontSize: '0.75rem', color: '#999', marginTop: '0.2rem', fontStyle: 'italic' }}>{data.item.note}</div>}
+                      <div style={{ fontSize: '0.8rem', color: '#999', marginTop: '0.3rem' }}>{data.item.quantity} {data.item.unit}</div>
+                    </div>
+                    <button onClick={() => updateItemStatus(id, 'inCart')} style={{ padding: '0.5rem 0.8rem', background: '#4a8a6a', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, transition: 'all 0.3s' }}>Caddie</button>
+                    <button onClick={() => updateItemStatus(id, 'unavailable')} style={{ padding: '0.5rem 0.8rem', background: '#d97560', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, transition: 'all 0.3s' }}>Indispo</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {itemsInCart > 0 && (
+            <div style={{ background: 'linear-gradient(135deg, #f0f8f5 0%, #e0f0eb 100%)', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem', border: '1px solid #c8e0d8', animation: 'slideInLeft 0.3s' }}>
+              <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 600, color: '#3d5848' }}>Dans le caddie</h3>
+              <div style={{ display: 'grid', gap: '0.75rem' }}>
+                {Object.entries(shoppingItems).filter(([_, data]) => data.status === 'inCart').map(([id, data]) => (
+                  <div key={id} style={{ background: 'white', padding: '1rem', borderRadius: '10px', border: '1px solid #c8e0d8', display: 'flex', alignItems: 'center', gap: '1rem', opacity: 0.65, animation: 'fadeIn 0.3s' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '0.95rem', fontWeight: 500, textDecoration: 'line-through', color: '#999' }}>{data.item.name}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#bbb', marginTop: '0.3rem' }}>{data.item.quantity} {data.item.unit}</div>
+                    </div>
+                    <button onClick={() => updateItemStatus(id, 'pending')} style={{ padding: '0.5rem 1rem', background: 'white', color: '#4a8a6a', border: '1px solid #c8e0d8', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, transition: 'all 0.3s' }}>Annuler</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {itemsUnavailable > 0 && (
+            <div style={{ background: 'linear-gradient(135deg, #fff5f0 0%, #ffe8e0 100%)', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem', border: '1px solid #f0d4c4', animation: 'slideInLeft 0.3s' }}>
+              <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 600, color: '#d97560' }}>Indisponibles</h3>
+              <div style={{ display: 'grid', gap: '0.75rem' }}>
+                {Object.entries(shoppingItems).filter(([_, data]) => data.status === 'unavailable').map(([id, data]) => (
+                  <div key={id} style={{ background: 'white', padding: '1rem', borderRadius: '10px', border: '1px solid #f0d4c4', display: 'flex', alignItems: 'center', gap: '1rem', opacity: 0.65, animation: 'fadeIn 0.3s' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '0.95rem', fontWeight: 500, color: '#999' }}>{data.item.name}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#bbb', marginTop: '0.3rem' }}>{data.item.quantity} {data.item.unit}</div>
+                    </div>
+                    <button onClick={() => updateItemStatus(id, 'pending')} style={{ padding: '0.5rem 1rem', background: 'white', color: '#d97560', border: '1px solid #f0d4c4', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, transition: 'all 0.3s' }}>Annuler</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div style={{ background: cardBg, borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem', border: `1px solid ${cardBorder}` }}>
+            <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 600, color: textColor }}>💰 Montant dépensé</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <input type="number" placeholder="Montant total (€)" value={shoppingAmount} onChange={(e) => setShoppingAmount(e.target.value)} step="0.01" min="0" style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '1rem', background: inputBg, color: textColor, transition: 'all 0.3s' }} />
+              <p style={{ margin: '0', fontSize: '0.85rem', color: '#999', fontStyle: 'italic' }}>Saisis le montant total que tu as dépensé</p>
+            </div>
+          </div>
+
+          <button onClick={finalizeShopping} style={{ width: '100%', padding: '1rem', background: 'linear-gradient(135deg, #4a8a6a 0%, #3d7159 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem', fontWeight: 600, transition: 'all 0.3s' }}>Valider les achats</button>
+        </div>
+      </div>
+    );
+  }
+
+  // PAGE PRINCIPALE
+  return (
+    <div style={{ minHeight: '100vh', background: bgGradient, fontFamily: '"Outfit", "Segoe UI", sans-serif', padding: '2rem', color: textColor }}>
+      <style>{styles}</style>
+
+      {menuOpen && <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0, 0, 0, ' + (darkMode ? '0.5' : '0.3') + ')', zIndex: 998 }} />}
+
+      <div style={{ position: 'fixed', top: 0, left: 0, height: '100vh', width: '280px', background: cardBg, boxShadow: '2px 0 12px rgba(0, 0, 0, 0.15)', transform: menuOpen ? 'translateX(0)' : 'translateX(-100%)', transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)', zIndex: 999, borderRight: `1px solid ${cardBorder}`, overflowY: 'auto' }}>
+        <div style={{ paddingLeft: '1.5rem', paddingRight: '1.5rem', paddingTop: '2rem' }}>
+          <button onClick={() => setMenuOpen(false)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#3d5848', marginBottom: '2rem' }}>×</button>
+          
+          <nav style={{ display: 'grid', gap: '0.75rem' }}>
+            <button onClick={() => { setShowHistory(true); setMenuOpen(false); }} style={{ width: '100%', padding: '1rem', background: 'linear-gradient(135deg, #f5ede5 0%, #ede6df 100%)', color: '#5b9db8', border: `2px solid #5b9db8`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, textAlign: 'left', transition: 'all 0.3s' }}>📋 Historique</button>
+            <button onClick={() => { setShowStats(true); setMenuOpen(false); }} style={{ width: '100%', padding: '1rem', background: 'linear-gradient(135deg, #f5ede5 0%, #ede6df 100%)', color: '#e8a947', border: `2px solid #e8a947`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, textAlign: 'left', transition: 'all 0.3s' }}>📊 Statistiques</button>
+            <button onClick={() => { setShowShare(true); setMenuOpen(false); }} style={{ width: '100%', padding: '1rem', background: 'linear-gradient(135deg, #f5ede5 0%, #ede6df 100%)', color: '#5b9db8', border: `2px solid #5b9db8`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, textAlign: 'left', transition: 'all 0.3s' }}>📤 Partager</button>
+            <button onClick={() => { setShowLoyaltyCards(true); setMenuOpen(false); }} style={{ width: '100%', padding: '1rem', background: 'linear-gradient(135deg, #f5ede5 0%, #ede6df 100%)', color: '#e8a947', border: `2px solid #e8a947`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, textAlign: 'left', transition: 'all 0.3s' }}>💳 Cartes de fidélité</button>
+            <button onClick={() => { setShowExpenses(true); setMenuOpen(false); }} style={{ width: '100%', padding: '1rem', background: 'linear-gradient(135deg, #f5ede5 0%, #ede6df 100%)', color: '#5b9db8', border: `2px solid #5b9db8`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, textAlign: 'left', transition: 'all 0.3s' }}>💰 Dépenses</button>
+            <button onClick={() => { setShowCategories(true); setMenuOpen(false); }} style={{ width: '100%', padding: '1rem', background: 'linear-gradient(135deg, #f5ede5 0%, #ede6df 100%)', color: '#c85d8f', border: `2px solid #c85d8f`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, textAlign: 'left', transition: 'all 0.3s' }}>⚙️ Paramètres</button>
+            <button onClick={() => setDarkMode(!darkMode)} style={{ width: '100%', padding: '1rem', background: 'linear-gradient(135deg, #f5ede5 0%, #ede6df 100%)', color: '#3d5848', border: `2px solid #3d5848`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, textAlign: 'left', transition: 'all 0.3s' }}>{darkMode ? '☀️' : '🌙'} Mode</button>
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+              <button onClick={undo} disabled={historyIndex <= 0} style={{ flex: 1, padding: '0.8rem', background: historyIndex <= 0 ? '#e8ddd2' : '#9db8a0', color: 'white', border: 'none', cursor: historyIndex <= 0 ? 'not-allowed' : 'pointer', fontSize: '0.8rem', fontWeight: 600, borderRadius: '8px', transition: 'all 0.3s' }}>↶ Annuler</button>
+              <button onClick={redo} disabled={historyIndex >= history_actions.length - 1} style={{ flex: 1, padding: '0.8rem', background: historyIndex >= history_actions.length - 1 ? '#e8ddd2' : '#9db8a0', color: 'white', border: 'none', cursor: historyIndex >= history_actions.length - 1 ? 'not-allowed' : 'pointer', fontSize: '0.8rem', fontWeight: 600, borderRadius: '8px', transition: 'all 0.3s' }}>↷ Refaire</button>
+            </div>
+          </nav>
+        </div>
+      </div>
+
+      {/* Bannière avec motifs discrets */}
+      <div style={{ background: 'linear-gradient(135deg, #faf8f4 0%, #f5f0e8 100%)', padding: '0.8rem 2rem', marginBottom: '2rem', borderRadius: '0', width: '100vw', marginLeft: 'calc(-50vw + 50%)', position: 'relative', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)' }}>
+        {/* Motifs en arrière-plan */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.08, pointerEvents: 'none' }}>
+          <svg width="100%" height="100%" style={{ position: 'absolute' }}>
+            <defs>
+              <pattern id="shopping-pattern" x="0" y="0" width="200" height="150" patternUnits="userSpaceOnUse">
+                {/* Caddie */}
+                <text x="20" y="40" fontSize="28" fill="#3d5848">🛒</text>
+                {/* Bouteille */}
+                <text x="80" y="60" fontSize="24" fill="#d97560">🥤</text>
+                {/* Pomme */}
+                <text x="140" y="35" fontSize="26" fill="#5b9db8">🍎</text>
+                {/* Panier */}
+                <text x="50" y="110" fontSize="22" fill="#e8a947">🛍️</text>
+                {/* Lait */}
+                <text x="120" y="120" fontSize="24" fill="#c85d8f">🥛</text>
+                {/* Raisin */}
+                <text x="10" y="130" fontSize="22" fill="#4a8a6a">🍇</text>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#shopping-pattern)" />
+          </svg>
+        </div>
+
+        {/* Contenu de la bannière */}
+        <div style={{ maxWidth: '900px', margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', zIndex: 1, gap: '2rem' }}>
+          
+          <div style={{ textAlign: 'center' }}>
+            <svg 
+              width="320" 
+              height="140" 
+              viewBox="0 0 500 300" 
+              style={{ display: 'block', margin: '0 auto' }}
+            >
+              {/* Logo coloré */}
+              <g style={{ fontFamily: '"Inter", sans-serif', fontWeight: 900, fontSize: '140px', fontStyle: 'normal' }}>
+                <text x="30" y="160" fill="#3d5848">K</text>
+                <text x="135" y="160" fill="#d97560">a</text>
+                <text x="215" y="160" fill="#5b9db8">d</text>
+                <text x="295" y="160" fill="#e8a947">e</text>
+                <text x="375" y="160" fill="#c85d8f">e</text>
+              </g>
+              
+              {/* Phrase en dessous - même largeur que Kadee */}
+              <text x="245" y="205" textAnchor="middle" style={{ fontFamily: '"Outfit", sans-serif', fontSize: '48px', fontWeight: 500, fill: '#3d5848', letterSpacing: '0.2px' }}>Les courses faciles</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      {/* Onglet menu collé au bord gauche */}
+      <div 
+        onClick={() => setMenuOpen(true)}
+        style={{
+          position: 'fixed',
+          left: '-50px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          width: '60px',
+          height: '120px',
+          background: 'linear-gradient(135deg, #4a8a6a 0%, #3d7159 100%)',
+          border: 'none',
+          borderRadius: '0 12px 12px 0',
+          cursor: 'pointer',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 999,
+          color: 'white',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          boxShadow: '2px 0 12px rgba(0, 0, 0, 0.15)',
+          gap: '0.5rem'
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.left = '-40px'}
+        onMouseLeave={(e) => e.currentTarget.style.left = '-50px'}
+      >
+        <div style={{ fontSize: '1rem', fontWeight: 700, letterSpacing: '0.5px' }}>M</div>
+        <div style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0px', marginTop: '-2px' }}>E</div>
+        <div style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0px', marginTop: '-2px' }}>N</div>
+        <div style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0px', marginTop: '-2px' }}>U</div>
+      </div>
+
+      <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', background: cardBg, borderRadius: '10px', padding: '0.4rem', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)', border: `1px solid ${cardBorder}` }}>
+          <button onClick={() => setView('inventory')} style={{ flex: 1, padding: '0.75rem', border: 'none', background: view === 'inventory' ? 'linear-gradient(135deg, #f5ede5 0%, #ede6df 100%)' : 'transparent', cursor: 'pointer', fontSize: '0.95rem', fontWeight: view === 'inventory' ? 600 : 500, color: view === 'inventory' ? '#3d5848' : '#999', borderRadius: '8px', borderBottom: view === 'inventory' ? '3px solid #5b9db8' : 'none', transition: 'all 0.3s' }}>Inventaire</button>
+          <button onClick={() => setView('templates')} style={{ flex: 1, padding: '0.75rem', border: 'none', background: view === 'templates' ? 'linear-gradient(135deg, #f5ede5 0%, #ede6df 100%)' : 'transparent', cursor: 'pointer', fontSize: '0.95rem', fontWeight: view === 'templates' ? 600 : 500, color: view === 'templates' ? '#3d5848' : '#999', borderRadius: '8px', borderBottom: view === 'templates' ? '3px solid #e8a947' : 'none', transition: 'all 0.3s' }}>Mes produits</button>
+        </div>
+
+        {view === 'inventory' && (
+          <>
+            <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                <span style={{ fontSize: '0.75rem', color: '#999', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>Produits</span>
+                <span style={{ fontSize: '1.8rem', fontWeight: 700, color: '#5b9db8' }}>{getFilteredItems().length}</span>
+              </div>
+              <button onClick={startShopping} disabled={items.length === 0} style={{ padding: '0.9rem 2rem', background: items.length === 0 ? '#e8ddd2' : 'linear-gradient(135deg, #4a8a6a 0%, #3d7159 100%)', color: items.length === 0 ? '#999' : 'white', border: 'none', borderRadius: '10px', cursor: items.length === 0 ? 'not-allowed' : 'pointer', fontSize: '0.95rem', fontWeight: 600, boxShadow: items.length === 0 ? 'none' : '0 4px 12px rgba(74, 138, 106, 0.25)', transition: 'all 0.3s' }}>Faire les courses</button>
+            </div>
+
+            <input type="text" placeholder="🔍 Chercher un produit..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ width: '100%', padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, marginBottom: '2rem', boxSizing: 'border-box', transition: 'all 0.3s' }} />
+
+            <div style={{ background: cardBg, borderRadius: '12px', padding: '2rem', marginBottom: '2rem', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)', border: `1px solid ${cardBorder}` }}>
+              <h3 style={{ margin: '0 0 1.5rem 0', fontSize: '1rem', fontWeight: 600, color: textColor }}>Ajouter un produit</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+                <input type="text" placeholder="Nom" value={newItem} onChange={(e) => { 
+                  setNewItem(e.target.value); 
+                  if (e.target.value.trim()) {
+                    const matchingTemplate = templates.find(t => t.name.toLowerCase().trim() === e.target.value.toLowerCase().trim());
+                    if (matchingTemplate) {
+                      setNewCategory(matchingTemplate.category);
+                      setNewUnit(matchingTemplate.unit);
+                    } else {
+                      setNewCategory(getAutoCategoryFromName(e.target.value));
+                    }
+                  }
+                }} style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, transition: 'all 0.3s' }} />
+                <input type="text" placeholder="Note (optionnel)" value={newItemNote} onChange={(e) => setNewItemNote(e.target.value)} style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, transition: 'all 0.3s' }} />
+                <select value={newUnit} onChange={(e) => setNewUnit(e.target.value)} style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', cursor: 'pointer', background: inputBg, color: textColor, transition: 'all 0.3s' }}>{UNITS.map(unit => <option key={unit}>{unit}</option>)}</select>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
+                <input type="number" placeholder="Quantité" value={newQuantity} onChange={(e) => setNewQuantity(e.target.value)} style={{ flex: 1, padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, transition: 'all 0.3s' }} />
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '1.5rem' }}>
+                {categories.map(cat => (
+                  <button key={cat} onClick={() => setNewCategory(cat)} style={{ padding: '0.6rem 1.2rem', border: newCategory === cat ? 'none' : `1px solid ${cardBorder}`, borderRadius: '20px', fontSize: '0.85rem', cursor: 'pointer', background: newCategory === cat ? 'linear-gradient(135deg, #3d5848 0%, #2f4639 100%)' : inputBg, color: newCategory === cat ? 'white' : textColor, fontWeight: newCategory === cat ? 600 : 500, transition: 'all 0.3s' }}>{cat}</button>
+                ))}
+              </div>
+              <button onClick={addItem} style={{ width: '100%', padding: '0.9rem', background: justAddedItem ? '#9db8a0' : 'linear-gradient(135deg, #9db8a0 0%, #8bad93 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, transition: 'all 0.3s ease', transform: justAddedItem ? 'scale(1.02)' : 'scale(1)' }}>{justAddedItem ? '✓ Ajouté' : '+ Ajouter'}</button>
+            </div>
+
+            {favoriteItems.length > 0 && (
+              <div style={{ marginBottom: '2rem', animation: 'slideInLeft 0.3s' }}>
+                <h2 style={{ fontSize: '1rem', fontWeight: 600, color: '#3d5848', marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: `2px solid #e8a947` }}>⭐ Favoris</h2>
+                <div style={{ display: 'grid', gap: '0.75rem' }}>
+                  {favoriteItems.map((item, idx) => (
+                    <div key={item.id} style={{ background: cardBg, padding: '1rem', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '1rem', border: `1px solid ${cardBorder}`, borderLeft: '4px solid #e8a947', backgroundColor: darkMode ? '#2d2d2d' : '#fffaf4', cursor: 'grab', animation: `slideInLeft ${0.1 + idx * 0.05}s`, transition: 'all 0.3s' }} draggable onDragStart={() => setDraggedItem(item.id)} onDragOver={(e) => { e.preventDefault(); setDragOverItem(item.id); }} onDragLeave={() => setDragOverItem(null)} onDrop={() => { if (draggedItem && draggedItem !== item.id) reorderItems(draggedItem, item.id); setDraggedItem(null); setDragOverItem(null); }} className={dragOverItem === item.id ? 'drag-over' : ''}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '0.95rem', fontWeight: 500, color: textColor }}>⋮⋮ {item.name}</div>
+                        {item.note && <div style={{ fontSize: '0.75rem', color: '#999', marginTop: '0.2rem', fontStyle: 'italic' }}>{item.note}</div>}
+                        <div style={{ fontSize: '0.8rem', color: '#999', marginTop: '0.25rem' }}>{item.quantity} {item.unit}</div>
+                      </div>
+                      <button onClick={() => toggleFavorite(item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#e8a947', transition: 'all 0.3s' }}>⭐</button>
+                      <button onClick={() => deleteItem(item.id)} style={{ background: '#f5f0e8', border: `1px solid ${cardBorder}`, padding: '0.6rem', borderRadius: '8px', cursor: 'pointer', fontSize: '1.1rem', color: '#d97560', transition: 'all 0.3s' }}>×</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {Object.entries(groupedItems).length > 0 && (
+              Object.entries(groupedItems).map(([category, catItems], catIdx) => (
+                <div key={category} style={{ marginBottom: '2rem', animation: `slideInLeft ${0.1 + catIdx * 0.1}s` }}>
+                  <h2 style={{ fontSize: '1rem', fontWeight: 600, color: getCategoryColor(category), marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: `2px solid ${getCategoryColor(category)}`, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ width: '10px', height: '10px', borderRadius: '3px', background: getCategoryColor(category) }}></span>
+                    {category}
+                  </h2>
+                  <div style={{ display: 'grid', gap: '0.75rem' }}>
+                    {catItems.map((item, idx) => (
+                      <div key={item.id} style={{ background: cardBg, padding: '1rem', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '1rem', border: `1px solid ${cardBorder}`, cursor: 'grab', animation: `slideInLeft ${0.1 + catIdx * 0.1 + idx * 0.03}s`, transition: 'all 0.3s' }} draggable onDragStart={() => setDraggedItem(item.id)} onDragOver={(e) => { e.preventDefault(); setDragOverItem(item.id); }} onDragLeave={() => setDragOverItem(null)} onDrop={() => { if (draggedItem && draggedItem !== item.id) reorderItems(draggedItem, item.id); setDraggedItem(null); setDragOverItem(null); }} className={dragOverItem === item.id ? 'drag-over' : ''}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '0.95rem', fontWeight: 500, color: textColor }}>⋮⋮ {item.name}</div>
+                          {item.note && <div style={{ fontSize: '0.75rem', color: '#999', marginTop: '0.2rem', fontStyle: 'italic' }}>{item.note}</div>}
+                          <div style={{ fontSize: '0.8rem', color: '#999', marginTop: '0.25rem' }}>{item.quantity} {item.unit}</div>
+                        </div>
+                        <button onClick={() => toggleFavorite(item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', transition: 'all 0.3s' }}>{item.favorite ? '⭐' : '☆'}</button>
+                        <button onClick={() => deleteItem(item.id)} style={{ background: '#f5f0e8', border: `1px solid ${cardBorder}`, padding: '0.6rem', borderRadius: '8px', cursor: 'pointer', fontSize: '1.1rem', color: '#d97560', transition: 'all 0.3s' }}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
+
+            {Object.entries(groupedItems).length === 0 && (
+              <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#999', animation: 'fadeIn 0.3s' }}>
+                <p style={{ fontSize: '1rem', margin: 0 }}>{searchQuery ? 'Aucun produit trouvé' : 'Ajoute un produit'}</p>
+              </div>
+            )}
+          </>
+        )}
+
+        {view === 'templates' && (
+          <>
+            <div style={{ background: cardBg, borderRadius: '12px', padding: '2rem', marginBottom: '2rem', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)', border: `1px solid ${cardBorder}`, animation: 'slideInLeft 0.3s' }}>
+              <h3 style={{ margin: '0 0 1.5rem 0', fontSize: '1rem', fontWeight: 600, color: textColor }}>Ajouter un produit</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+                <input type="text" placeholder="Nom" value={newTemplate} onChange={(e) => { 
+                  setNewTemplate(e.target.value); 
+                  if (e.target.value.trim()) {
+                    const matchingTemplate = templates.find(t => t.name.toLowerCase().trim() === e.target.value.toLowerCase().trim());
+                    if (matchingTemplate) {
+                      setNewTemplateCategory(matchingTemplate.category);
+                      setNewTemplateUnit(matchingTemplate.unit);
+                    } else {
+                      setNewTemplateCategory(getAutoCategoryFromName(e.target.value));
+                    }
+                  }
+                }} style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, transition: 'all 0.3s' }} />
+                <input type="text" placeholder="Note (optionnel)" value={newTemplateNote} onChange={(e) => setNewTemplateNote(e.target.value)} style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, transition: 'all 0.3s' }} />
+                <select value={newTemplateUnit} onChange={(e) => setNewTemplateUnit(e.target.value)} style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', cursor: 'pointer', background: inputBg, color: textColor, transition: 'all 0.3s' }}>{UNITS.map(unit => <option key={unit}>{unit}</option>)}</select>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '1.5rem' }}>
+                {categories.map(cat => (
+                  <button key={cat} onClick={() => setNewTemplateCategory(cat)} style={{ padding: '0.6rem 1.2rem', border: newTemplateCategory === cat ? 'none' : `1px solid ${cardBorder}`, borderRadius: '20px', fontSize: '0.85rem', cursor: 'pointer', background: newTemplateCategory === cat ? 'linear-gradient(135deg, #3d5848 0%, #2f4639 100%)' : inputBg, color: newTemplateCategory === cat ? 'white' : textColor, fontWeight: newTemplateCategory === cat ? 600 : 500, transition: 'all 0.3s' }}>{cat}</button>
+                ))}
+              </div>
+              <button onClick={addTemplate} style={{ width: '100%', padding: '0.9rem', background: justAddedTemplate ? '#9db8a0' : 'linear-gradient(135deg, #9db8a0 0%, #8bad93 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, transition: 'all 0.3s ease', transform: justAddedTemplate ? 'scale(1.02)' : 'scale(1)' }}>{justAddedTemplate ? '✓ Ajouté' : '+ Ajouter'}</button>
+            </div>
+
+            {favoriteTemplates.length > 0 && (
+              <div style={{ marginBottom: '2rem', animation: 'slideInLeft 0.3s' }}>
+                <h2 style={{ fontSize: '1rem', fontWeight: 600, color: '#3d5848', marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: `2px solid #e8a947` }}>⭐ Favoris</h2>
+                <div style={{ display: 'grid', gap: '0.75rem' }}>
+                  {favoriteTemplates.map((template, idx) => (
+                    <div key={template.id} style={{ background: cardBg, padding: '1rem', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '0.75rem', border: `1px solid ${cardBorder}`, borderLeft: '4px solid #e8a947', backgroundColor: darkMode ? '#2d2d2d' : '#fffaf4', animation: `slideInLeft ${0.1 + idx * 0.05}s`, transition: 'all 0.3s' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '0.95rem', fontWeight: 500 }}>{template.name}</div>
+                          {template.note && <div style={{ fontSize: '0.75rem', color: '#999', marginTop: '0.2rem', fontStyle: 'italic' }}>{template.note}</div>}
+                          <div style={{ fontSize: '0.8rem', color: '#999', marginTop: '0.25rem' }}>{template.unit}</div>
+                        </div>
+                        <button onClick={() => toggleTemplateFavorite(template.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#e8a947', transition: 'all 0.3s', padding: 0, minWidth: 'auto' }}>⭐</button>
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <input type="number" placeholder="Qté" value={quickAddQuantities[template.id] || ''} onChange={(e) => setQuickAddQuantities(prev => ({ ...prev, [template.id]: e.target.value }))} min="0.1" step="0.1" style={{ width: '50px', padding: '0.5rem', border: `1px solid ${cardBorder}`, borderRadius: '6px', fontSize: '0.85rem', background: inputBg, color: textColor, transition: 'all 0.3s' }} />
+                        <button onClick={() => quickAddFromTemplate(template)} style={{ padding: '0.5rem 0.8rem', background: justAdded === template.id ? '#9db8a0' : '#4a8a6a', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, transition: 'all 0.3s ease', transform: justAdded === template.id ? 'scale(1.15)' : 'scale(1)' }}>
+                          {justAdded === template.id ? '✓' : '+'}
+                        </button>
+                        <button onClick={() => { setShowProductStats(true); setSelectedProductStats(template.name); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', color: '#5b9db8', transition: 'all 0.3s', padding: '0.5rem', minWidth: 'auto' }}>📊</button>
+                        <button onClick={() => deleteTemplate(template.id)} style={{ background: '#f5f0e8', border: `1px solid ${cardBorder}`, padding: '0.5rem', borderRadius: '6px', cursor: 'pointer', fontSize: '1rem', color: '#d97560', transition: 'all 0.3s', marginLeft: 'auto' }}>×</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {Object.entries(groupedTemplates).length > 0 && (
+              Object.entries(groupedTemplates).map(([category, categoryTemplates], catIdx) => (
+                <div key={category} style={{ marginBottom: '1.5rem', animation: `slideInLeft ${0.1 + catIdx * 0.1}s` }}>
+                  <button 
+                    onClick={() => setExpandedCategories(prev => ({ ...prev, [category]: !prev[category] }))}
+                    style={{ 
+                      width: '100%', 
+                      fontSize: '1rem', 
+                      fontWeight: 600, 
+                      color: '#3d5848',
+                      marginBottom: expandedCategories[category] ? '0.75rem' : '0',
+                      paddingBottom: '0.75rem', 
+                      borderBottom: `2px solid ${getCategoryColor(category)}`,
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '0.5rem',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '0.5rem 0',
+                      transition: 'all 0.3s',
+                      justifyContent: 'space-between'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ width: '10px', height: '10px', borderRadius: '3px', background: getCategoryColor(category) }}></span>
+                      {category} ({categoryTemplates.length})
+                    </div>
+                    <span style={{ transition: 'transform 0.3s', transform: expandedCategories[category] ? 'rotate(180deg)' : 'rotate(0deg)', color: '#3d5848' }}>▼</span>
+                  </button>
+                  
+                  {expandedCategories[category] && (
+                    <div style={{ display: 'grid', gap: '0.75rem' }}>
+                      {categoryTemplates.map((template, idx) => (
+                        <div key={template.id} style={{ background: cardBg, padding: '1rem', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '0.75rem', border: `1px solid ${cardBorder}`, animation: `slideInLeft ${0.1 + catIdx * 0.1 + idx * 0.03}s`, transition: 'all 0.3s' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontSize: '0.95rem', fontWeight: 500 }}>{template.name}</div>
+                              {template.note && <div style={{ fontSize: '0.75rem', color: '#999', marginTop: '0.2rem', fontStyle: 'italic' }}>{template.note}</div>}
+                              <div style={{ fontSize: '0.8rem', color: '#999', marginTop: '0.25rem' }}>{template.unit}</div>
+                            </div>
+                            <button onClick={() => toggleTemplateFavorite(template.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', transition: 'all 0.3s', padding: 0, minWidth: 'auto' }}>☆</button>
+                          </div>
+                          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                            <input type="number" placeholder="Qté" value={quickAddQuantities[template.id] || ''} onChange={(e) => setQuickAddQuantities(prev => ({ ...prev, [template.id]: e.target.value }))} min="0.1" step="0.1" style={{ width: '50px', padding: '0.5rem', border: `1px solid ${cardBorder}`, borderRadius: '6px', fontSize: '0.85rem', background: inputBg, color: textColor, transition: 'all 0.3s' }} />
+                            <button onClick={() => quickAddFromTemplate(template)} style={{ padding: '0.5rem 0.8rem', background: justAdded === template.id ? '#9db8a0' : (isTemplateInInventory(template.name) ? '#d9ced7' : '#4a8a6a'), color: 'white', border: 'none', borderRadius: '6px', cursor: isTemplateInInventory(template.name) && justAdded !== template.id ? 'not-allowed' : 'pointer', fontSize: '0.8rem', fontWeight: 600, opacity: isTemplateInInventory(template.name) && justAdded !== template.id ? 0.6 : 1, transition: 'all 0.3s ease', transform: justAdded === template.id ? 'scale(1.15)' : 'scale(1)' }}>
+                              {justAdded === template.id ? '✓' : '+'}
+                            </button>
+                            <button onClick={() => { setShowProductStats(true); setSelectedProductStats(template.name); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', color: '#5b9db8', transition: 'all 0.3s', padding: '0.5rem', minWidth: 'auto' }}>📊</button>
+                            <button onClick={() => deleteTemplate(template.id)} style={{ background: '#f5f0e8', border: `1px solid ${cardBorder}`, padding: '0.5rem', borderRadius: '6px', cursor: 'pointer', fontSize: '1rem', color: '#d97560', transition: 'all 0.3s', marginLeft: 'auto' }}>×</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+
+            {favoriteTemplates.length === 0 && Object.entries(groupedTemplates).length === 0 && (
+              <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#999', animation: 'fadeIn 0.3s' }}>
+                <p style={{ fontSize: '1rem', margin: 0 }}>Ajoute tes produits habituels</p>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
