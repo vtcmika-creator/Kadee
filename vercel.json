@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "buildCommand": "echo 'Build complete'",
+  "outputDirectory": ".",
+  "framework": "static"
+}
