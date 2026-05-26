@@ -1328,9 +1328,20 @@ Réponds UNIQUEMENT en JSON valide: {"products": [{"raw_name": "...", "clean_nam
                     <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={e => {
                       const file = e.target.files[0];
                       if (!file) return;
-                      const reader = new FileReader();
-                      reader.onload = ev => setTicketPhotos(prev => [...prev, { preview: ev.target.result, base64: ev.target.result.split(',')[1] }]);
-                      reader.readAsDataURL(file);
+                      const img = new Image();
+                      const url = URL.createObjectURL(file);
+                      img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const maxW = 1200;
+                        const scale = Math.min(1, maxW / img.width);
+                        canvas.width = img.width * scale;
+                        canvas.height = img.height * scale;
+                        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                        const compressed = canvas.toDataURL('image/jpeg', 0.7);
+                        setTicketPhotos(prev => [...prev, { preview: compressed, base64: compressed.split(',')[1] }]);
+                        URL.revokeObjectURL(url);
+                      };
+                      img.src = url;
                       e.target.value = '';
                     }} />
                   </label>
@@ -1339,9 +1350,20 @@ Réponds UNIQUEMENT en JSON valide: {"products": [{"raw_name": "...", "clean_nam
                     <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => {
                       const file = e.target.files[0];
                       if (!file) return;
-                      const reader = new FileReader();
-                      reader.onload = ev => setTicketPhotos(prev => [...prev, { preview: ev.target.result, base64: ev.target.result.split(',')[1] }]);
-                      reader.readAsDataURL(file);
+                      const img = new Image();
+                      const url = URL.createObjectURL(file);
+                      img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const maxW = 1200;
+                        const scale = Math.min(1, maxW / img.width);
+                        canvas.width = img.width * scale;
+                        canvas.height = img.height * scale;
+                        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                        const compressed = canvas.toDataURL('image/jpeg', 0.7);
+                        setTicketPhotos(prev => [...prev, { preview: compressed, base64: compressed.split(',')[1] }]);
+                        URL.revokeObjectURL(url);
+                      };
+                      img.src = url;
                       e.target.value = '';
                     }} />
                   </label>
