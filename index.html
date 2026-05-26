@@ -164,7 +164,7 @@ function Kadee() {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [items, templates, history, categories, loyaltyCards, expenses, hasLoaded]);
+  }, [items, templates, history, categories, loyaltyCards, expenses, priceHistory, apiKey, hasLoaded]);
 
   // Créer une liste partageable formatée
   const createShareableList = () => {
