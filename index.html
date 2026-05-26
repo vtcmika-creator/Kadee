@@ -1206,6 +1206,16 @@ Réponds UNIQUEMENT en JSON valide: {"products": [{"raw_name": "...", "clean_nam
         })
       });
       const data = await response.json();
+      if (data.error) {
+        alert('Erreur API: ' + (data.error.message || JSON.stringify(data.error)));
+        setIsAnalyzing(false);
+        return;
+      }
+      if (!data.content || !data.content[0]) {
+        alert('Réponse inattendue: ' + JSON.stringify(data).substring(0, 200));
+        setIsAnalyzing(false);
+        return;
+      }
       const text = data.content[0].text;
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
@@ -1218,6 +1228,8 @@ Réponds UNIQUEMENT en JSON valide: {"products": [{"raw_name": "...", "clean_nam
         }));
         setExtractedProducts(products);
         setScanStep('review');
+      } else {
+        alert('Impossible de parser la réponse: ' + text.substring(0, 200));
       }
     } catch(e) {
       alert('Erreur analyse: ' + e.message);
@@ -1332,12 +1344,12 @@ Réponds UNIQUEMENT en JSON valide: {"products": [{"raw_name": "...", "clean_nam
                       const url = URL.createObjectURL(file);
                       img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        const maxW = 1200;
+                        const maxW = 800;
                         const scale = Math.min(1, maxW / img.width);
                         canvas.width = img.width * scale;
                         canvas.height = img.height * scale;
                         canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                        const compressed = canvas.toDataURL('image/jpeg', 0.7);
+                        const compressed = canvas.toDataURL('image/jpeg', 0.6);
                         setTicketPhotos(prev => [...prev, { preview: compressed, base64: compressed.split(',')[1] }]);
                         URL.revokeObjectURL(url);
                       };
@@ -1354,12 +1366,12 @@ Réponds UNIQUEMENT en JSON valide: {"products": [{"raw_name": "...", "clean_nam
                       const url = URL.createObjectURL(file);
                       img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        const maxW = 1200;
+                        const maxW = 800;
                         const scale = Math.min(1, maxW / img.width);
                         canvas.width = img.width * scale;
                         canvas.height = img.height * scale;
                         canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                        const compressed = canvas.toDataURL('image/jpeg', 0.7);
+                        const compressed = canvas.toDataURL('image/jpeg', 0.6);
                         setTicketPhotos(prev => [...prev, { preview: compressed, base64: compressed.split(',')[1] }]);
                         URL.revokeObjectURL(url);
                       };
