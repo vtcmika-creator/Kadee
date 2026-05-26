@@ -1133,6 +1133,12 @@ function Kadee() {
             <div style={{ display: 'grid', gap: '0.75rem' }}>
               <button onClick={() => setDarkMode(!darkMode)} style={{ width: '100%', padding: '1rem', background: inputBg, border: `1px solid ${cardBorder}`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: textColor, textAlign: 'left', transition: 'all 0.3s' }}>{darkMode ? '☀️ Passer en mode jour' : '🌙 Passer en mode nuit'}</button>
               <button onClick={exportData} style={{ width: '100%', padding: '1rem', background: inputBg, border: `1px solid #6a9a7e`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: '#6a9a7e', textAlign: 'left', transition: 'all 0.3s' }}>💾 Sauvegarder mes données</button>
+              <div style={{ paddingTop: '0.5rem', borderTop: `1px solid ${cardBorder}` }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#6a9a7e', marginBottom: '0.5rem' }}>🔑 Clé API Anthropic (scanner tickets)</div>
+                <input type="password" placeholder="sk-ant-api03-..." value={apiKey} onChange={e => setApiKey(e.target.value)} style={{ width: '100%', padding: '0.75rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.9rem', background: inputBg, color: textColor, boxSizing: 'border-box' }} />
+                {!apiKey && <div style={{ fontSize: '0.75rem', color: '#e8a090', marginTop: '0.4rem' }}>Requis pour analyser les tickets</div>}
+                {apiKey && <div style={{ fontSize: '0.75rem', color: '#7db89a', marginTop: '0.4rem' }}>✓ Clé mémorisée</div>}
+              </div>
               <label style={{ width: '100%', display: 'block', padding: '1rem', background: inputBg, border: `1px solid #85b8d0`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: '#85b8d0', textAlign: 'left', transition: 'all 0.3s', boxSizing: 'border-box' }}>
                 📂 Restaurer mes données
                 <input type="file" accept=".json" style={{ display: 'none' }} onChange={e => { importData(e.target.files[0]); e.target.value=''; }} />
@@ -1295,19 +1301,7 @@ Réponds UNIQUEMENT en JSON valide: {"products": [{"raw_name": "...", "clean_nam
             <button onClick={() => setShowTicketScanner(false)} style={{ background: cardBg, border: `1px solid ${cardBorder}`, padding: '0.75rem', borderRadius: '10px', cursor: 'pointer', fontSize: '1.2rem', color: textColor }}>×</button>
           </div>
 
-          {/* Clé API */}
-          <div style={{ background: cardBg, borderRadius: '12px', padding: '1.25rem', border: `1px solid ${cardBorder}`, marginBottom: '1.5rem' }}>
-            <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#6a9a7e', marginBottom: '0.5rem' }}>Clé API Anthropic</div>
-            <input
-              type="password"
-              placeholder="sk-ant-api03-..."
-              value={apiKey}
-              onChange={e => setApiKey(e.target.value)}
-              style={{ width: '100%', padding: '0.75rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.9rem', background: inputBg, color: textColor, boxSizing: 'border-box' }}
-            />
-            {!apiKey && <div style={{ fontSize: '0.75rem', color: '#e8a090', marginTop: '0.4rem' }}>Requis pour analyser les tickets (console.anthropic.com)</div>}
-            {apiKey && <div style={{ fontSize: '0.75rem', color: '#7db89a', marginTop: '0.4rem' }}>✓ Clé sauvegardée automatiquement</div>}
-          </div>
+
 
           {scanStep === 'photo' && (
             <div style={{ background: cardBg, borderRadius: '12px', padding: '1.5rem', border: `1px solid ${cardBorder}` }}>
@@ -1357,9 +1351,11 @@ Réponds UNIQUEMENT en JSON valide: {"products": [{"raw_name": "...", "clean_nam
 
               {/* Bouton analyser */}
               {ticketPhotos.length > 0 && (
-                <button onClick={analyzeTicket} disabled={!apiKey || isAnalyzing} style={{ width: '100%', padding: '0.9rem', background: (!apiKey || isAnalyzing) ? '#ccc' : 'linear-gradient(135deg, #7db89a 0%, #6aab8a 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: (!apiKey || isAnalyzing) ? 'not-allowed' : 'pointer', fontSize: '0.95rem', fontWeight: 600 }}>
-                  {isAnalyzing ? '⏳ Analyse en cours...' : `🔍 Analyser ${ticketPhotos.length} photo${ticketPhotos.length > 1 ? 's' : ''}`}
-                </button>
+                !apiKey
+                  ? <div style={{ padding: '0.9rem', background: '#fff0f0', border: '1px solid #fdd', borderRadius: '10px', fontSize: '0.85rem', color: '#e8a090', textAlign: 'center' }}>⚠️ Configure ta clé API dans Paramètres pour analyser</div>
+                  : <button onClick={analyzeTicket} disabled={isAnalyzing} style={{ width: '100%', padding: '0.9rem', background: isAnalyzing ? '#ccc' : 'linear-gradient(135deg, #7db89a 0%, #6aab8a 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: isAnalyzing ? 'not-allowed' : 'pointer', fontSize: '0.95rem', fontWeight: 600 }}>
+                    {isAnalyzing ? '⏳ Analyse en cours...' : `🔍 Analyser ${ticketPhotos.length} photo${ticketPhotos.length > 1 ? 's' : ''}`}
+                  </button>
               )}
             </div>
           )}
