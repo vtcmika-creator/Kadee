@@ -1412,7 +1412,7 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
         if (data.stores) setStores(data.stores);
         setSaveNotifOk(true); setSaveNotif('✅ ' + (data.templates || []).length + ' produits restaurés !'); setTimeout(() => { setSaveNotif(''); setShowCategories(false); }, 2500);
       } catch(err) {
-        setSaveNotif('❌ Fichier invalide — vérifie que c'est bien un fichier Kadee');
+        setSaveNotif('❌ Fichier invalide');
         setTimeout(() => setSaveNotif(''), 4000);
       }
     };
