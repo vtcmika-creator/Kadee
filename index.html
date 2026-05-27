@@ -99,6 +99,12 @@ function Kadee() {
 
   const [shoppingItems, setShoppingItems] = useState({});
   const [quickAddQuantities, setQuickAddQuantities] = useState({});
+  const [stores, setStores] = useState(['Lidl', 'Leclerc', 'Carrefour', 'Auchan', 'Intermarché']);
+  const [currentStore, setCurrentStore] = useState('');
+  const [newStoreInput, setNewStoreInput] = useState('');
+  const [changeCatFor, setChangeCatFor] = useState(null);
+  const [showInlineCatAdd, setShowInlineCatAdd] = useState(null); // 'inventory' | 'template'
+  const [newInlineCat, setNewInlineCat] = useState('');
   const [justAdded, setJustAdded] = useState(null);
   const [justAddedItem, setJustAddedItem] = useState(false);
   const [justAddedTemplate, setJustAddedTemplate] = useState(false);
@@ -137,6 +143,7 @@ function Kadee() {
         setExpenses(data.expenses || []);
         setPriceHistory(data.priceHistory || {});
         if (data.apiKey) setApiKey(data.apiKey);
+        if (data.stores) setStores(data.stores);
         setHistoryActions([{ items }]);
         setHistoryIndex(0);
       } catch (e) {
@@ -156,7 +163,7 @@ function Kadee() {
     }
     
     saveTimeoutRef.current = setTimeout(() => {
-      localStorage.setItem('kadee_data', JSON.stringify({ items, templates, history, categories, loyaltyCards, expenses, priceHistory, apiKey }));
+      localStorage.setItem('kadee_data', JSON.stringify({ items, templates, history, categories, loyaltyCards, expenses, priceHistory, apiKey, stores }));
     }, 500);
     
     return () => {
@@ -357,6 +364,21 @@ function Kadee() {
     setNewTemplateCategory(getAutoCategoryFromName(''));
   };
 
+  const changeTemplateCategory = (id, newCat) => {
+    setTemplates(templates.map(t => t.id === id ? { ...t, category: newCat } : t));
+    setChangeCatFor(null);
+  };
+
+  const addInlineCategory = (source) => {
+    const trimmed = newInlineCat.trim();
+    if (!trimmed || categories.includes(trimmed)) { setShowInlineCatAdd(null); setNewInlineCat(''); return; }
+    setCategories([...categories, trimmed]);
+    if (source === 'inventory') setNewCategory(trimmed);
+    if (source === 'template') setNewTemplateCategory(trimmed);
+    setShowInlineCatAdd(null);
+    setNewInlineCat('');
+  };
+
   const deleteTemplate = (id) => {
     setTemplates(templates.filter(t => t.id !== id));
   };
@@ -458,6 +480,7 @@ function Kadee() {
     setHistory([{
       id: Date.now(),
       date: dateStr,
+      store: currentStore,
       items: purchasedItems
     }, ...history]);
 
@@ -467,6 +490,7 @@ function Kadee() {
         id: Date.now() + 1,
         amount: parseFloat(shoppingAmount),
         date: dateStr,
+        store: currentStore,
         timestamp: Date.now()
       };
       setExpenses([...expenses, newExpense]);
@@ -479,6 +503,7 @@ function Kadee() {
     setShoppingMode(false);
     setShoppingItems({});
     setShoppingAmount('');
+    setCurrentStore('');
   };
 
   const restoreFromHistory = (historyItem) => {
@@ -1055,11 +1080,18 @@ function Kadee() {
 
           <div style={{ background: cardBg, borderRadius: '12px', padding: '2rem', marginBottom: '2rem', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)', border: `1px solid ${cardBorder}` }}>
             <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 600, color: textColor }}>Ajouter une carte</h3>
-            <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '1rem 2rem', background: 'linear-gradient(135deg, #b8d4bc 0%, #a8ccb0 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, transition: 'all 0.3s' }}>
-              <span style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>📸</span>
-              <span style={{ textAlign: 'center' }}>Photographier<br />une carte</span>
-              <input type="file" accept="image/*" capture="environment" onChange={handleAddCard} style={{ display: 'none' }} />
-            </label>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <label style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1rem', background: 'linear-gradient(135deg, #b8d4bc 0%, #a8ccb0 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, textAlign: 'center' }}>
+                <span style={{ fontSize: '1.3rem', marginBottom: '0.4rem' }}>📷</span>
+                <span>Prendre<br/>en photo</span>
+                <input type="file" accept="image/*" capture="environment" onChange={handleAddCard} style={{ display: 'none' }} />
+              </label>
+              <label style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1rem', background: inputBg, border: `2px solid #b8d4bc`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, color: '#6a9a7e', textAlign: 'center' }}>
+                <span style={{ fontSize: '1.3rem', marginBottom: '0.4rem' }}>🖼️</span>
+                <span>Depuis la<br/>galerie</span>
+                <input type="file" accept="image/*" onChange={handleAddCard} style={{ display: 'none' }} />
+              </label>
+            </div>
           </div>
 
           {Object.keys(groupedByStore).length > 0 ? (
@@ -1143,6 +1175,22 @@ function Kadee() {
                 📂 Restaurer mes données
                 <input type="file" accept=".json" style={{ display: 'none' }} onChange={e => { importData(e.target.files[0]); e.target.value=''; }} />
               </label>
+            </div>
+          </div>
+
+          <div style={{ background: cardBg, borderRadius: '12px', padding: '1.5rem', marginTop: '2rem', border: `1px solid ${cardBorder}` }}>
+            <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 600, color: textColor }}>🏪 Mes magasins</h3>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
+              {stores.map((s, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', padding: '0.4rem 0.75rem', background: inputBg, border: `1px solid ${cardBorder}`, borderRadius: '20px', fontSize: '0.85rem' }}>
+                  <span style={{ color: textColor }}>{s}</span>
+                  <button onClick={() => setStores(stores.filter((_, idx) => idx !== i))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#e8a090', fontSize: '0.85rem', padding: 0, lineHeight: 1 }}>×</button>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <input type="text" placeholder="Ajouter un magasin" value={newStoreInput} onChange={e => setNewStoreInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && newStoreInput.trim() && !stores.includes(newStoreInput.trim())) { setStores(prev => [...prev, newStoreInput.trim()]); setNewStoreInput(''); }}} style={{ flex: 1, padding: '0.75rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.9rem', background: inputBg, color: textColor }} />
+              <button onClick={() => { if (newStoreInput.trim() && !stores.includes(newStoreInput.trim())) { setStores(prev => [...prev, newStoreInput.trim()]); setNewStoreInput(''); }}} style={{ padding: '0.75rem 1rem', background: '#6a9a7e', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>+</button>
             </div>
           </div>
 
@@ -1647,24 +1695,45 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
             </div>
           </div>
 
-          {itemsRemaining > 0 && (
-            <div style={{ background: cardBg, borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem', border: `1px solid ${cardBorder}`, animation: 'slideInLeft 0.3s' }}>
-              <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 600, color: textColor }}>À faire</h3>
-              <div style={{ display: 'grid', gap: '0.75rem' }}>
-                {Object.entries(shoppingItems).filter(([_, data]) => data.status === 'pending').map(([id, data], idx) => (
-                  <div key={id} style={{ background: inputBg, padding: '1rem', borderRadius: '10px', border: `1px solid ${cardBorder}`, display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', animation: `slideInLeft ${0.1 + idx * 0.05}s` }}>
-                    <div style={{ flex: 1, minWidth: '150px' }}>
-                      <div style={{ fontSize: '0.95rem', fontWeight: 500 }}>{data.item.name}</div>
-                      {data.item.note && <div style={{ fontSize: '0.75rem', color: '#999', marginTop: '0.2rem', fontStyle: 'italic' }}>{data.item.note}</div>}
-                      <div style={{ fontSize: '0.8rem', color: '#999', marginTop: '0.3rem' }}>{data.item.quantity} {data.item.unit}</div>
-                    </div>
-                    <button onClick={() => updateItemStatus(id, 'inCart')} style={{ padding: '0.5rem 0.8rem', background: '#7db89a', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, transition: 'all 0.3s' }}>Caddie</button>
-                    <button onClick={() => updateItemStatus(id, 'unavailable')} style={{ padding: '0.5rem 0.8rem', background: '#e8a090', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, transition: 'all 0.3s' }}>Indispo</button>
+          {itemsRemaining > 0 && (() => {
+            const pendingByCategory = {};
+            Object.entries(shoppingItems).filter(([_, data]) => data.status === 'pending').forEach(([id, data]) => {
+              const cat = data.item.category || 'Divers';
+              if (!pendingByCategory[cat]) pendingByCategory[cat] = [];
+              pendingByCategory[cat].push([id, data]);
+            });
+            return (
+              <div style={{ marginBottom: '1.5rem' }}>
+                <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 600, color: textColor }}>À faire</h3>
+                {Object.entries(pendingByCategory).map(([cat, catItems]) => (
+                  <div key={cat} style={{ background: cardBg, borderRadius: '12px', marginBottom: '0.75rem', border: `1px solid ${cardBorder}`, overflow: 'hidden', animation: 'slideInLeft 0.3s' }}>
+                    <button onClick={() => setExpandedCategories(prev => ({ ...prev, ['shop_'+cat]: !prev['shop_'+cat] }))} style={{ width: '100%', padding: '0.85rem 1rem', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, color: getCategoryColor(cat), fontSize: '0.9rem' }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: getCategoryColor(cat), display: 'inline-block' }}></span>
+                        {cat} <span style={{ fontSize: '0.75rem', color: '#999', fontWeight: 400 }}>({catItems.length})</span>
+                      </span>
+                      <span style={{ transition: 'transform 0.3s', transform: expandedCategories['shop_'+cat] === false ? 'rotate(-90deg)' : 'rotate(0deg)', color: '#999', fontSize: '0.8rem' }}>▼</span>
+                    </button>
+                    {expandedCategories['shop_'+cat] !== false && (
+                      <div style={{ padding: '0 0.75rem 0.75rem', display: 'grid', gap: '0.5rem' }}>
+                        {catItems.map(([id, data], idx) => (
+                          <div key={id} style={{ background: inputBg, padding: '0.85rem', borderRadius: '8px', border: `1px solid ${cardBorder}`, display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', animation: `slideInLeft ${0.1 + idx * 0.05}s` }}>
+                            <div style={{ flex: 1, minWidth: '120px' }}>
+                              <div style={{ fontSize: '0.95rem', fontWeight: 500 }}>{data.item.name}</div>
+                              {data.item.note && <div style={{ fontSize: '0.75rem', color: '#999', marginTop: '0.2rem', fontStyle: 'italic' }}>{data.item.note}</div>}
+                              <div style={{ fontSize: '0.8rem', color: '#999', marginTop: '0.2rem' }}>{data.item.quantity} {data.item.unit}</div>
+                            </div>
+                            <button onClick={() => updateItemStatus(id, 'inCart')} style={{ padding: '0.45rem 0.75rem', background: '#7db89a', color: 'white', border: 'none', borderRadius: '7px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}>Caddie</button>
+                            <button onClick={() => updateItemStatus(id, 'unavailable')} style={{ padding: '0.45rem 0.75rem', background: '#e8a090', color: 'white', border: 'none', borderRadius: '7px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}>Indispo</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {itemsInCart > 0 && (
             <div style={{ background: 'linear-gradient(135deg, #f0f8f5 0%, #e0f0eb 100%)', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem', border: '1px solid #c8e0d8', animation: 'slideInLeft 0.3s' }}>
@@ -1701,10 +1770,17 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
           )}
 
           <div style={{ background: cardBg, borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem', border: `1px solid ${cardBorder}` }}>
-            <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 600, color: textColor }}>💰 Montant dépensé</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <input type="number" placeholder="Montant total (€)" value={shoppingAmount} onChange={(e) => setShoppingAmount(e.target.value)} step="0.01" min="0" style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '1rem', background: inputBg, color: textColor, transition: 'all 0.3s' }} />
-              <p style={{ margin: '0', fontSize: '0.85rem', color: '#999', fontStyle: 'italic' }}>Saisis le montant total que tu as dépensé</p>
+            <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 600, color: textColor }}>💰 Finaliser les courses</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              <input type="number" placeholder="Montant total (€)" value={shoppingAmount} onChange={(e) => setShoppingAmount(e.target.value)} step="0.01" min="0" style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '1rem', background: inputBg, color: textColor }} />
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <select value={currentStore} onChange={e => setCurrentStore(e.target.value)} style={{ flex: 1, padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: currentStore ? textColor : '#999', cursor: 'pointer' }}>
+                  <option value="">🏪 Magasin (optionnel)</option>
+                  {stores.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+                <input type="text" placeholder="Autre magasin" value={newStoreInput} onChange={e => setNewStoreInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && newStoreInput.trim()) { if (!stores.includes(newStoreInput.trim())) setStores(prev => [...prev, newStoreInput.trim()]); setCurrentStore(newStoreInput.trim()); setNewStoreInput(''); }}} style={{ flex: 1, padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.9rem', background: inputBg, color: textColor }} />
+              </div>
+              {currentStore && <div style={{ fontSize: '0.8rem', color: '#7db89a' }}>✓ Courses chez {currentStore}</div>}
             </div>
           </div>
 
@@ -1826,8 +1902,8 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
       <div style={{ maxWidth: '900px', margin: '0 auto' }}>
 
         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', background: cardBg, borderRadius: '10px', padding: '0.4rem', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)', border: `1px solid ${cardBorder}` }}>
-          <button onClick={() => setView('inventory')} style={{ flex: 1, padding: '0.75rem', border: 'none', background: view === 'inventory' ? 'linear-gradient(135deg, #f5ede5 0%, #ede6df 100%)' : 'transparent', cursor: 'pointer', fontSize: '0.95rem', fontWeight: view === 'inventory' ? 600 : 500, color: view === 'inventory' ? '#6a9a7e' : '#999', borderRadius: '8px', borderBottom: view === 'inventory' ? '3px solid #85b8d0' : 'none', transition: 'all 0.3s' }}>Inventaire</button>
-          <button onClick={() => setView('templates')} style={{ flex: 1, padding: '0.75rem', border: 'none', background: view === 'templates' ? 'linear-gradient(135deg, #f5ede5 0%, #ede6df 100%)' : 'transparent', cursor: 'pointer', fontSize: '0.95rem', fontWeight: view === 'templates' ? 600 : 500, color: view === 'templates' ? '#6a9a7e' : '#999', borderRadius: '8px', borderBottom: view === 'templates' ? '3px solid #f0c87a' : 'none', transition: 'all 0.3s' }}>Mes produits</button>
+          <button onClick={() => setView('inventory')} style={{ flex: 1, padding: '0.75rem', border: 'none', background: view === 'inventory' ? 'linear-gradient(135deg, #f5ede5 0%, #ede6df 100%)' : 'transparent', cursor: 'pointer', fontSize: '0.95rem', fontWeight: view === 'inventory' ? 600 : 500, color: view === 'inventory' ? '#6a9a7e' : '#999', borderRadius: '8px', borderBottom: view === 'inventory' ? '3px solid #85b8d0' : 'none', transition: 'all 0.3s' }}>Mes courses</button>
+          <button onClick={() => setView('templates')} style={{ flex: 1, padding: '0.75rem', border: 'none', background: view === 'templates' ? 'linear-gradient(135deg, #f5ede5 0%, #ede6df 100%)' : 'transparent', cursor: 'pointer', fontSize: '0.95rem', fontWeight: view === 'templates' ? 600 : 500, color: view === 'templates' ? '#6a9a7e' : '#999', borderRadius: '8px', borderBottom: view === 'templates' ? '3px solid #f0c87a' : 'none', transition: 'all 0.3s' }}>Inventaire</button>
         </div>
 
         {view === 'inventory' && (
@@ -1864,12 +1940,25 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                 <select value={newUnit} onChange={(e) => setNewUnit(e.target.value)} style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', cursor: 'pointer', background: inputBg, color: textColor, transition: 'all 0.3s' }}>{UNITS.map(unit => <option key={unit}>{unit}</option>)}</select>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
-                <input type="number" placeholder="Quantité" value={newQuantity} onChange={(e) => setNewQuantity(e.target.value)} style={{ flex: 1, padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, transition: 'all 0.3s' }} />
+                <div style={{ display: 'flex', alignItems: 'center', border: `1px solid ${cardBorder}`, borderRadius: '8px', overflow: 'hidden', flex: 1 }}>
+                  <button onClick={() => setNewQuantity(prev => { const v = parseFloat(prev)||1; return String(Math.max(0.1, parseFloat((v - (v >= 2 ? 1 : 0.1)).toFixed(1)))); })} style={{ padding: '0.85rem 0.9rem', background: inputBg, border: 'none', borderRight: `1px solid ${cardBorder}`, cursor: 'pointer', fontSize: '1.1rem', color: textColor, fontWeight: 700 }}>−</button>
+                  <input type="number" value={newQuantity} onChange={(e) => setNewQuantity(e.target.value)} min="0.1" step="0.1" style={{ flex: 1, padding: '0.85rem 0.5rem', border: 'none', fontSize: '0.95rem', background: inputBg, color: textColor, textAlign: 'center', minWidth: 0 }} />
+                  <button onClick={() => setNewQuantity(prev => String(parseFloat((parseFloat(prev)||0) + 1).toFixed(1)).replace('.0',''))} style={{ padding: '0.85rem 0.9rem', background: inputBg, border: 'none', borderLeft: `1px solid ${cardBorder}`, cursor: 'pointer', fontSize: '1.1rem', color: textColor, fontWeight: 700 }}>+</button>
+                </div>
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '1.5rem', alignItems: 'center' }}>
                 {categories.map(cat => (
                   <button key={cat} onClick={() => setNewCategory(cat)} style={{ padding: '0.6rem 1.2rem', border: newCategory === cat ? 'none' : `1px solid ${cardBorder}`, borderRadius: '20px', fontSize: '0.85rem', cursor: 'pointer', background: newCategory === cat ? 'linear-gradient(135deg, #6a9a7e 0%, #2f4639 100%)' : inputBg, color: newCategory === cat ? 'white' : textColor, fontWeight: newCategory === cat ? 600 : 500, transition: 'all 0.3s' }}>{cat}</button>
                 ))}
+                {showInlineCatAdd === 'inventory' ? (
+                  <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                    <input autoFocus type="text" value={newInlineCat} onChange={e => setNewInlineCat(e.target.value)} onKeyDown={e => e.key === 'Enter' && addInlineCategory('inventory')} placeholder="Nouvelle catégorie" style={{ padding: '0.5rem 0.8rem', border: `1px solid ${cardBorder}`, borderRadius: '20px', fontSize: '0.85rem', background: inputBg, color: textColor, width: '150px' }} />
+                    <button onClick={() => addInlineCategory('inventory')} style={{ padding: '0.5rem 0.8rem', background: '#6a9a7e', color: 'white', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>✓</button>
+                    <button onClick={() => { setShowInlineCatAdd(null); setNewInlineCat(''); }} style={{ padding: '0.5rem 0.8rem', background: inputBg, border: `1px solid ${cardBorder}`, borderRadius: '20px', cursor: 'pointer', fontSize: '0.8rem', color: textColor }}>✕</button>
+                  </div>
+                ) : (
+                  <button onClick={() => setShowInlineCatAdd('inventory')} style={{ padding: '0.5rem 0.8rem', background: inputBg, border: `1px dashed ${cardBorder}`, borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', color: '#6a9a7e', fontWeight: 600 }}>+ Rubrique</button>
+                )}
               </div>
               <button onClick={addItem} style={{ width: '100%', padding: '0.9rem', background: justAddedItem ? '#b8d4bc' : 'linear-gradient(135deg, #b8d4bc 0%, #a8ccb0 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, transition: 'all 0.3s ease', transform: justAddedItem ? 'scale(1.02)' : 'scale(1)' }}>{justAddedItem ? '✓ Ajouté' : '+ Ajouter'}</button>
             </div>
@@ -1945,10 +2034,19 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                 <input type="text" placeholder="Note (optionnel)" value={newTemplateNote} onChange={(e) => setNewTemplateNote(e.target.value)} style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, transition: 'all 0.3s' }} />
                 <select value={newTemplateUnit} onChange={(e) => setNewTemplateUnit(e.target.value)} style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', cursor: 'pointer', background: inputBg, color: textColor, transition: 'all 0.3s' }}>{UNITS.map(unit => <option key={unit}>{unit}</option>)}</select>
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '1.5rem', alignItems: 'center' }}>
                 {categories.map(cat => (
                   <button key={cat} onClick={() => setNewTemplateCategory(cat)} style={{ padding: '0.6rem 1.2rem', border: newTemplateCategory === cat ? 'none' : `1px solid ${cardBorder}`, borderRadius: '20px', fontSize: '0.85rem', cursor: 'pointer', background: newTemplateCategory === cat ? 'linear-gradient(135deg, #6a9a7e 0%, #2f4639 100%)' : inputBg, color: newTemplateCategory === cat ? 'white' : textColor, fontWeight: newTemplateCategory === cat ? 600 : 500, transition: 'all 0.3s' }}>{cat}</button>
                 ))}
+                {showInlineCatAdd === 'template' ? (
+                  <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                    <input autoFocus type="text" value={newInlineCat} onChange={e => setNewInlineCat(e.target.value)} onKeyDown={e => e.key === 'Enter' && addInlineCategory('template')} placeholder="Nouvelle catégorie" style={{ padding: '0.5rem 0.8rem', border: `1px solid ${cardBorder}`, borderRadius: '20px', fontSize: '0.85rem', background: inputBg, color: textColor, width: '150px' }} />
+                    <button onClick={() => addInlineCategory('template')} style={{ padding: '0.5rem 0.8rem', background: '#6a9a7e', color: 'white', border: 'none', borderRadius: '20px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>✓</button>
+                    <button onClick={() => { setShowInlineCatAdd(null); setNewInlineCat(''); }} style={{ padding: '0.5rem 0.8rem', background: inputBg, border: `1px solid ${cardBorder}`, borderRadius: '20px', cursor: 'pointer', fontSize: '0.8rem', color: textColor }}>✕</button>
+                  </div>
+                ) : (
+                  <button onClick={() => setShowInlineCatAdd('template')} style={{ padding: '0.5rem 0.8rem', background: inputBg, border: `1px dashed ${cardBorder}`, borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', color: '#6a9a7e', fontWeight: 600 }}>+ Rubrique</button>
+                )}
               </div>
               <button onClick={addTemplate} style={{ width: '100%', padding: '0.9rem', background: justAddedTemplate ? '#b8d4bc' : 'linear-gradient(135deg, #b8d4bc 0%, #a8ccb0 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, transition: 'all 0.3s ease', transform: justAddedTemplate ? 'scale(1.02)' : 'scale(1)' }}>{justAddedTemplate ? '✓ Ajouté' : '+ Ajouter'}</button>
             </div>
@@ -1968,13 +2066,25 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                         <button onClick={() => toggleTemplateFavorite(template.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#f0c87a', transition: 'all 0.3s', padding: 0, minWidth: 'auto' }}>⭐</button>
                       </div>
                       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                        <input type="number" placeholder="Qté" value={quickAddQuantities[template.id] || ''} onChange={(e) => setQuickAddQuantities(prev => ({ ...prev, [template.id]: e.target.value }))} min="0.1" step="0.1" style={{ width: '50px', padding: '0.5rem', border: `1px solid ${cardBorder}`, borderRadius: '6px', fontSize: '0.85rem', background: inputBg, color: textColor, transition: 'all 0.3s' }} />
+                        <div style={{ display: 'flex', alignItems: 'center', border: `1px solid ${cardBorder}`, borderRadius: '6px', overflow: 'hidden' }}>
+                            <button onClick={() => setQuickAddQuantities(prev => { const v = parseFloat(prev[template.id])||1; return { ...prev, [template.id]: String(Math.max(0.1, parseFloat((v - (v>=2?1:0.1)).toFixed(1)))); }}} style={{ padding: '0.4rem 0.5rem', background: inputBg, border: 'none', borderRight: `1px solid ${cardBorder}`, cursor: 'pointer', fontSize: '0.9rem', fontWeight: 700, color: textColor }}>−</button>
+                            <input type="number" value={quickAddQuantities[template.id] || '1'} onChange={(e) => setQuickAddQuantities(prev => ({ ...prev, [template.id]: e.target.value }))} min="0.1" step="0.1" style={{ width: '36px', padding: '0.4rem 0.2rem', border: 'none', fontSize: '0.85rem', background: inputBg, color: textColor, textAlign: 'center' }} />
+                            <button onClick={() => setQuickAddQuantities(prev => ({ ...prev, [template.id]: String(parseFloat((parseFloat(prev[template.id])||1) + 1).toFixed(1)).replace('.0','') }))} style={{ padding: '0.4rem 0.5rem', background: inputBg, border: 'none', borderLeft: `1px solid ${cardBorder}`, cursor: 'pointer', fontSize: '0.9rem', fontWeight: 700, color: textColor }}>+</button>
+                          </div>
                         <button onClick={() => quickAddFromTemplate(template)} style={{ padding: '0.5rem 0.8rem', background: justAdded === template.id ? '#b8d4bc' : '#7db89a', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, transition: 'all 0.3s ease', transform: justAdded === template.id ? 'scale(1.15)' : 'scale(1)' }}>
                           {justAdded === template.id ? '✓' : '+'}
                         </button>
                         <button onClick={() => { setShowProductStats(true); setSelectedProductStats(template.name); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', color: '#85b8d0', transition: 'all 0.3s', padding: '0.5rem', minWidth: 'auto' }}>📊</button>
+                        <button onClick={() => setChangeCatFor(changeCatFor === template.id ? null : template.id)} title="Changer de catégorie" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', color: '#f0c87a', transition: 'all 0.3s', padding: '0.5rem', minWidth: 'auto' }}>🏷️</button>
                         <button onClick={() => deleteTemplate(template.id)} style={{ background: '#f5f0e8', border: `1px solid ${cardBorder}`, padding: '0.5rem', borderRadius: '6px', cursor: 'pointer', fontSize: '1rem', color: '#e8a090', transition: 'all 0.3s', marginLeft: 'auto' }}>×</button>
                       </div>
+                      {changeCatFor === template.id && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', paddingTop: '0.5rem', borderTop: `1px solid ${cardBorder}` }}>
+                          {categories.map(cat => (
+                            <button key={cat} onClick={() => changeTemplateCategory(template.id, cat)} style={{ padding: '0.3rem 0.8rem', border: template.category === cat ? 'none' : `1px solid ${cardBorder}`, borderRadius: '20px', fontSize: '0.75rem', cursor: 'pointer', background: template.category === cat ? '#6a9a7e' : inputBg, color: template.category === cat ? 'white' : textColor, fontWeight: template.category === cat ? 600 : 400 }}>{cat}</button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -2025,13 +2135,25 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                             <button onClick={() => toggleTemplateFavorite(template.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', transition: 'all 0.3s', padding: 0, minWidth: 'auto' }}>☆</button>
                           </div>
                           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                            <input type="number" placeholder="Qté" value={quickAddQuantities[template.id] || ''} onChange={(e) => setQuickAddQuantities(prev => ({ ...prev, [template.id]: e.target.value }))} min="0.1" step="0.1" style={{ width: '50px', padding: '0.5rem', border: `1px solid ${cardBorder}`, borderRadius: '6px', fontSize: '0.85rem', background: inputBg, color: textColor, transition: 'all 0.3s' }} />
+                            <div style={{ display: 'flex', alignItems: 'center', border: `1px solid ${cardBorder}`, borderRadius: '6px', overflow: 'hidden' }}>
+                            <button onClick={() => setQuickAddQuantities(prev => { const v = parseFloat(prev[template.id])||1; return { ...prev, [template.id]: String(Math.max(0.1, parseFloat((v - (v>=2?1:0.1)).toFixed(1)))); }}} style={{ padding: '0.4rem 0.5rem', background: inputBg, border: 'none', borderRight: `1px solid ${cardBorder}`, cursor: 'pointer', fontSize: '0.9rem', fontWeight: 700, color: textColor }}>−</button>
+                            <input type="number" value={quickAddQuantities[template.id] || '1'} onChange={(e) => setQuickAddQuantities(prev => ({ ...prev, [template.id]: e.target.value }))} min="0.1" step="0.1" style={{ width: '36px', padding: '0.4rem 0.2rem', border: 'none', fontSize: '0.85rem', background: inputBg, color: textColor, textAlign: 'center' }} />
+                            <button onClick={() => setQuickAddQuantities(prev => ({ ...prev, [template.id]: String(parseFloat((parseFloat(prev[template.id])||1) + 1).toFixed(1)).replace('.0','') }))} style={{ padding: '0.4rem 0.5rem', background: inputBg, border: 'none', borderLeft: `1px solid ${cardBorder}`, cursor: 'pointer', fontSize: '0.9rem', fontWeight: 700, color: textColor }}>+</button>
+                          </div>
                             <button onClick={() => quickAddFromTemplate(template)} style={{ padding: '0.5rem 0.8rem', background: justAdded === template.id ? '#b8d4bc' : (isTemplateInInventory(template.name) ? '#d9ced7' : '#7db89a'), color: 'white', border: 'none', borderRadius: '6px', cursor: isTemplateInInventory(template.name) && justAdded !== template.id ? 'not-allowed' : 'pointer', fontSize: '0.8rem', fontWeight: 600, opacity: isTemplateInInventory(template.name) && justAdded !== template.id ? 0.6 : 1, transition: 'all 0.3s ease', transform: justAdded === template.id ? 'scale(1.15)' : 'scale(1)' }}>
                               {justAdded === template.id ? '✓' : '+'}
                             </button>
                             <button onClick={() => { setShowProductStats(true); setSelectedProductStats(template.name); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', color: '#85b8d0', transition: 'all 0.3s', padding: '0.5rem', minWidth: 'auto' }}>📊</button>
+                            <button onClick={() => setChangeCatFor(changeCatFor === template.id ? null : template.id)} title="Changer de catégorie" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', color: '#f0c87a', transition: 'all 0.3s', padding: '0.5rem', minWidth: 'auto' }}>🏷️</button>
                             <button onClick={() => deleteTemplate(template.id)} style={{ background: '#f5f0e8', border: `1px solid ${cardBorder}`, padding: '0.5rem', borderRadius: '6px', cursor: 'pointer', fontSize: '1rem', color: '#e8a090', transition: 'all 0.3s', marginLeft: 'auto' }}>×</button>
                           </div>
+                          {changeCatFor === template.id && (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', paddingTop: '0.5rem', borderTop: `1px solid ${cardBorder}` }}>
+                              {categories.map(cat => (
+                                <button key={cat} onClick={() => changeTemplateCategory(template.id, cat)} style={{ padding: '0.3rem 0.8rem', border: template.category === cat ? 'none' : `1px solid ${cardBorder}`, borderRadius: '20px', fontSize: '0.75rem', cursor: 'pointer', background: template.category === cat ? '#6a9a7e' : inputBg, color: template.category === cat ? 'white' : textColor, fontWeight: template.category === cat ? 600 : 400 }}>{cat}</button>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
