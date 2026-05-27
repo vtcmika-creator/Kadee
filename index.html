@@ -49,6 +49,170 @@ const getAutoCategoryFromName = (name) => {
   return 'Fruits & Légumes';
 };
 
+const PRODUCT_LIBRARY = [
+  // Fruits & Légumes
+  { name: 'Pommes', category: 'Fruits & Légumes', unit: 'kilogramme' },
+  { name: 'Poires', category: 'Fruits & Légumes', unit: 'kilogramme' },
+  { name: 'Bananes', category: 'Fruits & Légumes', unit: 'kilogramme' },
+  { name: 'Oranges', category: 'Fruits & Légumes', unit: 'kilogramme' },
+  { name: 'Citrons', category: 'Fruits & Légumes', unit: 'kilogramme' },
+  { name: 'Fraises', category: 'Fruits & Légumes', unit: 'barquette' },
+  { name: 'Raisins', category: 'Fruits & Légumes', unit: 'kilogramme' },
+  { name: 'Tomates', category: 'Fruits & Légumes', unit: 'kilogramme' },
+  { name: 'Salade', category: 'Fruits & Légumes', unit: 'pièce' },
+  { name: 'Carottes', category: 'Fruits & Légumes', unit: 'kilogramme' },
+  { name: 'Pommes de terre', category: 'Fruits & Légumes', unit: 'kilogramme' },
+  { name: 'Oignons', category: 'Fruits & Légumes', unit: 'kilogramme' },
+  { name: 'Ail', category: 'Fruits & Légumes', unit: 'pièce' },
+  { name: 'Courgettes', category: 'Fruits & Légumes', unit: 'kilogramme' },
+  { name: 'Aubergines', category: 'Fruits & Légumes', unit: 'pièce' },
+  { name: 'Poivrons', category: 'Fruits & Légumes', unit: 'pièce' },
+  { name: 'Champignons', category: 'Fruits & Légumes', unit: 'barquette' },
+  { name: 'Brocolis', category: 'Fruits & Légumes', unit: 'pièce' },
+  { name: 'Épinards', category: 'Fruits & Légumes', unit: 'sachet' },
+  { name: 'Avocat', category: 'Fruits & Légumes', unit: 'pièce' },
+  { name: 'Concombre', category: 'Fruits & Légumes', unit: 'pièce' },
+  { name: 'Poireaux', category: 'Fruits & Légumes', unit: 'botte' },
+  // Produits laitiers et œufs
+  { name: 'Lait demi-écrémé', category: 'Produits laitiers et œufs', unit: 'litre' },
+  { name: 'Lait entier', category: 'Produits laitiers et œufs', unit: 'litre' },
+  { name: 'Beurre', category: 'Produits laitiers et œufs', unit: 'paquet' },
+  { name: 'Crème fraîche', category: 'Produits laitiers et œufs', unit: 'pot' },
+  { name: 'Yaourts nature', category: 'Produits laitiers et œufs', unit: 'paquet' },
+  { name: 'Yaourts aux fruits', category: 'Produits laitiers et œufs', unit: 'paquet' },
+  { name: 'Fromage blanc', category: 'Produits laitiers et œufs', unit: 'pot' },
+  { name: 'Emmental râpé', category: 'Produits laitiers et œufs', unit: 'sachet' },
+  { name: 'Camembert', category: 'Produits laitiers et œufs', unit: 'pièce' },
+  { name: 'Comté', category: 'Produits laitiers et œufs', unit: 'paquet' },
+  { name: 'Mozzarella', category: 'Produits laitiers et œufs', unit: 'pièce' },
+  { name: 'Œufs', category: 'Produits laitiers et œufs', unit: 'boîte' },
+  // Viande et poisson
+  { name: 'Poulet entier', category: 'Viande et poisson', unit: 'pièce' },
+  { name: 'Escalopes de poulet', category: 'Viande et poisson', unit: 'barquette' },
+  { name: 'Steak haché', category: 'Viande et poisson', unit: 'barquette' },
+  { name: 'Côtelettes de porc', category: 'Viande et poisson', unit: 'barquette' },
+  { name: 'Saumon', category: 'Viande et poisson', unit: 'barquette' },
+  { name: 'Thon en boîte', category: 'Viande et poisson', unit: 'boîte' },
+  { name: 'Crevettes', category: 'Viande et poisson', unit: 'sachet' },
+  { name: 'Cabillaud', category: 'Viande et poisson', unit: 'barquette' },
+  { name: 'Jambon blanc', category: 'Charcuterie', unit: 'paquet' },
+  { name: 'Jambon sec', category: 'Charcuterie', unit: 'paquet' },
+  { name: 'Lardons', category: 'Charcuterie', unit: 'paquet' },
+  { name: 'Saucisses', category: 'Charcuterie', unit: 'paquet' },
+  { name: 'Merguez', category: 'Charcuterie', unit: 'paquet' },
+  { name: 'Chorizo', category: 'Charcuterie', unit: 'paquet' },
+  // Pâtes et riz
+  { name: 'Pâtes spaghetti', category: 'Pâtes et riz', unit: 'paquet' },
+  { name: 'Pâtes penne', category: 'Pâtes et riz', unit: 'paquet' },
+  { name: 'Pâtes tagliatelles', category: 'Pâtes et riz', unit: 'paquet' },
+  { name: 'Riz blanc', category: 'Pâtes et riz', unit: 'paquet' },
+  { name: 'Riz basmati', category: 'Pâtes et riz', unit: 'paquet' },
+  { name: 'Semoule', category: 'Pâtes et riz', unit: 'paquet' },
+  { name: 'Lentilles', category: 'Pâtes et riz', unit: 'paquet' },
+  { name: 'Pois chiches', category: 'Bocaux et conserves', unit: 'boîte' },
+  // Bocaux et conserves
+  { name: 'Tomates pelées', category: 'Bocaux et conserves', unit: 'boîte' },
+  { name: 'Concentré de tomate', category: 'Bocaux et conserves', unit: 'tube' },
+  { name: 'Haricots verts', category: 'Bocaux et conserves', unit: 'boîte' },
+  { name: 'Maïs', category: 'Bocaux et conserves', unit: 'boîte' },
+  { name: 'Cornichons', category: 'Bocaux et conserves', unit: 'bocal' },
+  { name: 'Olives', category: 'Bocaux et conserves', unit: 'bocal' },
+  { name: 'Confiture', category: 'Bocaux et conserves', unit: 'pot' },
+  { name: 'Miel', category: 'Bocaux et conserves', unit: 'pot' },
+  // Boulangerie
+  { name: 'Pain de mie', category: 'Boulangerie', unit: 'paquet' },
+  { name: 'Baguette', category: 'Boulangerie', unit: 'pièce' },
+  { name: 'Pain complet', category: 'Boulangerie', unit: 'paquet' },
+  { name: 'Croissants', category: 'Boulangerie', unit: 'paquet' },
+  { name: 'Biscottes', category: 'Boulangerie', unit: 'paquet' },
+  // Petit déjeuner et café
+  { name: 'Café moulu', category: 'Petit déjeuner et café', unit: 'paquet' },
+  { name: 'Café en capsules', category: 'Petit déjeuner et café', unit: 'boîte' },
+  { name: 'Thé', category: 'Petit déjeuner et café', unit: 'boîte' },
+  { name: 'Céréales', category: 'Petit déjeuner et café', unit: 'paquet' },
+  { name: 'Muesli', category: 'Petit déjeuner et café', unit: 'paquet' },
+  { name: 'Chocolat en poudre', category: 'Petit déjeuner et café', unit: 'boîte' },
+  { name: 'Sucre', category: 'Petit déjeuner et café', unit: 'paquet' },
+  { name: 'Farine', category: 'Petit déjeuner et café', unit: 'paquet' },
+  { name: 'Nutella', category: 'Petit déjeuner et café', unit: 'pot' },
+  // Pâtisseries et sucreries
+  { name: 'Chocolat noir', category: 'Pâtisseries et sucreries', unit: 'tablette' },
+  { name: 'Chocolat au lait', category: 'Pâtisseries et sucreries', unit: 'tablette' },
+  { name: 'Biscuits', category: 'Pâtisseries et sucreries', unit: 'paquet' },
+  { name: 'Gâteaux secs', category: 'Pâtisseries et sucreries', unit: 'paquet' },
+  { name: 'Bonbons', category: 'Pâtisseries et sucreries', unit: 'sachet' },
+  // Apéro et snacks
+  { name: 'Chips', category: 'Apéro et snacks', unit: 'paquet' },
+  { name: 'Crackers', category: 'Apéro et snacks', unit: 'paquet' },
+  { name: 'Noix', category: 'Apéro et snacks', unit: 'sachet' },
+  { name: 'Cacahuètes', category: 'Apéro et snacks', unit: 'sachet' },
+  { name: 'Tarama', category: 'Apéro et snacks', unit: 'pot' },
+  { name: 'Guacamole', category: 'Apéro et snacks', unit: 'pot' },
+  { name: 'Houmous', category: 'Apéro et snacks', unit: 'pot' },
+  // Boissons
+  { name: 'Eau plate', category: 'Boissons', unit: 'pack' },
+  { name: 'Eau gazeuse', category: 'Boissons', unit: 'pack' },
+  { name: 'Jus d orange', category: 'Boissons', unit: 'litre' },
+  { name: 'Coca-Cola', category: 'Boissons', unit: 'bouteille' },
+  { name: 'Limonade', category: 'Boissons', unit: 'bouteille' },
+  { name: 'Sirop', category: 'Boissons', unit: 'bouteille' },
+  { name: 'Bière', category: 'Boissons', unit: 'pack' },
+  { name: 'Vin rouge', category: 'Boissons', unit: 'bouteille' },
+  { name: 'Vin blanc', category: 'Boissons', unit: 'bouteille' },
+  { name: 'Champagne', category: 'Boissons', unit: 'bouteille' },
+  { name: 'Whisky', category: 'Boissons', unit: 'bouteille' },
+  { name: 'Rhum', category: 'Boissons', unit: 'bouteille' },
+  // Surgelés
+  { name: 'Pizza surgelée', category: 'Surgelés', unit: 'pièce' },
+  { name: 'Frites surgelées', category: 'Surgelés', unit: 'sachet' },
+  { name: 'Légumes surgelés', category: 'Surgelés', unit: 'sachet' },
+  { name: 'Poisson pané surgelé', category: 'Surgelés', unit: 'paquet' },
+  { name: 'Glaces', category: 'Surgelés', unit: 'boîte' },
+  { name: 'Croque-monsieur surgelé', category: 'Surgelés', unit: 'paquet' },
+  // Hygiène & Nettoyage
+  { name: 'Shampoing', category: 'Hygiène & Nettoyage', unit: 'flacon' },
+  { name: 'Après-shampoing', category: 'Hygiène & Nettoyage', unit: 'flacon' },
+  { name: 'Gel douche', category: 'Hygiène & Nettoyage', unit: 'flacon' },
+  { name: 'Savon', category: 'Hygiène & Nettoyage', unit: 'paquet' },
+  { name: 'Dentifrice', category: 'Hygiène & Nettoyage', unit: 'tube' },
+  { name: 'Brosse à dents', category: 'Hygiène & Nettoyage', unit: 'pièce' },
+  { name: 'Déodorant', category: 'Hygiène & Nettoyage', unit: 'flacon' },
+  { name: 'Rasoir', category: 'Hygiène & Nettoyage', unit: 'paquet' },
+  { name: 'Coton-tiges', category: 'Hygiène & Nettoyage', unit: 'boîte' },
+  { name: 'Papier toilette', category: 'Hygiène & Nettoyage', unit: 'paquet' },
+  { name: 'Mouchoirs', category: 'Hygiène & Nettoyage', unit: 'paquet' },
+  { name: 'Serviettes hygiéniques', category: 'Hygiène & Nettoyage', unit: 'paquet' },
+  { name: 'Lessive', category: 'Hygiène & Nettoyage', unit: 'flacon' },
+  { name: 'Adoucissant', category: 'Hygiène & Nettoyage', unit: 'flacon' },
+  { name: 'Liquide vaisselle', category: 'Hygiène & Nettoyage', unit: 'flacon' },
+  { name: 'Tablettes lave-vaisselle', category: 'Hygiène & Nettoyage', unit: 'paquet' },
+  { name: 'Nettoyant multi-surfaces', category: 'Hygiène & Nettoyage', unit: 'flacon' },
+  { name: 'Désinfectant', category: 'Hygiène & Nettoyage', unit: 'flacon' },
+  { name: 'Sacs poubelle', category: 'Hygiène & Nettoyage', unit: 'rouleau' },
+  { name: 'Papier essuie-tout', category: 'Hygiène & Nettoyage', unit: 'rouleau' },
+  { name: 'Film alimentaire', category: 'Hygiène & Nettoyage', unit: 'rouleau' },
+  { name: 'Papier aluminium', category: 'Hygiène & Nettoyage', unit: 'rouleau' },
+  // Animaux
+  { name: 'Croquettes chien', category: 'Animaux', unit: 'sac' },
+  { name: 'Croquettes chat', category: 'Animaux', unit: 'sac' },
+  { name: 'Pâtée chien', category: 'Animaux', unit: 'boîte' },
+  { name: 'Pâtée chat', category: 'Animaux', unit: 'boîte' },
+  // Divers
+  { name: 'Huile d olive', category: 'Bocaux et conserves', unit: 'bouteille' },
+  { name: 'Huile de tournesol', category: 'Bocaux et conserves', unit: 'bouteille' },
+  { name: 'Vinaigre', category: 'Bocaux et conserves', unit: 'bouteille' },
+  { name: 'Sel', category: 'Divers', unit: 'paquet' },
+  { name: 'Poivre', category: 'Divers', unit: 'flacon' },
+  { name: 'Herbes de Provence', category: 'Divers', unit: 'flacon' },
+  { name: 'Moutarde', category: 'Bocaux et conserves', unit: 'pot' },
+  { name: 'Ketchup', category: 'Bocaux et conserves', unit: 'flacon' },
+  { name: 'Mayonnaise', category: 'Bocaux et conserves', unit: 'pot' },
+  { name: 'Sauce soja', category: 'Bocaux et conserves', unit: 'flacon' },
+  { name: 'Levure chimique', category: 'Divers', unit: 'paquet' },
+  { name: 'Piles', category: 'Divers', unit: 'paquet' },
+  { name: 'Ampoules', category: 'Divers', unit: 'paquet' },
+];
+
 function Kadee() {
   const [darkMode, setDarkMode] = useState(false);
   const [view, setView] = useState('inventory');
@@ -113,7 +277,13 @@ function Kadee() {
   const [showBackupModal, setShowBackupModal] = useState(false);
   const [backupData, setBackupData] = useState('');
   const [copySuccess, setCopySuccess] = useState(false);
-  const [cloudSyncStatus, setCloudSyncStatus] = useState(''); // '', 'saving', 'saved', 'error'
+  const [cloudSyncStatus, setCloudSyncStatus] = useState('');
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [welcomeSelected, setWelcomeSelected] = useState({});
+  const [welcomeSearch, setWelcomeSearch] = useState('');
+  const [welcomeCustom, setWelcomeCustom] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestionsFor, setShowSuggestionsFor] = useState(null); // '', 'saving', 'saved', 'error'
   const [justAdded, setJustAdded] = useState(null);
   const [justAddedItem, setJustAddedItem] = useState(false);
   const [justAddedTemplate, setJustAddedTemplate] = useState(false);
@@ -161,11 +331,14 @@ function Kadee() {
         if (data.cloudId) localStorage.setItem('kadee_cloud_id', data.cloudId);
         setHistoryActions([{ items }]);
         setHistoryIndex(0);
+        if (!data.welcomeDone) setShowWelcome(true);
       } catch (e) {
         console.error('Erreur chargement données:', e);
       }
     }
     setHasLoaded(true);
+    const saved = localStorage.getItem('kadee_data');
+    if (!saved) setShowWelcome(true);
   }, []);
 
   useEffect(() => {
@@ -1427,6 +1600,33 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
   };
 
   // Obtenir ou créer l'ID unique de cet appareil
+  const finishWelcome = () => {
+    const selected = Object.entries(welcomeSelected).filter(([_, v]) => v).map(([k]) => {
+      const product = PRODUCT_LIBRARY[parseInt(k)];
+      return { id: Date.now() + parseInt(k), name: product.name, unit: product.unit, category: product.category, note: '', favorite: false };
+    });
+    if (selected.length > 0) {
+      setTemplates(prev => {
+        const existing = prev.map(t => t.name.toLowerCase());
+        const newOnes = selected.filter(s => !existing.includes(s.name.toLowerCase()));
+        return [...prev, ...newOnes];
+      });
+    }
+    // Marquer bienvenue comme fait
+    const data = JSON.parse(localStorage.getItem('kadee_data') || '{}');
+    data.welcomeDone = true;
+    localStorage.setItem('kadee_data', JSON.stringify(data));
+    setShowWelcome(false);
+  };
+
+  const getSuggestions = (query, source) => {
+    if (!query || query.length < 2) { setSuggestions([]); setShowSuggestionsFor(null); return; }
+    const q = query.toLowerCase();
+    const matches = PRODUCT_LIBRARY.filter(p => p.name.toLowerCase().includes(q)).slice(0, 6);
+    setSuggestions(matches);
+    setShowSuggestionsFor(source);
+  };
+
   const getCloudId = () => {
     let id = localStorage.getItem('kadee_cloud_id');
     if (!id) {
@@ -1578,6 +1778,75 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
               <span style={{ fontFamily: '"Inter", sans-serif', fontWeight: 900, fontSize: 'clamp(52px, 16vw, 100px)', color: '#D0E8D9' }}>e</span>
             </div>
             <div style={{ fontFamily: '"Outfit", sans-serif', fontWeight: 500, fontSize: 'clamp(14px, 4vw, 26px)', color: '#7a8a7d', letterSpacing: '0.35em', textAlign: 'justify', textAlignLast: 'justify', marginTop: '4px' }}>Les courses faciles</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // PAGE BIENVENUE (premier lancement)
+  if (showWelcome) {
+    const categories = [...new Set(PRODUCT_LIBRARY.map(p => p.category))];
+    const filtered = welcomeSearch.length >= 2
+      ? PRODUCT_LIBRARY.filter(p => p.name.toLowerCase().includes(welcomeSearch.toLowerCase()))
+      : PRODUCT_LIBRARY;
+    const selectedCount = Object.values(welcomeSelected).filter(Boolean).length;
+
+    return (
+      <div style={{ minHeight: '100vh', background: bgGradient, fontFamily: '"Outfit", sans-serif', padding: '1.5rem', color: textColor }}>
+        <style>{styles}</style>
+        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: '3px', lineHeight: 1 }}>
+              <span style={{ fontFamily: '"Inter", sans-serif', fontWeight: 900, fontSize: 'clamp(36px, 10vw, 60px)', color: '#000000' }}>K</span>
+              <span style={{ fontFamily: '"Inter", sans-serif', fontWeight: 900, fontSize: 'clamp(36px, 10vw, 60px)', color: '#E8B4B8' }}>a</span>
+              <span style={{ fontFamily: '"Inter", sans-serif', fontWeight: 900, fontSize: 'clamp(36px, 10vw, 60px)', color: '#888888' }}>d</span>
+              <span style={{ fontFamily: '"Inter", sans-serif', fontWeight: 900, fontSize: 'clamp(36px, 10vw, 60px)', color: '#B5D6E6' }}>e</span>
+              <span style={{ fontFamily: '"Inter", sans-serif', fontWeight: 900, fontSize: 'clamp(36px, 10vw, 60px)', color: '#D0E8D9' }}>e</span>
+            </div>
+            <p style={{ color: '#7a8a7d', marginTop: '0.5rem', fontSize: '0.95rem' }}>Bienvenue ! Sélectionne tes produits habituels pour démarrer.</p>
+          </div>
+
+          {/* Barre de recherche */}
+          <input type="text" placeholder="🔍 Rechercher un produit..." value={welcomeSearch} onChange={e => setWelcomeSearch(e.target.value)}
+            style={{ width: '100%', padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '10px', fontSize: '0.95rem', background: inputBg, color: textColor, boxSizing: 'border-box', marginBottom: '1.5rem' }} />
+
+          {/* Produits par catégorie */}
+          {(welcomeSearch.length >= 2 ? [{ cat: 'Résultats', items: filtered }] : categories.map(cat => ({ cat, items: PRODUCT_LIBRARY.filter(p => p.category === cat) }))).map(({ cat, items }) => (
+            <div key={cat} style={{ marginBottom: '1.5rem' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#6a9a7e', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{cat}</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                {items.map((p, i) => {
+                  const idx = PRODUCT_LIBRARY.indexOf(p);
+                  const selected = welcomeSelected[idx];
+                  return (
+                    <button key={idx} onClick={() => setWelcomeSelected(prev => ({ ...prev, [idx]: !prev[idx] }))}
+                      style={{ padding: '0.5rem 0.9rem', borderRadius: '20px', border: selected ? 'none' : `1px solid ${cardBorder}`, background: selected ? '#6a9a7e' : inputBg, color: selected ? 'white' : textColor, cursor: 'pointer', fontSize: '0.85rem', fontWeight: selected ? 600 : 400, transition: 'all 0.2s' }}>
+                      {selected ? '✓ ' : ''}{p.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+
+          {/* Ajouter un produit personnalisé */}
+          <div style={{ background: cardBg, borderRadius: '12px', padding: '1.25rem', border: `1px solid ${cardBorder}`, marginBottom: '1.5rem' }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: 600, color: textColor, marginBottom: '0.75rem' }}>Ajouter un produit non listé</div>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <input type="text" placeholder="Nom du produit..." value={welcomeCustom} onChange={e => setWelcomeCustom(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && welcomeCustom.trim()) { setTemplates(prev => [...prev, { id: Date.now(), name: welcomeCustom.trim(), unit: 'pièce', category: 'Divers', note: '', favorite: false }]); setWelcomeCustom(''); }}}
+                style={{ flex: 1, padding: '0.75rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.9rem', background: inputBg, color: textColor }} />
+              <button onClick={() => { if (welcomeCustom.trim()) { setTemplates(prev => [...prev, { id: Date.now(), name: welcomeCustom.trim(), unit: 'pièce', category: 'Divers', note: '', favorite: false }]); setWelcomeCustom(''); }}}
+                style={{ padding: '0.75rem 1rem', background: '#6a9a7e', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>+</button>
+            </div>
+          </div>
+
+          {/* Boutons bas de page */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', position: 'sticky', bottom: '1.5rem' }}>
+            <button onClick={finishWelcome} style={{ width: '100%', padding: '1rem', background: selectedCount > 0 ? 'linear-gradient(135deg, #7db89a 0%, #6aab8a 100%)' : '#ccc', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem', fontWeight: 600 }}>
+              {selectedCount > 0 ? `✓ Démarrer avec ${selectedCount} produit${selectedCount > 1 ? 's' : ''}` : 'Démarrer sans sélection'}
+            </button>
           </div>
         </div>
       </div>
@@ -2112,18 +2381,29 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
             <div style={{ background: cardBg, borderRadius: '12px', padding: '2rem', marginBottom: '2rem', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)', border: `1px solid ${cardBorder}` }}>
               <h3 style={{ margin: '0 0 1.5rem 0', fontSize: '1rem', fontWeight: 600, color: textColor }}>Ajouter un produit</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
-                <input type="text" placeholder="Nom" value={newItem} onChange={(e) => { 
-                  setNewItem(e.target.value); 
-                  if (e.target.value.trim()) {
-                    const matchingTemplate = templates.find(t => t.name.toLowerCase().trim() === e.target.value.toLowerCase().trim());
-                    if (matchingTemplate) {
-                      setNewCategory(matchingTemplate.category);
-                      setNewUnit(matchingTemplate.unit);
-                    } else {
-                      setNewCategory(getAutoCategoryFromName(e.target.value));
+                <div style={{ position: 'relative' }}>
+                  <input type="text" placeholder="Nom" value={newItem} onChange={(e) => {
+                    setNewItem(e.target.value);
+                    getSuggestions(e.target.value, 'inventory');
+                    if (e.target.value.trim()) {
+                      const matchingTemplate = templates.find(t => t.name.toLowerCase().trim() === e.target.value.toLowerCase().trim());
+                      if (matchingTemplate) { setNewCategory(matchingTemplate.category); setNewUnit(matchingTemplate.unit); }
+                      else setNewCategory(getAutoCategoryFromName(e.target.value));
                     }
-                  }
-                }} style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, transition: 'all 0.3s' }} />
+                  }} onBlur={() => setTimeout(() => { setSuggestions([]); setShowSuggestionsFor(null); }, 200)}
+                  style={{ width: '100%', padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, transition: 'all 0.3s', boxSizing: 'border-box' }} />
+                  {showSuggestionsFor === 'inventory' && suggestions.length > 0 && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '8px', zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+                      {suggestions.map((s, i) => (
+                        <div key={i} onClick={() => { setNewItem(s.name); setNewCategory(s.category); setNewUnit(s.unit); setSuggestions([]); setShowSuggestionsFor(null); }}
+                          style={{ padding: '0.75rem 1rem', cursor: 'pointer', borderBottom: i < suggestions.length-1 ? `1px solid ${cardBorder}` : 'none', fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between' }}>
+                          <span>{s.name}</span>
+                          <span style={{ fontSize: '0.75rem', color: '#999' }}>{s.category}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <input type="text" placeholder="Note (optionnel)" value={newItemNote} onChange={(e) => setNewItemNote(e.target.value)} style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, transition: 'all 0.3s' }} />
                 <select value={newUnit} onChange={(e) => setNewUnit(e.target.value)} style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', cursor: 'pointer', background: inputBg, color: textColor, transition: 'all 0.3s' }}>{UNITS.map(unit => <option key={unit}>{unit}</option>)}</select>
               </div>
@@ -2207,18 +2487,29 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
             <div style={{ background: cardBg, borderRadius: '12px', padding: '2rem', marginBottom: '2rem', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)', border: `1px solid ${cardBorder}`, animation: 'slideInLeft 0.3s' }}>
               <h3 style={{ margin: '0 0 1.5rem 0', fontSize: '1rem', fontWeight: 600, color: textColor }}>Ajouter un produit</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
-                <input type="text" placeholder="Nom" value={newTemplate} onChange={(e) => { 
-                  setNewTemplate(e.target.value); 
-                  if (e.target.value.trim()) {
-                    const matchingTemplate = templates.find(t => t.name.toLowerCase().trim() === e.target.value.toLowerCase().trim());
-                    if (matchingTemplate) {
-                      setNewTemplateCategory(matchingTemplate.category);
-                      setNewTemplateUnit(matchingTemplate.unit);
-                    } else {
-                      setNewTemplateCategory(getAutoCategoryFromName(e.target.value));
+                <div style={{ position: 'relative' }}>
+                  <input type="text" placeholder="Nom" value={newTemplate} onChange={(e) => {
+                    setNewTemplate(e.target.value);
+                    getSuggestions(e.target.value, 'template');
+                    if (e.target.value.trim()) {
+                      const matchingTemplate = templates.find(t => t.name.toLowerCase().trim() === e.target.value.toLowerCase().trim());
+                      if (matchingTemplate) { setNewTemplateCategory(matchingTemplate.category); setNewTemplateUnit(matchingTemplate.unit); }
+                      else setNewTemplateCategory(getAutoCategoryFromName(e.target.value));
                     }
-                  }
-                }} style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, transition: 'all 0.3s' }} />
+                  }} onBlur={() => setTimeout(() => { setSuggestions([]); setShowSuggestionsFor(null); }, 200)}
+                  style={{ width: '100%', padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, transition: 'all 0.3s', boxSizing: 'border-box' }} />
+                  {showSuggestionsFor === 'template' && suggestions.length > 0 && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '8px', zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+                      {suggestions.map((s, i) => (
+                        <div key={i} onClick={() => { setNewTemplate(s.name); setNewTemplateCategory(s.category); setNewTemplateUnit(s.unit); setSuggestions([]); setShowSuggestionsFor(null); }}
+                          style={{ padding: '0.75rem 1rem', cursor: 'pointer', borderBottom: i < suggestions.length-1 ? `1px solid ${cardBorder}` : 'none', fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between' }}>
+                          <span>{s.name}</span>
+                          <span style={{ fontSize: '0.75rem', color: '#999' }}>{s.category} · {s.unit}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <input type="text" placeholder="Note (optionnel)" value={newTemplateNote} onChange={(e) => setNewTemplateNote(e.target.value)} style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, transition: 'all 0.3s' }} />
                 <select value={newTemplateUnit} onChange={(e) => setNewTemplateUnit(e.target.value)} style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', cursor: 'pointer', background: inputBg, color: textColor, transition: 'all 0.3s' }}>{UNITS.map(unit => <option key={unit}>{unit}</option>)}</select>
               </div>
