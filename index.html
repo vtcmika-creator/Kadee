@@ -110,6 +110,10 @@ function Kadee() {
   const [newInlineCat, setNewInlineCat] = useState('');
   const [saveNotif, setSaveNotif] = useState('');
   const [saveNotifOk, setSaveNotifOk] = useState(true);
+  const [showBackupModal, setShowBackupModal] = useState(false);
+  const [backupData, setBackupData] = useState('');
+  const [copySuccess, setCopySuccess] = useState(false);
+  const [cloudSyncStatus, setCloudSyncStatus] = useState(''); // '', 'saving', 'saved', 'error'
   const [justAdded, setJustAdded] = useState(null);
   const [justAddedItem, setJustAddedItem] = useState(false);
   const [justAddedTemplate, setJustAddedTemplate] = useState(false);
@@ -154,6 +158,7 @@ function Kadee() {
         setPriceHistory(data.priceHistory || {});
         if (data.apiKey) setApiKey(data.apiKey);
         if (data.stores) setStores(data.stores);
+        if (data.cloudId) localStorage.setItem('kadee_cloud_id', data.cloudId);
         setHistoryActions([{ items }]);
         setHistoryIndex(0);
       } catch (e) {
@@ -173,7 +178,9 @@ function Kadee() {
     }
     
     saveTimeoutRef.current = setTimeout(() => {
-      localStorage.setItem('kadee_data', JSON.stringify({ items, templates, history, categories, loyaltyCards, expenses, priceHistory, apiKey, stores }));
+      const dataStr = JSON.stringify({ items, templates, history, categories, loyaltyCards, expenses, priceHistory, apiKey, stores });
+      localStorage.setItem('kadee_data', dataStr);
+      autoSaveToCloud(dataStr);
     }, 500);
     
     return () => {
@@ -1145,6 +1152,45 @@ function Kadee() {
   }
 
   // PAGE CATEGORIES
+  if (showBackupModal) {
+    return (
+      <div style={{ minHeight: '100vh', background: bgGradient, fontFamily: '"Outfit", sans-serif', padding: '1.5rem', color: textColor }}>
+        <style>{styles}</style>
+        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <h1 style={{ fontSize: '1.5rem', margin: 0, color: '#6a9a7e', fontWeight: 600 }}>💾 Sauvegarde des données</h1>
+            <button onClick={() => setShowBackupModal(false)} style={{ background: cardBg, border: `1px solid ${cardBorder}`, padding: '0.75rem', borderRadius: '10px', cursor: 'pointer', fontSize: '1.2rem', color: textColor }}>×</button>
+          </div>
+          
+          <div style={{ background: cardBg, borderRadius: '12px', padding: '1.5rem', border: `1px solid ${cardBorder}`, marginBottom: '1rem' }}>
+            <p style={{ margin: '0 0 1rem 0', fontSize: '0.9rem', color: '#999' }}>
+              Sur mobile, copie ces données et colle-les dans tes notes, un email ou Google Drive pour les sauvegarder.
+            </p>
+            <textarea 
+              readOnly 
+              value={backupData} 
+              style={{ width: '100%', height: '200px', padding: '0.75rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.75rem', background: inputBg, color: textColor, fontFamily: 'monospace', resize: 'none', boxSizing: 'border-box' }}
+              onClick={e => e.target.select()}
+            />
+          </div>
+
+          <button onClick={() => {
+            navigator.clipboard.writeText(backupData).then(() => {
+              setCopySuccess(true);
+              setTimeout(() => setCopySuccess(false), 3000);
+            }).catch(() => {});
+          }} style={{ width: '100%', padding: '1rem', background: copySuccess ? '#7db89a' : 'linear-gradient(135deg, #7db89a 0%, #6aab8a 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem', fontWeight: 600, marginBottom: '0.75rem', transition: 'all 0.3s' }}>
+            {copySuccess ? '✅ Copié dans le presse-papiers !' : '📋 Copier les données'}
+          </button>
+
+          <p style={{ fontSize: '0.8rem', color: '#999', textAlign: 'center', margin: 0 }}>
+            Pour restaurer, va dans Paramètres → Restaurer mes données et sélectionne le fichier sauvegardé.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (showCategories) {
     return (
       <div style={{ minHeight: '100vh', background: bgGradient, fontFamily: '"Outfit", "Segoe UI", sans-serif', padding: '2rem', color: textColor }}>
@@ -1199,8 +1245,9 @@ function Kadee() {
                 {!apiKey && <div style={{ fontSize: '0.75rem', color: '#e8a090', marginTop: '0.4rem' }}>Requis pour analyser les tickets</div>}
                 {apiKey && <div style={{ fontSize: '0.75rem', color: '#7db89a', marginTop: '0.4rem' }}>✓ Clé mémorisée</div>}
               </div>
-              <label style={{ width: '100%', display: 'block', padding: '1rem', background: inputBg, border: `1px solid #85b8d0`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: '#85b8d0', textAlign: 'left', transition: 'all 0.3s', boxSizing: 'border-box' }}>
-                📂 Restaurer mes données
+              <button onClick={restoreFromCloud} style={{ width: '100%', padding: '1rem', background: inputBg, border: '1px solid #85b8d0', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: '#85b8d0', textAlign: 'left', transition: 'all 0.3s' }}>☁️ Restaurer depuis le cloud</button>
+              <label style={{ width: '100%', display: 'block', padding: '1rem', background: inputBg, border: `1px solid ${cardBorder}`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: '#999', textAlign: 'left', transition: 'all 0.3s', boxSizing: 'border-box' }}>
+                📂 Restaurer depuis un fichier
                 <input type="file" accept=".json,application/json,text/*" style={{ display: 'none' }} onChange={e => { importData(e.target.files[0]); e.target.value=''; }} />
               </label>
             </div>
@@ -1379,34 +1426,87 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
     setScanStep('done');
   };
 
-  const exportData = async () => {
+  // Obtenir ou créer l'ID unique de cet appareil
+  const getCloudId = () => {
+    let id = localStorage.getItem('kadee_cloud_id');
+    if (!id) {
+      id = 'kadee_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('kadee_cloud_id', id);
+    }
+    return id;
+  };
+
+  // Sauvegarde automatique silencieuse sur Cloudflare KV
+  const autoSaveToCloud = async (dataToSave) => {
+    try {
+      const id = getCloudId();
+      await fetch('https://kadee-proxy.vtc-mika.workers.dev', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-kadee-action': 'save', 'x-kadee-id': id },
+        body: dataToSave || localStorage.getItem('kadee_data') || '{}'
+      });
+    } catch(e) { /* silencieux */ }
+  };
+
+  // Restauration depuis Cloudflare KV
+  const restoreFromCloud = async () => {
+    setSaveNotifOk(true);
+    setSaveNotif('⏳ Recherche de sauvegarde...');
+    try {
+      const id = getCloudId();
+      const res = await fetch('https://kadee-proxy.vtc-mika.workers.dev', {
+        method: 'GET',
+        headers: { 'x-kadee-action': 'restore', 'x-kadee-id': id }
+      });
+      const result = await res.json();
+      if (result.ok && result.data) {
+        const data = JSON.parse(result.data);
+        localStorage.setItem('kadee_data', result.data);
+        setItems(data.items || []);
+        setTemplates(data.templates || []);
+        setHistory(data.history || []);
+        setCategories(data.categories || DEFAULT_CATEGORIES);
+        setLoyaltyCards(data.loyaltyCards || []);
+        setExpenses(data.expenses || []);
+        setPriceHistory(data.priceHistory || {});
+        if (data.apiKey) setApiKey(data.apiKey);
+        if (data.stores) setStores(data.stores);
+        setSaveNotifOk(true);
+        setSaveNotif('✅ ' + (data.templates || []).length + ' produits restaurés depuis le cloud !');
+        setTimeout(() => { setSaveNotif(''); setShowCategories(false); }, 2500);
+      } else {
+        setSaveNotifOk(false);
+        setSaveNotif('❌ Aucune sauvegarde cloud trouvée');
+        setTimeout(() => setSaveNotif(''), 3000);
+      }
+    } catch(e) {
+      setSaveNotifOk(false);
+      setSaveNotif('❌ Erreur de connexion');
+      setTimeout(() => setSaveNotif(''), 3000);
+    }
+  };
+
+  const exportData = () => {
     const data = localStorage.getItem('kadee_data');
     if (!data) { setSaveNotifOk(false); setSaveNotif('❌ Aucune donnée à sauvegarder'); setTimeout(() => setSaveNotif(''), 3000); return; }
-    const fileName = 'kadee-sauvegarde-' + new Date().toLocaleDateString('fr-FR').replace(/\//g, '-') + '.json';
-    const blob = new Blob([data], { type: 'application/json' });
     
-    // Essayer Web Share API (Android PWA)
-    if (navigator.share && navigator.canShare) {
-      const file = new File([blob], fileName, { type: 'application/json' });
-      if (navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({ files: [file], title: 'Sauvegarde Kadee' });
-          setSaveNotifOk(true); setSaveNotif('✅ Sauvegarde partagée !'); setTimeout(() => setSaveNotif(''), 3000);
-          return;
-        } catch(e) { /* annulé par l'utilisateur ou erreur */ }
-      }
-    }
+    // Essayer téléchargement direct (fonctionne sur PC)
+    try {
+      const fileName = 'kadee-sauvegarde-' + new Date().toLocaleDateString('fr-FR').replace(/\//g, '-') + '.json';
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch(e) {}
     
-    // Fallback : téléchargement classique
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    setSaveNotifOk(true); setSaveNotif('✅ Sauvegarde téléchargée !'); setTimeout(() => setSaveNotif(''), 3000);
+    // Toujours afficher le modal avec les données (fiable sur tous les appareils)
+    setBackupData(data);
+    setShowBackupModal(true);
   };
 
   const importData = (file) => {
