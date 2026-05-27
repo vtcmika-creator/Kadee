@@ -63,6 +63,7 @@ function Kadee() {
   const [justCopied, setJustCopied] = useState(false);
   const [showProductStats, setShowProductStats] = useState(false);
   const [fullscreenCard, setFullscreenCard] = useState(null);
+  const [showSplash, setShowSplash] = useState(true);
   const [expandedCategories, setExpandedCategories] = useState({});
   const [loyaltyCards, setLoyaltyCards] = useState([]);
   const [showLoyaltyCards, setShowLoyaltyCards] = useState(false);
@@ -123,6 +124,11 @@ function Kadee() {
   const [priceHistory, setPriceHistory] = useState({});
   const [apiKey, setApiKey] = useState('');
   const [scanStep, setScanStep] = useState('photo');
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowSplash(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem('kadee_data');
@@ -1416,6 +1422,43 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
       .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
   };
 
+  // SPLASH SCREEN
+  if (showSplash) {
+    return (
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999, overflow: 'hidden' }}>
+        {/* Motifs plein écran */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.08, pointerEvents: 'none' }}>
+          <svg width="100%" height="100%" style={{ position: 'absolute' }}>
+            <defs>
+              <pattern id="splash-pattern" x="0" y="0" width="200" height="150" patternUnits="userSpaceOnUse">
+                <text x="20" y="40" fontSize="28" fill="#6a9a7e">🛒</text>
+                <text x="80" y="60" fontSize="24" fill="#e8a090">🥤</text>
+                <text x="140" y="35" fontSize="26" fill="#85b8d0">🍎</text>
+                <text x="50" y="110" fontSize="22" fill="#f0c87a">🛍️</text>
+                <text x="120" y="120" fontSize="24" fill="#e090b8">🥛</text>
+                <text x="10" y="130" fontSize="22" fill="#7db89a">🍇</text>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#splash-pattern)" />
+          </svg>
+        </div>
+        {/* Logo centré */}
+        <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+          <div style={{ display: 'inline-block' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: '3px', lineHeight: 1 }}>
+              <span style={{ fontFamily: '"Inter", sans-serif', fontWeight: 900, fontSize: 'clamp(52px, 16vw, 100px)', color: '#000000' }}>K</span>
+              <span style={{ fontFamily: '"Inter", sans-serif', fontWeight: 900, fontSize: 'clamp(52px, 16vw, 100px)', color: '#E8B4B8' }}>a</span>
+              <span style={{ fontFamily: '"Inter", sans-serif', fontWeight: 900, fontSize: 'clamp(52px, 16vw, 100px)', color: '#888888' }}>d</span>
+              <span style={{ fontFamily: '"Inter", sans-serif', fontWeight: 900, fontSize: 'clamp(52px, 16vw, 100px)', color: '#B5D6E6' }}>e</span>
+              <span style={{ fontFamily: '"Inter", sans-serif', fontWeight: 900, fontSize: 'clamp(52px, 16vw, 100px)', color: '#D0E8D9' }}>e</span>
+            </div>
+            <div style={{ fontFamily: '"Outfit", sans-serif', fontWeight: 500, fontSize: 'clamp(14px, 4vw, 26px)', color: '#7a8a7d', letterSpacing: '0.35em', textAlign: 'justify', textAlignLast: 'justify', marginTop: '4px' }}>Les courses faciles</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // PAGE SCANNER TICKET
   if (showTicketScanner) {
     return (
@@ -1733,10 +1776,14 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                       <div style={{ padding: '0 0.75rem 0.75rem', display: 'grid', gap: '0.5rem' }}>
                         {catItems.map(([id, data], idx) => (
                           <div key={id} style={{ background: inputBg, padding: '0.85rem', borderRadius: '8px', border: `1px solid ${cardBorder}`, display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', animation: `slideInLeft ${0.1 + idx * 0.05}s` }}>
-                            <div style={{ flex: 1, minWidth: '120px' }}>
+                            <div style={{ flex: 1, minWidth: '100px' }}>
                               <div style={{ fontSize: '0.95rem', fontWeight: 500 }}>{data.item.name}</div>
                               {data.item.note && <div style={{ fontSize: '0.75rem', color: '#999', marginTop: '0.2rem', fontStyle: 'italic' }}>{data.item.note}</div>}
-                              <div style={{ fontSize: '0.8rem', color: '#999', marginTop: '0.2rem' }}>{data.item.quantity} {data.item.unit}</div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.3rem' }}>
+                                <button onClick={() => setShoppingItems(prev => ({ ...prev, [id]: { ...prev[id], item: { ...prev[id].item, quantity: Math.max(0.1, (prev[id].item.quantity || 1) - 1) } } }))} style={{ padding: '0.1rem 0.4rem', background: inputBg, border: `1px solid ${cardBorder}`, borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 700, color: textColor, lineHeight: 1 }}>−</button>
+                                <span style={{ fontSize: '0.8rem', color: '#999', minWidth: '40px', textAlign: 'center' }}>{data.item.quantity} {data.item.unit}</span>
+                                <button onClick={() => setShoppingItems(prev => ({ ...prev, [id]: { ...prev[id], item: { ...prev[id].item, quantity: (prev[id].item.quantity || 1) + 1 } } }))} style={{ padding: '0.1rem 0.4rem', background: inputBg, border: `1px solid ${cardBorder}`, borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 700, color: textColor, lineHeight: 1 }}>+</button>
+                              </div>
                             </div>
                             <button onClick={() => updateItemStatus(id, 'inCart')} style={{ padding: '0.45rem 0.75rem', background: '#7db89a', color: 'white', border: 'none', borderRadius: '7px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}>Caddie</button>
                             <button onClick={() => updateItemStatus(id, 'unavailable')} style={{ padding: '0.45rem 0.75rem', background: '#e8a090', color: 'white', border: 'none', borderRadius: '7px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}>Indispo</button>
@@ -1793,8 +1840,8 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                 {stores.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <input type="text" placeholder="✏️ Autre magasin (appuie sur Entrée)" value={newStoreInput} onChange={e => setNewStoreInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && newStoreInput.trim()) { if (!stores.includes(newStoreInput.trim())) setStores(prev => [...prev, newStoreInput.trim()]); setCurrentStore(newStoreInput.trim()); setNewStoreInput(''); }}} style={{ flex: 1, padding: '0.75rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.9rem', background: inputBg, color: textColor }} />
-                <button onClick={() => { if (newStoreInput.trim()) { if (!stores.includes(newStoreInput.trim())) setStores(prev => [...prev, newStoreInput.trim()]); setCurrentStore(newStoreInput.trim()); setNewStoreInput(''); }}} style={{ padding: '0.75rem 1rem', background: '#6a9a7e', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>✓</button>
+                <input type="text" placeholder="Autre magasin" value={newStoreInput} onChange={e => setNewStoreInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && newStoreInput.trim()) { if (!stores.includes(newStoreInput.trim())) setStores(prev => [...prev, newStoreInput.trim()]); setCurrentStore(newStoreInput.trim()); setNewStoreInput(''); }}} style={{ flex: 1, minWidth: 0, padding: '0.75rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.9rem', background: inputBg, color: textColor, boxSizing: 'border-box' }} />
+                <button onClick={() => { if (newStoreInput.trim()) { if (!stores.includes(newStoreInput.trim())) setStores(prev => [...prev, newStoreInput.trim()]); setCurrentStore(newStoreInput.trim()); setNewStoreInput(''); }}} style={{ flexShrink: 0, padding: '0.75rem 1rem', background: '#6a9a7e', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>✓</button>
               </div>
               {currentStore && <div style={{ fontSize: '0.8rem', color: '#7db89a' }}>✓ Courses chez {currentStore}</div>}
             </div>
