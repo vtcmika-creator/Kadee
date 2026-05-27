@@ -284,7 +284,9 @@ function Kadee() {
   const [welcomeCustom, setWelcomeCustom] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestionsFor, setShowSuggestionsFor] = useState(null);
-  const [confirmClearList, setConfirmClearList] = useState(false); // '', 'saving', 'saved', 'error'
+  const [confirmClearList, setConfirmClearList] = useState(false);
+  const [showUnitPicker, setShowUnitPicker] = useState(false);
+  const [showTemplateUnitPicker, setShowTemplateUnitPicker] = useState(false); // '', 'saving', 'saved', 'error'
   const [justAdded, setJustAdded] = useState(null);
   const [justAddedItem, setJustAddedItem] = useState(false);
   const [justAddedTemplate, setJustAddedTemplate] = useState(false);
@@ -2419,7 +2421,24 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                   )}
                 </div>
                 <input type="text" placeholder="Note (optionnel)" value={newItemNote} onChange={(e) => setNewItemNote(e.target.value)} style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, transition: 'all 0.3s' }} />
-                <select value={newUnit} onChange={(e) => setNewUnit(e.target.value)} style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', cursor: 'pointer', background: inputBg, color: textColor, transition: 'all 0.3s' }}>{UNITS.map(unit => <option key={unit}>{unit}</option>)}</select>
+                <div style={{ position: 'relative' }}>
+                  <button onClick={() => { setShowUnitPicker(!showUnitPicker); setShowTemplateUnitPicker(false); }} style={{ width: '100%', padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', cursor: 'pointer', background: inputBg, color: textColor, textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>{newUnit}</span>
+                    <span style={{ fontSize: '0.75rem', color: '#999' }}>▼</span>
+                  </button>
+                  {showUnitPicker && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '10px', zIndex: 200, padding: '0.75rem', boxShadow: '0 4px 16px rgba(0,0,0,0.12)', marginTop: '4px' }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                        {UNITS.map(unit => (
+                          <button key={unit} onClick={() => { setNewUnit(unit); setShowUnitPicker(false); }}
+                            style={{ padding: '0.4rem 0.85rem', borderRadius: '20px', border: newUnit === unit ? 'none' : `1px solid ${cardBorder}`, background: newUnit === unit ? '#6a9a7e' : inputBg, color: newUnit === unit ? 'white' : textColor, cursor: 'pointer', fontSize: '0.85rem', fontWeight: newUnit === unit ? 600 : 400 }}>
+                            {unit}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', border: `1px solid ${cardBorder}`, borderRadius: '8px', overflow: 'hidden', flex: 1 }}>
@@ -2543,7 +2562,24 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                   )}
                 </div>
                 <input type="text" placeholder="Note (optionnel)" value={newTemplateNote} onChange={(e) => setNewTemplateNote(e.target.value)} style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, transition: 'all 0.3s' }} />
-                <select value={newTemplateUnit} onChange={(e) => setNewTemplateUnit(e.target.value)} style={{ padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', cursor: 'pointer', background: inputBg, color: textColor, transition: 'all 0.3s' }}>{UNITS.map(unit => <option key={unit}>{unit}</option>)}</select>
+                <div style={{ position: 'relative' }}>
+                  <button onClick={() => { setShowTemplateUnitPicker(!showTemplateUnitPicker); setShowUnitPicker(false); }} style={{ width: '100%', padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', cursor: 'pointer', background: inputBg, color: textColor, textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>{newTemplateUnit}</span>
+                    <span style={{ fontSize: '0.75rem', color: '#999' }}>▼</span>
+                  </button>
+                  {showTemplateUnitPicker && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '10px', zIndex: 200, padding: '0.75rem', boxShadow: '0 4px 16px rgba(0,0,0,0.12)', marginTop: '4px' }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                        {UNITS.map(unit => (
+                          <button key={unit} onClick={() => { setNewTemplateUnit(unit); setShowTemplateUnitPicker(false); }}
+                            style={{ padding: '0.4rem 0.85rem', borderRadius: '20px', border: newTemplateUnit === unit ? 'none' : `1px solid ${cardBorder}`, background: newTemplateUnit === unit ? '#6a9a7e' : inputBg, color: newTemplateUnit === unit ? 'white' : textColor, cursor: 'pointer', fontSize: '0.85rem', fontWeight: newTemplateUnit === unit ? 600 : 400 }}>
+                            {unit}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '1.5rem', alignItems: 'center' }}>
                 {categories.map(cat => (
