@@ -108,7 +108,8 @@ function Kadee() {
   const [editingTemplate, setEditingTemplate] = useState(null); // {id, name}
   const [showInlineCatAdd, setShowInlineCatAdd] = useState(null); // 'inventory' | 'template'
   const [newInlineCat, setNewInlineCat] = useState('');
-  const [saveNotif, setSaveNotif] = useState(''); // message de confirmation
+  const [saveNotif, setSaveNotif] = useState('');
+  const [saveNotifOk, setSaveNotifOk] = useState(true);
   const [justAdded, setJustAdded] = useState(null);
   const [justAddedItem, setJustAddedItem] = useState(false);
   const [justAddedTemplate, setJustAddedTemplate] = useState(false);
@@ -1150,7 +1151,7 @@ function Kadee() {
         <style>{styles}</style>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           {saveNotif && (
-            <div style={{ background: saveNotif.startsWith('✅') ? '#f0fff4' : '#fff0f0', border: `1px solid ${saveNotif.startsWith('✅') ? '#7db89a' : '#e8a090'}`, borderRadius: '10px', padding: '1rem 1.25rem', marginBottom: '1rem', fontSize: '0.95rem', fontWeight: 600, color: saveNotif.startsWith('✅') ? '#6a9a7e' : '#e8a090', textAlign: 'center', animation: 'fadeIn 0.3s' }}>
+            <div style={{ background: saveNotifOk ? '#f0fff4' : '#fff0f0', border: saveNotifOk ? '1px solid #7db89a' : '1px solid #e8a090', borderRadius: '10px', padding: '1rem 1.25rem', marginBottom: '1rem', fontSize: '0.95rem', fontWeight: 600, color: saveNotifOk ? '#6a9a7e' : '#e8a090', textAlign: 'center', animation: 'fadeIn 0.3s' }}>
               {saveNotif}
             </div>
           )}
@@ -1380,7 +1381,7 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
 
   const exportData = () => {
     const data = localStorage.getItem('kadee_data');
-    if (!data) { setSaveNotif('❌ Aucune donnée à sauvegarder'); setTimeout(() => setSaveNotif(''), 3000); return; }
+    if (!data) { setSaveNotifOk(false); setSaveNotif('❌ Aucune donnée à sauvegarder'); setTimeout(() => setSaveNotif(''), 3000); return; }
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1390,8 +1391,7 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    setSaveNotif('✅ Sauvegarde téléchargée !');
-    setTimeout(() => setSaveNotif(''), 3000);
+    setSaveNotifOk(true); setSaveNotif('✅ Sauvegarde téléchargée !'); setTimeout(() => setSaveNotif(''), 3000);
   };
 
   const importData = (file) => {
@@ -1410,8 +1410,7 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
         setPriceHistory(data.priceHistory || {});
         if (data.apiKey) setApiKey(data.apiKey);
         if (data.stores) setStores(data.stores);
-        setSaveNotif('✅ ' + (data.templates || []).length + ' produits restaurés !');
-        setTimeout(() => { setSaveNotif(''); setShowCategories(false); }, 2500);
+        setSaveNotifOk(true); setSaveNotif('✅ ' + (data.templates || []).length + ' produits restaurés !'); setTimeout(() => { setSaveNotif(''); setShowCategories(false); }, 2500);
       } catch(err) {
         setSaveNotif('❌ Fichier invalide — vérifie que c'est bien un fichier Kadee');
         setTimeout(() => setSaveNotif(''), 4000);
