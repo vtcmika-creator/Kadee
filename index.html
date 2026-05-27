@@ -1235,12 +1235,38 @@ Réponds UNIQUEMENT en JSON valide: {"products": [{"raw_name": "...", "clean_nam
         let parsed;
         try {
           parsed = JSON.parse(jsonMatch[0]);
-        } catch(pe) {
-          const cleaned = jsonMatch[0]
-            .replace(/[\u0000-\u001F\u007F-\u009F]/g, ' ')
-            .replace(/,\s*}/g, '}').replace(/,\s*]/g, ']')
-            .replace(/([^\\])\n/g, '$1 ').replace(/([^\\])\r/g, '$1 ');
-          parsed = JSON.parse(cleaned);
+        } catch(e1) {
+          try {
+            const cleaned = jsonMatch[0]
+              .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, ' ')
+              .replace(/,\s*}/g, '}').replace(/,\s*]/g, ']')
+              .replace(/([^\\])\n/g, '$1 ').replace(/([^\\])\r/g, '$1 ')
+              .replace(/([^\\])\t/g, '$1 ');
+            parsed = JSON.parse(cleaned);
+          } catch(e2) {
+            try {
+              const products = [];
+              const raws = [...jsonMatch[0].matchAll(/"raw_name"\s*:\s*"([^"]+)"/g)];
+              const cleans = [...jsonMatch[0].matchAll(/"clean_name"\s*:\s*"([^"]+)"/g)];
+              const prices = [...jsonMatch[0].matchAll(/"price"\s*:\s*([0-9]+(?:\.[0-9]+)?)/g)];
+              const confs = [...jsonMatch[0].matchAll(/"confidence"\s*:\s*"([^"]+)"/g)];
+              for (let i = 0; i < prices.length; i++) {
+                products.push({
+                  raw_name: raws[i]?.[1] || '?',
+                  clean_name: cleans[i]?.[1] || raws[i]?.[1] || '?',
+                  price: parseFloat(prices[i][1]),
+                  confidence: confs[i]?.[1] || 'high',
+                  suggestions: []
+                });
+              }
+              if (products.length === 0) throw new Error('vide');
+              parsed = { products };
+            } catch(e3) {
+              alert('Impossible de lire la réponse. Essaie avec des photos plus nettes ou moins de produits.');
+              setIsAnalyzing(false);
+              return;
+            }
+          }
         }
         const products = (parsed.products || []).map((p, i) => ({
           ...p,
@@ -1251,7 +1277,7 @@ Réponds UNIQUEMENT en JSON valide: {"products": [{"raw_name": "...", "clean_nam
         setExtractedProducts(products);
         setScanStep('review');
       } else {
-        alert('Impossible de parser la réponse: ' + text.substring(0, 200));
+        alert('Réponse inattendue. Réessaie.');
       }
     } catch(e) {
       alert('Erreur analyse: ' + e.message);
