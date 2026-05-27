@@ -340,7 +340,35 @@ function Kadee() {
       }
     }
     setHasLoaded(true);
-    if (!saved) setShowWelcome(true);
+    if (!saved) {
+      // Pas de données locales — tenter restauration cloud automatique
+      const cloudId = localStorage.getItem('kadee_cloud_id');
+      if (cloudId) {
+        fetch('https://kadee-proxy.vtc-mika.workers.dev', {
+          method: 'GET',
+          headers: { 'x-kadee-action': 'restore', 'x-kadee-id': cloudId }
+        }).then(r => r.json()).then(result => {
+          if (result.ok && result.data) {
+            const data = JSON.parse(result.data);
+            localStorage.setItem('kadee_data', result.data);
+            setItems((data.items || []).map(i => ({ ...i, favorite: i.favorite ?? false })));
+            setTemplates((data.templates || []).map(t => ({ ...t, favorite: t.favorite ?? false })));
+            setHistory(data.history || []);
+            setCategories(data.categories || DEFAULT_CATEGORIES);
+            setLoyaltyCards(data.loyaltyCards || []);
+            setExpenses(data.expenses || []);
+            setPriceHistory(data.priceHistory || {});
+            if (data.apiKey) setApiKey(data.apiKey);
+            if (data.stores) setStores(data.stores);
+            if (!data.welcomeDone) setShowWelcome(true);
+          } else {
+            setShowWelcome(true);
+          }
+        }).catch(() => setShowWelcome(true));
+      } else {
+        setShowWelcome(true);
+      }
+    }
   }, []);
 
   useEffect(() => {
