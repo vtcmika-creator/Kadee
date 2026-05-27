@@ -38,7 +38,7 @@ const DEFAULT_CATEGORIES = [
   'Pâtisseries et sucreries', 'Apéro et snacks', 'Surgelés', 'Boissons', 'Animaux', 'Hygiène & Nettoyage', 'Divers'
 ];
 
-const UNITS = ['kilogramme', 'litre', 'pièces', 'paquet', 'boîte', 'bouteille', 'pot'];
+const UNITS = ['kilogramme', 'litre', 'pièce', 'paquet', 'boîte', 'bouteille', 'pot', 'barquette', 'sachet', 'bocal', 'tablette', 'pack', 'flacon', 'sac', 'rouleau', 'tube', 'botte'];
 
 const getAutoCategoryFromName = (name) => {
   const lowerName = name.toLowerCase();
@@ -283,7 +283,8 @@ function Kadee() {
   const [welcomeSearch, setWelcomeSearch] = useState('');
   const [welcomeCustom, setWelcomeCustom] = useState('');
   const [suggestions, setSuggestions] = useState([]);
-  const [showSuggestionsFor, setShowSuggestionsFor] = useState(null); // '', 'saving', 'saved', 'error'
+  const [showSuggestionsFor, setShowSuggestionsFor] = useState(null);
+  const [confirmClearList, setConfirmClearList] = useState(false); // '', 'saving', 'saved', 'error'
   const [justAdded, setJustAdded] = useState(null);
   const [justAddedItem, setJustAddedItem] = useState(false);
   const [justAddedTemplate, setJustAddedTemplate] = useState(false);
@@ -1819,10 +1820,18 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                 {items.map((p, i) => {
                   const idx = PRODUCT_LIBRARY.indexOf(p);
                   const selected = welcomeSelected[idx];
+                  const alreadyIn = templates.some(t => t.name.toLowerCase() === p.name.toLowerCase());
+                  const isOn = alreadyIn || selected;
                   return (
-                    <button key={idx} onClick={() => setWelcomeSelected(prev => ({ ...prev, [idx]: !prev[idx] }))}
-                      style={{ padding: '0.5rem 0.9rem', borderRadius: '20px', border: selected ? 'none' : `1px solid ${cardBorder}`, background: selected ? '#6a9a7e' : inputBg, color: selected ? 'white' : textColor, cursor: 'pointer', fontSize: '0.85rem', fontWeight: selected ? 600 : 400, transition: 'all 0.2s' }}>
-                      {selected ? '✓ ' : ''}{p.name}
+                    <button key={idx} onClick={() => {
+                      if (alreadyIn) {
+                        setTemplates(prev => prev.filter(t => t.name.toLowerCase() !== p.name.toLowerCase()));
+                      } else {
+                        setWelcomeSelected(prev => ({ ...prev, [idx]: !prev[idx] }));
+                      }
+                    }}
+                      style={{ padding: '0.5rem 0.9rem', borderRadius: '20px', border: isOn ? 'none' : `1px solid ${cardBorder}`, background: alreadyIn ? '#6a9a7e' : (selected ? '#85b8d0' : inputBg), color: isOn ? 'white' : textColor, cursor: 'pointer', fontSize: '0.85rem', fontWeight: isOn ? 600 : 400, transition: 'all 0.2s' }}>
+                      {isOn ? '✓ ' : ''}{p.name}
                     </button>
                   );
                 })}
@@ -2378,6 +2387,7 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
               </div>
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 <button onClick={() => setShowShare(true)} disabled={items.length === 0} title="Partager la liste" style={{ padding: '0.9rem', background: items.length === 0 ? '#e8ddd2' : cardBg, border: `1px solid ${items.length === 0 ? '#e8ddd2' : '#85b8d0'}`, borderRadius: '10px', cursor: items.length === 0 ? 'not-allowed' : 'pointer', fontSize: '1.2rem', transition: 'all 0.3s' }}>📤</button>
+                <button onClick={() => { if (items.length > 0) setConfirmClearList(true); }} disabled={items.length === 0} title="Annuler les courses" style={{ padding: '0.9rem', background: items.length === 0 ? '#e8ddd2' : cardBg, border: `1px solid ${items.length === 0 ? '#e8ddd2' : '#e8a090'}`, borderRadius: '10px', cursor: items.length === 0 ? 'not-allowed' : 'pointer', fontSize: '1.2rem', transition: 'all 0.3s' }}>🗑️</button>
                 <button onClick={startShopping} disabled={items.length === 0} style={{ padding: '0.9rem 2rem', background: items.length === 0 ? '#e8ddd2' : 'linear-gradient(135deg, #7db89a 0%, #6aab8a 100%)', color: items.length === 0 ? '#999' : 'white', border: 'none', borderRadius: '10px', cursor: items.length === 0 ? 'not-allowed' : 'pointer', fontSize: '0.95rem', fontWeight: 600, boxShadow: items.length === 0 ? 'none' : '0 4px 12px rgba(74, 138, 106, 0.25)', transition: 'all 0.3s' }}>Faire les courses</button>
               </div>
             </div>
@@ -2435,6 +2445,19 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
               <button onClick={addItem} style={{ width: '100%', padding: '0.9rem', background: justAddedItem ? '#b8d4bc' : 'linear-gradient(135deg, #b8d4bc 0%, #a8ccb0 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, transition: 'all 0.3s ease', transform: justAddedItem ? 'scale(1.02)' : 'scale(1)' }}>{justAddedItem ? '✓ Ajouté' : '+ Ajouter'}</button>
             </div>
 
+            {confirmClearList && (
+              <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+                <div style={{ background: cardBg, borderRadius: '16px', padding: '2rem', maxWidth: '340px', width: '100%', textAlign: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+                  <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🗑️</div>
+                  <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '1.1rem', fontWeight: 600, color: textColor }}>Annuler les courses ?</h3>
+                  <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.9rem', color: '#999' }}>Tous les produits de ta liste seront supprimés. Cette action est irréversible.</p>
+                  <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <button onClick={() => setConfirmClearList(false)} style={{ flex: 1, padding: '0.85rem', background: inputBg, border: `1px solid ${cardBorder}`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: textColor }}>Annuler</button>
+                    <button onClick={() => { setItems([]); setConfirmClearList(false); }} style={{ flex: 1, padding: '0.85rem', background: '#e8a090', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600 }}>Confirmer</button>
+                  </div>
+                </div>
+              </div>
+            )}
             <input type="search" placeholder="🔍 Chercher un produit..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={e => e.stopPropagation()} onKeyUp={e => e.stopPropagation()} style={{ width: '100%', padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, marginBottom: '1.5rem', boxSizing: 'border-box', transition: 'all 0.3s' }} />
 
             {favoriteItems.length > 0 && (
