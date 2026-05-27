@@ -1379,18 +1379,33 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
     setScanStep('done');
   };
 
-  const exportData = () => {
+  const exportData = async () => {
     const data = localStorage.getItem('kadee_data');
     if (!data) { setSaveNotifOk(false); setSaveNotif('❌ Aucune donnée à sauvegarder'); setTimeout(() => setSaveNotif(''), 3000); return; }
+    const fileName = 'kadee-sauvegarde-' + new Date().toLocaleDateString('fr-FR').replace(/\//g, '-') + '.json';
     const blob = new Blob([data], { type: 'application/json' });
+    
+    // Essayer Web Share API (Android PWA)
+    if (navigator.share && navigator.canShare) {
+      const file = new File([blob], fileName, { type: 'application/json' });
+      if (navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: 'Sauvegarde Kadee' });
+          setSaveNotifOk(true); setSaveNotif('✅ Sauvegarde partagée !'); setTimeout(() => setSaveNotif(''), 3000);
+          return;
+        } catch(e) { /* annulé par l'utilisateur ou erreur */ }
+      }
+    }
+    
+    // Fallback : téléchargement classique
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'kadee-sauvegarde-' + new Date().toLocaleDateString('fr-FR').replace(/\//g, '-') + '.json';
+    a.download = fileName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     setSaveNotifOk(true); setSaveNotif('✅ Sauvegarde téléchargée !'); setTimeout(() => setSaveNotif(''), 3000);
   };
 
