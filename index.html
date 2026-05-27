@@ -108,6 +108,7 @@ function Kadee() {
   const [editingTemplate, setEditingTemplate] = useState(null); // {id, name}
   const [showInlineCatAdd, setShowInlineCatAdd] = useState(null); // 'inventory' | 'template'
   const [newInlineCat, setNewInlineCat] = useState('');
+  const [saveNotif, setSaveNotif] = useState(''); // message de confirmation
   const [justAdded, setJustAdded] = useState(null);
   const [justAddedItem, setJustAddedItem] = useState(false);
   const [justAddedTemplate, setJustAddedTemplate] = useState(false);
@@ -1148,6 +1149,11 @@ function Kadee() {
       <div style={{ minHeight: '100vh', background: bgGradient, fontFamily: '"Outfit", "Segoe UI", sans-serif', padding: '2rem', color: textColor }}>
         <style>{styles}</style>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          {saveNotif && (
+            <div style={{ background: saveNotif.startsWith('✅') ? '#f0fff4' : '#fff0f0', border: `1px solid ${saveNotif.startsWith('✅') ? '#7db89a' : '#e8a090'}`, borderRadius: '10px', padding: '1rem 1.25rem', marginBottom: '1rem', fontSize: '0.95rem', fontWeight: 600, color: saveNotif.startsWith('✅') ? '#6a9a7e' : '#e8a090', textAlign: 'center', animation: 'fadeIn 0.3s' }}>
+              {saveNotif}
+            </div>
+          )}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
             <h1 style={{ fontSize: '2rem', margin: 0, color: '#6a9a7e', fontWeight: 600 }}>Paramètres</h1>
             <button onClick={() => setShowCategories(false)} style={{ background: cardBg, border: `1px solid ${cardBorder}`, padding: '0.75rem', borderRadius: '10px', cursor: 'pointer', fontSize: '1.5rem', color: textColor }}>×</button>
@@ -1194,7 +1200,7 @@ function Kadee() {
               </div>
               <label style={{ width: '100%', display: 'block', padding: '1rem', background: inputBg, border: `1px solid #85b8d0`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: '#85b8d0', textAlign: 'left', transition: 'all 0.3s', boxSizing: 'border-box' }}>
                 📂 Restaurer mes données
-                <input type="file" accept=".json" style={{ display: 'none' }} onChange={e => { importData(e.target.files[0]); e.target.value=''; }} />
+                <input type="file" accept=".json,application/json,text/*" style={{ display: 'none' }} onChange={e => { importData(e.target.files[0]); e.target.value=''; }} />
               </label>
             </div>
           </div>
@@ -1374,14 +1380,18 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
 
   const exportData = () => {
     const data = localStorage.getItem('kadee_data');
-    if (!data) return;
+    if (!data) { setSaveNotif('❌ Aucune donnée à sauvegarder'); setTimeout(() => setSaveNotif(''), 3000); return; }
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = 'kadee-sauvegarde-' + new Date().toLocaleDateString('fr-FR').replace(/\//g, '-') + '.json';
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    setSaveNotif('✅ Sauvegarde téléchargée !');
+    setTimeout(() => setSaveNotif(''), 3000);
   };
 
   const importData = (file) => {
@@ -1399,9 +1409,12 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
         setExpenses(data.expenses || []);
         setPriceHistory(data.priceHistory || {});
         if (data.apiKey) setApiKey(data.apiKey);
-        alert('✅ Données restaurées avec succès !');
-      } catch(e) {
-        alert('❌ Fichier invalide');
+        if (data.stores) setStores(data.stores);
+        setSaveNotif('✅ ' + (data.templates || []).length + ' produits restaurés !');
+        setTimeout(() => { setSaveNotif(''); setShowCategories(false); }, 2500);
+      } catch(err) {
+        setSaveNotif('❌ Fichier invalide — vérifie que c'est bien un fichier Kadee');
+        setTimeout(() => setSaveNotif(''), 4000);
       }
     };
     reader.readAsText(file);
@@ -1845,9 +1858,9 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <button onClick={finalizeShopping} style={{ flex: 1, padding: '1rem', background: 'linear-gradient(135deg, #7db89a 0%, #6aab8a 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem', fontWeight: 600, transition: 'all 0.3s' }}>Valider les achats</button>
-            <button onClick={() => { setShoppingMode(false); setShowTicketScanner(true); setScanStep('photo'); setTicketPhotos([]); setExtractedProducts([]); }} style={{ padding: '1rem 1.2rem', background: cardBg, border: `2px solid #7db89a`, borderRadius: '10px', cursor: 'pointer', fontSize: '1.3rem', transition: 'all 0.3s' }} title="Scanner le ticket">📸</button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <button onClick={finalizeShopping} style={{ width: '100%', padding: '1rem', background: 'linear-gradient(135deg, #7db89a 0%, #6aab8a 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem', fontWeight: 600, transition: 'all 0.3s' }}>Valider les achats</button>
+            <button onClick={() => { setShoppingMode(false); setShowTicketScanner(true); setScanStep('photo'); setTicketPhotos([]); setExtractedProducts([]); }} style={{ width: '100%', padding: '1rem', background: cardBg, border: `2px solid #7db89a`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: '#6a9a7e', transition: 'all 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>🧾 Scanner le ticket de caisse</button>
           </div>
         </div>
       </div>
