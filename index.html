@@ -288,6 +288,10 @@ function Kadee() {
   const [showUnitPicker, setShowUnitPicker] = useState(false);
   const [showTemplateUnitPicker, setShowTemplateUnitPicker] = useState(false);
   const [showCloudAuth, setShowCloudAuth] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+  const [authMode, setAuthMode] = useState('register'); // 'register' | 'login'
+  const [authMsg, setAuthMsg] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
   const [cloudPseudo, setCloudPseudo] = useState('');
   const [cloudPass, setCloudPass] = useState('');
   const [cloudAuthMode, setCloudAuthMode] = useState('login'); // 'login' | 'register'
@@ -350,6 +354,7 @@ function Kadee() {
       const pseudo = localStorage.getItem('kadee_pseudo');
       const pass = localStorage.getItem('kadee_pass');
       if (pseudo && pass) {
+        // Pseudo connu — restauration automatique
         fetch('https://kadee-proxy.vtc-mika.workers.dev', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-kadee-action': 'restore', 'x-kadee-pseudo': pseudo, 'x-kadee-pass': pass },
@@ -373,7 +378,8 @@ function Kadee() {
           }
         }).catch(() => setShowWelcome(true));
       } else {
-        setShowWelcome(true);
+        // Nouveau utilisateur — afficher page auth
+        setShowAuth(true);
       }
     }
   }, []);
@@ -1401,6 +1407,47 @@ function Kadee() {
     );
   }
 
+  if (showCloudAuth) {
+    return (
+      <div style={{ minHeight: '100vh', background: bgGradient, fontFamily: '"Outfit", sans-serif', padding: '1.5rem', color: textColor, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <style>{styles}</style>
+        <div style={{ maxWidth: '380px', width: '100%' }}>
+          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>☁️</div>
+            <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 600, color: textColor }}>Kadee Cloud</h2>
+            <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: '#999' }}>Sauvegarde et restauration de tes données</p>
+          </div>
+          <div style={{ background: cardBg, borderRadius: '16px', padding: '2rem', border: `1px solid ${cardBorder}` }}>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+              <button onClick={() => setCloudAuthMode('login')} style={{ flex: 1, padding: '0.7rem', borderRadius: '8px', border: 'none', background: cloudAuthMode === 'login' ? '#6a9a7e' : inputBg, color: cloudAuthMode === 'login' ? 'white' : textColor, cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>Me connecter</button>
+              <button onClick={() => setCloudAuthMode('register')} style={{ flex: 1, padding: '0.7rem', borderRadius: '8px', border: 'none', background: cloudAuthMode === 'register' ? '#6a9a7e' : inputBg, color: cloudAuthMode === 'register' ? 'white' : textColor, cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>Nouveau compte</button>
+            </div>
+            <input type="text" placeholder="Pseudo" value={cloudPseudo} onChange={e => setCloudPseudo(e.target.value)} style={{ width: '100%', padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, boxSizing: 'border-box', marginBottom: '0.75rem' }} />
+            <input type="password" placeholder="Mot de passe" value={cloudPass} onChange={e => setCloudPass(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleCloudAuth(); }} style={{ width: '100%', padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, boxSizing: 'border-box', marginBottom: '1rem' }} />
+            {cloudAuthMsg !== '' && (() => {
+              const isOk = cloudAuthMsg.indexOf('ok') === 0;
+              const isReg = cloudAuthMsg.indexOf('ok_register') === 0;
+              const isRest = cloudAuthMsg.indexOf('ok_restore_') === 0;
+              const nb = isRest ? cloudAuthMsg.split('_')[2] : '';
+              const err = cloudAuthMsg.replace('err_', '');
+              return (
+                <div style={{ padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem', fontWeight: 600, textAlign: 'center', background: isOk ? '#f0fff4' : '#fff0f0', color: isOk ? '#6a9a7e' : '#e8a090' }}>
+                  {isReg ? '✅ Compte créé !' : isRest ? ('✅ ' + nb + ' produits restaurés !') : ('❌ ' + err)}
+                </div>
+              );
+            })()}
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button onClick={() => { setShowCloudAuth(false); setCloudAuthMsg(''); setCloudPseudo(''); setCloudPass(''); }} style={{ flex: 1, padding: '0.85rem', background: inputBg, border: `1px solid ${cardBorder}`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, color: textColor }}>Annuler</button>
+              <button onClick={handleCloudAuth} disabled={cloudAuthLoading} style={{ flex: 2, padding: '0.85rem', background: cloudAuthLoading ? '#ccc' : 'linear-gradient(135deg, #7db89a 0%, #6aab8a 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: cloudAuthLoading ? 'not-allowed' : 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>
+                {cloudAuthLoading ? '⏳ Connexion...' : (cloudAuthMode === 'register' ? 'Créer le compte' : 'Restaurer mes données')}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (showCategories) {
     return (
       <div style={{ minHeight: '100vh', background: bgGradient, fontFamily: '"Outfit", "Segoe UI", sans-serif', padding: '2rem', color: textColor }}>
@@ -1456,37 +1503,7 @@ function Kadee() {
                 {apiKey && <div style={{ fontSize: '0.75rem', color: '#7db89a', marginTop: '0.4rem' }}>✓ Clé mémorisée</div>}
               </div>
               <button onClick={restoreFromCloud} style={{ width: '100%', padding: '1rem', background: inputBg, border: '1px solid #85b8d0', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: '#85b8d0', textAlign: 'left', transition: 'all 0.3s' }}>☁️ Restaurer depuis le cloud</button>
-              {showCloudAuth && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
-                  <div style={{ background: cardBg, borderRadius: '16px', padding: '2rem', maxWidth: '380px', width: '100%', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
-                    <h3 style={{ margin: '0 0 1.25rem 0', fontSize: '1.1rem', fontWeight: 600, color: textColor, textAlign: 'center' }}>☁️ Compte Kadee Cloud</h3>
-                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' }}>
-                      <button onClick={() => setCloudAuthMode('login')} style={{ flex: 1, padding: '0.7rem', borderRadius: '8px', border: 'none', background: cloudAuthMode === 'login' ? '#6a9a7e' : inputBg, color: cloudAuthMode === 'login' ? 'white' : textColor, cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>Me connecter</button>
-                      <button onClick={() => setCloudAuthMode('register')} style={{ flex: 1, padding: '0.7rem', borderRadius: '8px', border: 'none', background: cloudAuthMode === 'register' ? '#6a9a7e' : inputBg, color: cloudAuthMode === 'register' ? 'white' : textColor, cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>Nouveau compte</button>
-                    </div>
-                    <input type="text" placeholder="Pseudo" value={cloudPseudo} onChange={e => setCloudPseudo(e.target.value)} style={{ width: '100%', padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, boxSizing: 'border-box', marginBottom: '0.75rem' }} />
-                    <input type="password" placeholder="Mot de passe" value={cloudPass} onChange={e => setCloudPass(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleCloudAuth(); }} style={{ width: '100%', padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, boxSizing: 'border-box', marginBottom: '1rem' }} />
-                    {cloudAuthMsg !== '' && (() => {
-                      const isOk = cloudAuthMsg.indexOf('ok') === 0;
-                      const isReg = cloudAuthMsg.indexOf('ok_register') === 0;
-                      const isRest = cloudAuthMsg.indexOf('ok_restore_') === 0;
-                      const nb = isRest ? cloudAuthMsg.split('_')[2] : '';
-                      const err = cloudAuthMsg.replace('err_', '');
-                      return (
-                        <div style={{ padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem', fontWeight: 600, textAlign: 'center', background: isOk ? '#f0fff4' : '#fff0f0', color: isOk ? '#6a9a7e' : '#e8a090' }}>
-                          {isReg ? '✅ Compte créé !' : isRest ? ('✅ ' + nb + ' produits restaurés !') : ('❌ ' + err)}
-                        </div>
-                      );
-                    })()}
-                    <div style={{ display: 'flex', gap: '0.75rem' }}>
-                      <button onClick={() => { setShowCloudAuth(false); setCloudAuthMsg(''); setCloudPseudo(''); setCloudPass(''); }} style={{ flex: 1, padding: '0.85rem', background: inputBg, border: `1px solid ${cardBorder}`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, color: textColor }}>Annuler</button>
-                      <button onClick={handleCloudAuth} disabled={cloudAuthLoading} style={{ flex: 2, padding: '0.85rem', background: cloudAuthLoading ? '#ccc' : 'linear-gradient(135deg, #7db89a 0%, #6aab8a 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: cloudAuthLoading ? 'not-allowed' : 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>
-                        {cloudAuthLoading ? '⏳ Connexion...' : (cloudAuthMode === 'register' ? 'Créer le compte' : 'Restaurer mes données')}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
+
               <label style={{ width: '100%', display: 'block', padding: '1rem', background: inputBg, border: `1px solid ${cardBorder}`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: '#999', textAlign: 'left', transition: 'all 0.3s', boxSizing: 'border-box' }}>
                 📂 Restaurer depuis un fichier
                 <input type="file" accept=".json,application/json,text/*" style={{ display: 'none' }} onChange={e => { importData(e.target.files[0]); e.target.value=''; }} />
@@ -1697,6 +1714,62 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
 
   const WORKER_URL = 'https://kadee-proxy.vtc-mika.workers.dev';
 
+  const handleAuth = async () => {
+    if (!cloudPseudo.trim() || !cloudPass.trim()) {
+      setAuthMsg('err_Remplis les deux champs.');
+      return;
+    }
+    setAuthLoading(true);
+    setAuthMsg('');
+    try {
+      if (authMode === 'register') {
+        const res = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-kadee-action': 'register', 'x-kadee-pseudo': cloudPseudo.trim(), 'x-kadee-pass': cloudPass.trim() },
+          body: '{}'
+        });
+        const result = await res.json();
+        if (result.ok) {
+          localStorage.setItem('kadee_pseudo', cloudPseudo.trim());
+          localStorage.setItem('kadee_pass', cloudPass.trim());
+          setShowAuth(false);
+          setShowWelcome(true);
+        } else {
+          setAuthMsg('err_' + (result.error || 'Erreur'));
+        }
+      } else {
+        const res = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-kadee-action': 'restore', 'x-kadee-pseudo': cloudPseudo.trim(), 'x-kadee-pass': cloudPass.trim() },
+          body: '{}'
+        });
+        const result = await res.json();
+        if (result.ok && result.data) {
+          const data = JSON.parse(result.data);
+          localStorage.setItem('kadee_data', result.data);
+          localStorage.setItem('kadee_pseudo', cloudPseudo.trim());
+          localStorage.setItem('kadee_pass', cloudPass.trim());
+          setItems((data.items || []).map(i => ({ ...i, favorite: i.favorite ?? false })));
+          setTemplates((data.templates || []).map(t => ({ ...t, favorite: t.favorite ?? false })));
+          setHistory(data.history || []);
+          setCategories(data.categories || DEFAULT_CATEGORIES);
+          setLoyaltyCards(data.loyaltyCards || []);
+          setExpenses(data.expenses || []);
+          setPriceHistory(data.priceHistory || {});
+          if (data.apiKey) setApiKey(data.apiKey);
+          if (data.stores) setStores(data.stores);
+          setShowAuth(false);
+          if (!data.welcomeDone) setShowWelcome(true);
+        } else {
+          setAuthMsg('err_' + (result.error || 'Identifiants incorrects'));
+        }
+      }
+    } catch(e) {
+      setAuthMsg('err_Erreur de connexion. Vérifie ta connexion internet.');
+    }
+    setAuthLoading(false);
+  };
+
   const getCredentials = () => ({
     pseudo: localStorage.getItem('kadee_pseudo') || '',
     pass: localStorage.getItem('kadee_pass') || ''
@@ -1875,6 +1948,59 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
     );
   }
 
+  // PAGE AUTH (tout premier lancement — pas de compte connu)
+  if (showAuth) {
+    const authIsErr = authMsg.indexOf('err_') === 0;
+    const authErrTxt = authMsg.replace('err_', '');
+    return (
+      <div style={{ minHeight: '100vh', background: '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Outfit", sans-serif', padding: '1.5rem' }}>
+        <div style={{ width: '100%', maxWidth: '380px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: '3px', lineHeight: 1 }}>
+              <span style={{ fontFamily: '"Inter", sans-serif', fontWeight: 900, fontSize: 'clamp(40px, 12vw, 70px)', color: '#000000' }}>K</span>
+              <span style={{ fontFamily: '"Inter", sans-serif', fontWeight: 900, fontSize: 'clamp(40px, 12vw, 70px)', color: '#E8B4B8' }}>a</span>
+              <span style={{ fontFamily: '"Inter", sans-serif', fontWeight: 900, fontSize: 'clamp(40px, 12vw, 70px)', color: '#888888' }}>d</span>
+              <span style={{ fontFamily: '"Inter", sans-serif', fontWeight: 900, fontSize: 'clamp(40px, 12vw, 70px)', color: '#B5D6E6' }}>e</span>
+              <span style={{ fontFamily: '"Inter", sans-serif', fontWeight: 900, fontSize: 'clamp(40px, 12vw, 70px)', color: '#D0E8D9' }}>e</span>
+            </div>
+            <p style={{ color: '#7a8a7d', marginTop: '0.5rem', fontSize: '0.9rem' }}>Crée ton compte pour sauvegarder tes données automatiquement.</p>
+          </div>
+
+          <div style={{ background: 'white', borderRadius: '16px', padding: '1.75rem', boxShadow: '0 2px 16px rgba(0,0,0,0.08)' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', background: '#f5f5f7', borderRadius: '10px', padding: '4px' }}>
+              <button onClick={() => { setAuthMode('register'); setAuthMsg(''); }} style={{ flex: 1, padding: '0.65rem', borderRadius: '8px', border: 'none', background: authMode === 'register' ? 'white' : 'transparent', color: '#1c1c1e', cursor: 'pointer', fontWeight: authMode === 'register' ? 600 : 400, fontSize: '0.9rem', boxShadow: authMode === 'register' ? '0 1px 4px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.2s' }}>Nouveau compte</button>
+              <button onClick={() => { setAuthMode('login'); setAuthMsg(''); }} style={{ flex: 1, padding: '0.65rem', borderRadius: '8px', border: 'none', background: authMode === 'login' ? 'white' : 'transparent', color: '#1c1c1e', cursor: 'pointer', fontWeight: authMode === 'login' ? 600 : 400, fontSize: '0.9rem', boxShadow: authMode === 'login' ? '0 1px 4px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.2s' }}>J'ai déjà un compte</button>
+            </div>
+
+            <div style={{ marginBottom: '0.75rem' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, color: '#555', marginBottom: '0.4rem' }}>Pseudo</label>
+              <input type="text" placeholder="Mon pseudo..." value={cloudPseudo} onChange={e => setCloudPseudo(e.target.value)} style={{ width: '100%', padding: '0.85rem', border: '1px solid #e5e5ea', borderRadius: '10px', fontSize: '0.95rem', background: '#f9f9f9', color: '#1c1c1e', boxSizing: 'border-box', outline: 'none' }} />
+            </div>
+
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, color: '#555', marginBottom: '0.4rem' }}>Mot de passe</label>
+              <input type="password" placeholder="Mon mot de passe..." value={cloudPass} onChange={e => setCloudPass(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleAuth(); }} style={{ width: '100%', padding: '0.85rem', border: '1px solid #e5e5ea', borderRadius: '10px', fontSize: '0.95rem', background: '#f9f9f9', color: '#1c1c1e', boxSizing: 'border-box', outline: 'none' }} />
+            </div>
+
+            {authMsg !== '' && (
+              <div style={{ padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.875rem', fontWeight: 500, textAlign: 'center', background: authIsErr ? '#fff0f0' : '#f0fff4', color: authIsErr ? '#e8a090' : '#6a9a7e' }}>
+                {authIsErr ? ('❌ ' + authErrTxt) : '✅ Compte créé !'}
+              </div>
+            )}
+
+            <button onClick={handleAuth} disabled={authLoading} style={{ width: '100%', padding: '1rem', background: authLoading ? '#ccc' : 'linear-gradient(135deg, #7db89a 0%, #6aab8a 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: authLoading ? 'not-allowed' : 'pointer', fontSize: '1rem', fontWeight: 600, transition: 'all 0.3s' }}>
+              {authLoading ? '⏳ Connexion...' : (authMode === 'register' ? 'Créer mon compte' : 'Me connecter')}
+            </button>
+          </div>
+
+          <p style={{ textAlign: 'center', fontSize: '0.8rem', color: '#aaa', marginTop: '1rem' }}>
+            Tes données sont sauvegardées automatiquement et en sécurité.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // PAGE BIENVENUE (premier lancement)
   if (showWelcome) {
     const libCats = [...new Set(PRODUCT_LIBRARY.map(p => p.category))];
@@ -1953,7 +2079,37 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                 </button>
               );
             })()}
+            <button onClick={() => { setCloudAuthMode('login'); setCloudAuthMsg(''); setShowCloudAuth(true); }} style={{ width: '100%', padding: '0.85rem', background: inputBg, border: '1px solid #85b8d0', borderRadius: '10px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, color: '#85b8d0' }}>
+              ☁️ Restaurer depuis mon compte cloud
+            </button>
           </div>
+
+          {showCloudAuth && (
+            <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+              <div style={{ background: '#ffffff', borderRadius: '16px', padding: '2rem', maxWidth: '380px', width: '100%', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+                <h3 style={{ margin: '0 0 1.25rem 0', fontSize: '1.1rem', fontWeight: 600, color: '#1c1c1e', textAlign: 'center' }}>☁️ Restaurer mon compte</h3>
+                <input type="text" placeholder="Pseudo" value={cloudPseudo} onChange={e => setCloudPseudo(e.target.value)} style={{ width: '100%', padding: '0.85rem', border: '1px solid #e5e5ea', borderRadius: '8px', fontSize: '0.95rem', background: '#f5f5f7', color: '#1c1c1e', boxSizing: 'border-box', marginBottom: '0.75rem' }} />
+                <input type="password" placeholder="Mot de passe" value={cloudPass} onChange={e => setCloudPass(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleCloudAuth(); }} style={{ width: '100%', padding: '0.85rem', border: '1px solid #e5e5ea', borderRadius: '8px', fontSize: '0.95rem', background: '#f5f5f7', color: '#1c1c1e', boxSizing: 'border-box', marginBottom: '1rem' }} />
+                {cloudAuthMsg !== '' && (() => {
+                  const msgOk = cloudAuthMsg.indexOf('ok') === 0;
+                  const msgRest = cloudAuthMsg.indexOf('ok_restore_') === 0;
+                  const nbProd = msgRest ? cloudAuthMsg.split('_')[2] : '';
+                  const errTxt = cloudAuthMsg.replace('err_', '');
+                  return (
+                    <div style={{ padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem', fontWeight: 600, textAlign: 'center', background: msgOk ? '#f0fff4' : '#fff0f0', color: msgOk ? '#6a9a7e' : '#e8a090' }}>
+                      {msgRest ? ('✅ ' + nbProd + ' produits restaurés !') : ('❌ ' + errTxt)}
+                    </div>
+                  );
+                })()}
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button onClick={() => { setShowCloudAuth(false); setCloudAuthMsg(''); setCloudPseudo(''); setCloudPass(''); }} style={{ flex: 1, padding: '0.85rem', background: '#f5f5f7', border: '1px solid #e5e5ea', borderRadius: '10px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, color: '#1c1c1e' }}>Annuler</button>
+                  <button onClick={handleCloudAuth} disabled={cloudAuthLoading} style={{ flex: 2, padding: '0.85rem', background: cloudAuthLoading ? '#ccc' : 'linear-gradient(135deg, #7db89a 0%, #6aab8a 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: cloudAuthLoading ? 'not-allowed' : 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>
+                    {cloudAuthLoading ? '⏳ Connexion...' : 'Restaurer mes données'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
