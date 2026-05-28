@@ -286,7 +286,13 @@ function Kadee() {
   const [showSuggestionsFor, setShowSuggestionsFor] = useState(null);
   const [confirmClearList, setConfirmClearList] = useState(false);
   const [showUnitPicker, setShowUnitPicker] = useState(false);
-  const [showTemplateUnitPicker, setShowTemplateUnitPicker] = useState(false); // '', 'saving', 'saved', 'error'
+  const [showTemplateUnitPicker, setShowTemplateUnitPicker] = useState(false);
+  const [showCloudAuth, setShowCloudAuth] = useState(false);
+  const [cloudPseudo, setCloudPseudo] = useState('');
+  const [cloudPass, setCloudPass] = useState('');
+  const [cloudAuthMode, setCloudAuthMode] = useState('login'); // 'login' | 'register'
+  const [cloudAuthMsg, setCloudAuthMsg] = useState('');
+  const [cloudAuthLoading, setCloudAuthLoading] = useState(false); // '', 'saving', 'saved', 'error'
   const [justAdded, setJustAdded] = useState(null);
   const [justAddedItem, setJustAddedItem] = useState(false);
   const [justAddedTemplate, setJustAddedTemplate] = useState(false);
@@ -331,7 +337,7 @@ function Kadee() {
         setPriceHistory(data.priceHistory || {});
         if (data.apiKey) setApiKey(data.apiKey);
         if (data.stores) setStores(data.stores);
-        if (data.cloudId) localStorage.setItem('kadee_cloud_id', data.cloudId);
+        // cloudId legacy supprimé - utilisation pseudo/pass désormais
         setHistoryActions([{ items }]);
         setHistoryIndex(0);
         if (!data.welcomeDone) setShowWelcome(true);
@@ -341,12 +347,13 @@ function Kadee() {
     }
     setHasLoaded(true);
     if (!saved) {
-      // Pas de données locales — tenter restauration cloud automatique
-      const cloudId = localStorage.getItem('kadee_cloud_id');
-      if (cloudId) {
+      const pseudo = localStorage.getItem('kadee_pseudo');
+      const pass = localStorage.getItem('kadee_pass');
+      if (pseudo && pass) {
         fetch('https://kadee-proxy.vtc-mika.workers.dev', {
-          method: 'GET',
-          headers: { 'x-kadee-action': 'restore', 'x-kadee-id': cloudId }
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-kadee-action': 'restore', 'x-kadee-pseudo': pseudo, 'x-kadee-pass': pass },
+          body: '{}'
         }).then(r => r.json()).then(result => {
           if (result.ok && result.data) {
             const data = JSON.parse(result.data);
@@ -1449,6 +1456,34 @@ function Kadee() {
                 {apiKey && <div style={{ fontSize: '0.75rem', color: '#7db89a', marginTop: '0.4rem' }}>✓ Clé mémorisée</div>}
               </div>
               <button onClick={restoreFromCloud} style={{ width: '100%', padding: '1rem', background: inputBg, border: '1px solid #85b8d0', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: '#85b8d0', textAlign: 'left', transition: 'all 0.3s' }}>☁️ Restaurer depuis le cloud</button>
+              {showCloudAuth && (
+                <div style={{ background: inputBg, border: `1px solid ${cardBorder}`, borderRadius: '12px', padding: '1.25rem', marginTop: '0.5rem' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+                    <button onClick={() => setCloudAuthMode('login')} style={{ flex: 1, padding: '0.6rem', borderRadius: '8px', border: 'none', background: cloudAuthMode === 'login' ? '#6a9a7e' : cardBorder, color: cloudAuthMode === 'login' ? 'white' : textColor, cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>Me connecter</button>
+                    <button onClick={() => setCloudAuthMode('register')} style={{ flex: 1, padding: '0.6rem', borderRadius: '8px', border: 'none', background: cloudAuthMode === 'register' ? '#6a9a7e' : cardBorder, color: cloudAuthMode === 'register' ? 'white' : textColor, cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>Nouveau compte</button>
+                  </div>
+                  <input type="text" placeholder="Pseudo" value={cloudPseudo} onChange={e => setCloudPseudo(e.target.value)} style={{ width: '100%', padding: '0.75rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.9rem', background: cardBg, color: textColor, boxSizing: 'border-box', marginBottom: '0.5rem' }} />
+                  <input type="password" placeholder="Mot de passe" value={cloudPass} onChange={e => setCloudPass(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleCloudAuth(); }} style={{ width: '100%', padding: '0.75rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.9rem', background: cardBg, color: textColor, boxSizing: 'border-box', marginBottom: '0.75rem' }} />
+                  {cloudAuthMsg !== '' && (() => {
+                    const isOk = cloudAuthMsg.indexOf('ok') === 0;
+                    const isRegister = cloudAuthMsg.indexOf('ok_register') === 0;
+                    const isRestore = cloudAuthMsg.indexOf('ok_restore_') === 0;
+                    const nbProducts = isRestore ? cloudAuthMsg.split('_')[2] : '';
+                    const errMsg = cloudAuthMsg.replace('err_', '');
+                    return (
+                      <div style={{ padding: '0.6rem', borderRadius: '8px', marginBottom: '0.75rem', fontSize: '0.85rem', fontWeight: 600, textAlign: 'center', background: isOk ? '#f0fff4' : '#fff0f0', color: isOk ? '#6a9a7e' : '#e8a090' }}>
+                        {isRegister ? '✅ Compte créé !' : isRestore ? ('✅ ' + nbProducts + ' produits restaurés !') : ('❌ ' + errMsg)}
+                      </div>
+                    );
+                  })()}
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button onClick={() => { setShowCloudAuth(false); setCloudAuthMsg(''); }} style={{ flex: 1, padding: '0.75rem', background: inputBg, border: `1px solid ${cardBorder}`, borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem', color: textColor }}>Annuler</button>
+                    <button onClick={handleCloudAuth} disabled={cloudAuthLoading} style={{ flex: 2, padding: '0.75rem', background: cloudAuthLoading ? '#ccc' : '#6a9a7e', color: 'white', border: 'none', borderRadius: '8px', cursor: cloudAuthLoading ? 'not-allowed' : 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>
+                      {cloudAuthLoading ? '⏳ ...' : (cloudAuthMode === 'register' ? 'Créer le compte' : 'Restaurer')}
+                    </button>
+                  </div>
+                </div>
+              )}
               <label style={{ width: '100%', display: 'block', padding: '1rem', background: inputBg, border: `1px solid ${cardBorder}`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: '#999', textAlign: 'left', transition: 'all 0.3s', boxSizing: 'border-box' }}>
                 📂 Restaurer depuis un fichier
                 <input type="file" accept=".json,application/json,text/*" style={{ display: 'none' }} onChange={e => { importData(e.target.files[0]); e.target.value=''; }} />
@@ -1657,63 +1692,86 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
     setShowSuggestionsFor(source);
   };
 
-  const getCloudId = () => {
-    let id = localStorage.getItem('kadee_cloud_id');
-    if (!id) {
-      id = 'kadee_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-      localStorage.setItem('kadee_cloud_id', id);
-    }
-    return id;
-  };
+  const WORKER_URL = 'https://kadee-proxy.vtc-mika.workers.dev';
 
-  // Sauvegarde automatique silencieuse sur Cloudflare KV
+  const getCredentials = () => ({
+    pseudo: localStorage.getItem('kadee_pseudo') || '',
+    pass: localStorage.getItem('kadee_pass') || ''
+  });
+
   const autoSaveToCloud = async (dataToSave) => {
     try {
-      const id = getCloudId();
-      await fetch('https://kadee-proxy.vtc-mika.workers.dev', {
+      const { pseudo, pass } = getCredentials();
+      if (!pseudo || !pass) return;
+      fetch(WORKER_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-kadee-action': 'save', 'x-kadee-id': id },
+        headers: { 'Content-Type': 'application/json', 'x-kadee-action': 'save', 'x-kadee-pseudo': pseudo, 'x-kadee-pass': pass },
         body: dataToSave || localStorage.getItem('kadee_data') || '{}'
       });
-    } catch(e) { /* silencieux */ }
+    } catch(e) {}
   };
 
-  // Restauration depuis Cloudflare KV
-  const restoreFromCloud = async () => {
-    setSaveNotifOk(true);
-    setSaveNotif('⏳ Recherche de sauvegarde...');
+  const restoreFromCloud = () => {
+    setShowCloudAuth(true);
+    setCloudAuthMode('login');
+    setCloudAuthMsg('');
+  };
+
+  const handleCloudAuth = async () => {
+    if (!cloudPseudo.trim() || !cloudPass.trim()) {
+      setCloudAuthMsg('Remplis les deux champs.');
+      return;
+    }
+    setCloudAuthLoading(true);
+    setCloudAuthMsg('');
     try {
-      const id = getCloudId();
-      const res = await fetch('https://kadee-proxy.vtc-mika.workers.dev', {
-        method: 'GET',
-        headers: { 'x-kadee-action': 'restore', 'x-kadee-id': id }
-      });
-      const result = await res.json();
-      if (result.ok && result.data) {
-        const data = JSON.parse(result.data);
-        localStorage.setItem('kadee_data', result.data);
-        setItems(data.items || []);
-        setTemplates(data.templates || []);
-        setHistory(data.history || []);
-        setCategories(data.categories || DEFAULT_CATEGORIES);
-        setLoyaltyCards(data.loyaltyCards || []);
-        setExpenses(data.expenses || []);
-        setPriceHistory(data.priceHistory || {});
-        if (data.apiKey) setApiKey(data.apiKey);
-        if (data.stores) setStores(data.stores);
-        setSaveNotifOk(true);
-        setSaveNotif('✅ ' + (data.templates || []).length + ' produits restaurés depuis le cloud !');
-        setTimeout(() => { setSaveNotif(''); setShowCategories(false); }, 2500);
+      if (cloudAuthMode === 'register') {
+        const res = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-kadee-action': 'register', 'x-kadee-pseudo': cloudPseudo.trim(), 'x-kadee-pass': cloudPass.trim() },
+          body: localStorage.getItem('kadee_data') || '{}'
+        });
+        const result = await res.json();
+        if (result.ok) {
+          localStorage.setItem('kadee_pseudo', cloudPseudo.trim());
+          localStorage.setItem('kadee_pass', cloudPass.trim());
+          autoSaveToCloud();
+          setCloudAuthMsg('ok_register');
+          setTimeout(() => { setShowCloudAuth(false); setCloudAuthMsg(''); }, 2000);
+        } else {
+          setCloudAuthMsg('err_' + (result.error || 'Erreur'));
+        }
       } else {
-        setSaveNotifOk(false);
-        setSaveNotif('❌ Aucune sauvegarde cloud trouvée');
-        setTimeout(() => setSaveNotif(''), 3000);
+        const res = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-kadee-action': 'restore', 'x-kadee-pseudo': cloudPseudo.trim(), 'x-kadee-pass': cloudPass.trim() },
+          body: '{}'
+        });
+        const result = await res.json();
+        if (result.ok && result.data) {
+          const data = JSON.parse(result.data);
+          localStorage.setItem('kadee_data', result.data);
+          localStorage.setItem('kadee_pseudo', cloudPseudo.trim());
+          localStorage.setItem('kadee_pass', cloudPass.trim());
+          setItems((data.items || []).map(i => ({ ...i, favorite: i.favorite ?? false })));
+          setTemplates((data.templates || []).map(t => ({ ...t, favorite: t.favorite ?? false })));
+          setHistory(data.history || []);
+          setCategories(data.categories || DEFAULT_CATEGORIES);
+          setLoyaltyCards(data.loyaltyCards || []);
+          setExpenses(data.expenses || []);
+          setPriceHistory(data.priceHistory || {});
+          if (data.apiKey) setApiKey(data.apiKey);
+          if (data.stores) setStores(data.stores);
+          setCloudAuthMsg('ok_restore_' + (data.templates || []).length);
+          setTimeout(() => { setShowCloudAuth(false); setCloudAuthMsg(''); setShowCategories(false); }, 2500);
+        } else {
+          setCloudAuthMsg('err_' + (result.error || 'Identifiants incorrects'));
+        }
       }
     } catch(e) {
-      setSaveNotifOk(false);
-      setSaveNotif('❌ Erreur de connexion');
-      setTimeout(() => setSaveNotif(''), 3000);
+      setCloudAuthMsg('err_Erreur de connexion');
     }
+    setCloudAuthLoading(false);
   };
 
   const exportData = () => {
