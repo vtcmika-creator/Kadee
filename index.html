@@ -288,7 +288,7 @@ function Kadee() {
   const [showUnitPicker, setShowUnitPicker] = useState(false);
   const [showTemplateUnitPicker, setShowTemplateUnitPicker] = useState(false);
   const [showCloudAuth, setShowCloudAuth] = useState(false);
-  const [showAuth, setShowAuth] = useState(false);
+  const [showAuth, setShowAuth] = useState(true); // true par défaut, mis à false si déjà authentifié
   const [authMode, setAuthMode] = useState('register'); // 'register' | 'login'
   const [authMsg, setAuthMsg] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
@@ -321,6 +321,7 @@ function Kadee() {
 
   useEffect(() => {
     const saved = localStorage.getItem('kadee_data');
+    setShowAuth(false); // données ou pseudo connu → pas d'auth nécessaire
     if (saved) {
       try {
         const data = JSON.parse(saved);
@@ -354,6 +355,7 @@ function Kadee() {
       const pseudo = localStorage.getItem('kadee_pseudo');
       const pass = localStorage.getItem('kadee_pass');
       if (pseudo && pass) {
+        setShowAuth(false); // pseudo connu — restauration en cours
         // Pseudo connu — restauration automatique
         fetch('https://kadee-proxy.vtc-mika.workers.dev', {
           method: 'POST',
@@ -378,8 +380,7 @@ function Kadee() {
           }
         }).catch(() => setShowWelcome(true));
       } else {
-        // Nouveau utilisateur — afficher page auth
-        setShowAuth(true);
+        // Nouveau utilisateur — showAuth reste true (déjà initialisé)
       }
     }
   }, []);
