@@ -1457,30 +1457,33 @@ function Kadee() {
               </div>
               <button onClick={restoreFromCloud} style={{ width: '100%', padding: '1rem', background: inputBg, border: '1px solid #85b8d0', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: '#85b8d0', textAlign: 'left', transition: 'all 0.3s' }}>☁️ Restaurer depuis le cloud</button>
               {showCloudAuth && (
-                <div style={{ background: inputBg, border: `1px solid ${cardBorder}`, borderRadius: '12px', padding: '1.25rem', marginTop: '0.5rem' }}>
-                  <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-                    <button onClick={() => setCloudAuthMode('login')} style={{ flex: 1, padding: '0.6rem', borderRadius: '8px', border: 'none', background: cloudAuthMode === 'login' ? '#6a9a7e' : cardBorder, color: cloudAuthMode === 'login' ? 'white' : textColor, cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>Me connecter</button>
-                    <button onClick={() => setCloudAuthMode('register')} style={{ flex: 1, padding: '0.6rem', borderRadius: '8px', border: 'none', background: cloudAuthMode === 'register' ? '#6a9a7e' : cardBorder, color: cloudAuthMode === 'register' ? 'white' : textColor, cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>Nouveau compte</button>
-                  </div>
-                  <input type="text" placeholder="Pseudo" value={cloudPseudo} onChange={e => setCloudPseudo(e.target.value)} style={{ width: '100%', padding: '0.75rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.9rem', background: cardBg, color: textColor, boxSizing: 'border-box', marginBottom: '0.5rem' }} />
-                  <input type="password" placeholder="Mot de passe" value={cloudPass} onChange={e => setCloudPass(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleCloudAuth(); }} style={{ width: '100%', padding: '0.75rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.9rem', background: cardBg, color: textColor, boxSizing: 'border-box', marginBottom: '0.75rem' }} />
-                  {cloudAuthMsg !== '' && (() => {
-                    const isOk = cloudAuthMsg.indexOf('ok') === 0;
-                    const isRegister = cloudAuthMsg.indexOf('ok_register') === 0;
-                    const isRestore = cloudAuthMsg.indexOf('ok_restore_') === 0;
-                    const nbProducts = isRestore ? cloudAuthMsg.split('_')[2] : '';
-                    const errMsg = cloudAuthMsg.replace('err_', '');
-                    return (
-                      <div style={{ padding: '0.6rem', borderRadius: '8px', marginBottom: '0.75rem', fontSize: '0.85rem', fontWeight: 600, textAlign: 'center', background: isOk ? '#f0fff4' : '#fff0f0', color: isOk ? '#6a9a7e' : '#e8a090' }}>
-                        {isRegister ? '✅ Compte créé !' : isRestore ? ('✅ ' + nbProducts + ' produits restaurés !') : ('❌ ' + errMsg)}
-                      </div>
-                    );
-                  })()}
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button onClick={() => { setShowCloudAuth(false); setCloudAuthMsg(''); }} style={{ flex: 1, padding: '0.75rem', background: inputBg, border: `1px solid ${cardBorder}`, borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem', color: textColor }}>Annuler</button>
-                    <button onClick={handleCloudAuth} disabled={cloudAuthLoading} style={{ flex: 2, padding: '0.75rem', background: cloudAuthLoading ? '#ccc' : '#6a9a7e', color: 'white', border: 'none', borderRadius: '8px', cursor: cloudAuthLoading ? 'not-allowed' : 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>
-                      {cloudAuthLoading ? '⏳ ...' : (cloudAuthMode === 'register' ? 'Créer le compte' : 'Restaurer')}
-                    </button>
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+                  <div style={{ background: cardBg, borderRadius: '16px', padding: '2rem', maxWidth: '380px', width: '100%', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+                    <h3 style={{ margin: '0 0 1.25rem 0', fontSize: '1.1rem', fontWeight: 600, color: textColor, textAlign: 'center' }}>☁️ Compte Kadee Cloud</h3>
+                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' }}>
+                      <button onClick={() => setCloudAuthMode('login')} style={{ flex: 1, padding: '0.7rem', borderRadius: '8px', border: 'none', background: cloudAuthMode === 'login' ? '#6a9a7e' : inputBg, color: cloudAuthMode === 'login' ? 'white' : textColor, cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>Me connecter</button>
+                      <button onClick={() => setCloudAuthMode('register')} style={{ flex: 1, padding: '0.7rem', borderRadius: '8px', border: 'none', background: cloudAuthMode === 'register' ? '#6a9a7e' : inputBg, color: cloudAuthMode === 'register' ? 'white' : textColor, cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>Nouveau compte</button>
+                    </div>
+                    <input type="text" placeholder="Pseudo" value={cloudPseudo} onChange={e => setCloudPseudo(e.target.value)} style={{ width: '100%', padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, boxSizing: 'border-box', marginBottom: '0.75rem' }} />
+                    <input type="password" placeholder="Mot de passe" value={cloudPass} onChange={e => setCloudPass(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleCloudAuth(); }} style={{ width: '100%', padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '8px', fontSize: '0.95rem', background: inputBg, color: textColor, boxSizing: 'border-box', marginBottom: '1rem' }} />
+                    {cloudAuthMsg !== '' && (() => {
+                      const isOk = cloudAuthMsg.indexOf('ok') === 0;
+                      const isReg = cloudAuthMsg.indexOf('ok_register') === 0;
+                      const isRest = cloudAuthMsg.indexOf('ok_restore_') === 0;
+                      const nb = isRest ? cloudAuthMsg.split('_')[2] : '';
+                      const err = cloudAuthMsg.replace('err_', '');
+                      return (
+                        <div style={{ padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem', fontWeight: 600, textAlign: 'center', background: isOk ? '#f0fff4' : '#fff0f0', color: isOk ? '#6a9a7e' : '#e8a090' }}>
+                          {isReg ? '✅ Compte créé !' : isRest ? ('✅ ' + nb + ' produits restaurés !') : ('❌ ' + err)}
+                        </div>
+                      );
+                    })()}
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                      <button onClick={() => { setShowCloudAuth(false); setCloudAuthMsg(''); setCloudPseudo(''); setCloudPass(''); }} style={{ flex: 1, padding: '0.85rem', background: inputBg, border: `1px solid ${cardBorder}`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, color: textColor }}>Annuler</button>
+                      <button onClick={handleCloudAuth} disabled={cloudAuthLoading} style={{ flex: 2, padding: '0.85rem', background: cloudAuthLoading ? '#ccc' : 'linear-gradient(135deg, #7db89a 0%, #6aab8a 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: cloudAuthLoading ? 'not-allowed' : 'pointer', fontSize: '0.9rem', fontWeight: 600 }}>
+                        {cloudAuthLoading ? '⏳ Connexion...' : (cloudAuthMode === 'register' ? 'Créer le compte' : 'Restaurer mes données')}
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
