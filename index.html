@@ -315,8 +315,8 @@ function Kadee() {
 
   useEffect(() => {
     const saved = localStorage.getItem('kadee_data');
-    setShowAuth(false); // données ou pseudo connu → pas d'auth nécessaire
     if (saved) {
+      setShowAuth(false);
       try {
         const data = JSON.parse(saved);
         const items = (data.items || []).map(item => ({
@@ -380,16 +380,17 @@ function Kadee() {
   }, []);
 
   useEffect(() => {
-    // N'enregistrer que si les données ont été chargées
+    // Ne sauvegarder que si chargé ET authentifié ET pas sur l'écran de bienvenue
     if (!hasLoaded) return;
+    if (showAuth) return;
+    if (showWelcome) return;
     
-    // Débounce pour éviter de sauvegarder trop souvent
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
     
     saveTimeoutRef.current = setTimeout(() => {
-      const dataStr = JSON.stringify({ items, templates, history, categories, loyaltyCards, expenses, priceHistory, apiKey, stores });
+      const dataStr = JSON.stringify({ items, templates, history, categories, loyaltyCards, expenses, priceHistory, apiKey, stores, welcomeDone: true });
       localStorage.setItem('kadee_data', dataStr);
       autoSaveToCloud(dataStr);
     }, 500);
@@ -399,7 +400,7 @@ function Kadee() {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [items, templates, history, categories, loyaltyCards, expenses, priceHistory, apiKey, hasLoaded]);
+  }, [items, templates, history, categories, loyaltyCards, expenses, priceHistory, apiKey, hasLoaded, showAuth, showWelcome]);
 
   // Créer une liste partageable formatée
   const createShareableList = () => {
@@ -1692,10 +1693,6 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
         return [...prev, ...newOnes];
       });
     }
-    // Marquer bienvenue comme fait
-    const data = JSON.parse(localStorage.getItem('kadee_data') || '{}');
-    data.welcomeDone = true;
-    localStorage.setItem('kadee_data', JSON.stringify(data));
     setShowWelcome(false);
   };
 
