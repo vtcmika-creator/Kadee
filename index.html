@@ -227,6 +227,7 @@ function Kadee() {
   const [justCopied, setJustCopied] = useState(false);
   const [showProductStats, setShowProductStats] = useState(false);
   const [fullscreenCard, setFullscreenCard] = useState(null);
+  const [showLoyaltyModal, setShowLoyaltyModal] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState({});
   const [loyaltyCards, setLoyaltyCards] = useState([]);
   const [showLoyaltyCards, setShowLoyaltyCards] = useState(false);
@@ -2461,9 +2462,39 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {loyaltyCards.length > 0 && (
+              <button onClick={() => setShowLoyaltyModal(true)} style={{ width: '100%', padding: '1rem', background: inputBg, border: `2px solid #f0c87a`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: '#c4963a', transition: 'all 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>🎫 Carte de fidélité</button>
+            )}
             <button onClick={finalizeShopping} style={{ width: '100%', padding: '1rem', background: 'linear-gradient(135deg, #7db89a 0%, #6aab8a 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem', fontWeight: 600, transition: 'all 0.3s' }}>Valider les achats</button>
             <button onClick={() => { setShoppingMode(false); setShowTicketScanner(true); setScanStep('photo'); setTicketPhotos([]); setExtractedProducts([]); }} style={{ width: '100%', padding: '1rem', background: cardBg, border: `2px solid #7db89a`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: '#6a9a7e', transition: 'all 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>🧾 Scanner le ticket de caisse</button>
           </div>
+        {/* Modal cartes de fidélité en mode courses */}
+        {showLoyaltyModal && (
+          <div onClick={() => setShowLoyaltyModal(false)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 9998, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+            <div onClick={e => e.stopPropagation()} style={{ background: '#ffffff', borderRadius: '16px', padding: '1.5rem', width: '100%', maxWidth: '400px', maxHeight: '80vh', overflowY: 'auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600, color: '#1c1c1e' }}>🎫 Cartes de fidélité</h3>
+                <button onClick={() => setShowLoyaltyModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.4rem', color: '#999' }}>×</button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {loyaltyCards.map(card => (
+                  <div key={card.id} onClick={() => { setFullscreenCard(card); setShowLoyaltyModal(false); }} style={{ borderRadius: '10px', overflow: 'hidden', border: '1px solid #e5e5ea', cursor: 'pointer' }}>
+                    <img src={card.image} alt={card.store} style={{ width: '100%', objectFit: 'contain', display: 'block', background: '#f5f5f5', padding: '0.5rem', boxSizing: 'border-box', maxHeight: '140px' }} />
+                    <div style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem', fontWeight: 600, color: '#1c1c1e', background: '#f9f9f9' }}>{card.store}</div>
+                  </div>
+                ))}
+              </div>
+              <p style={{ margin: '1rem 0 0', fontSize: '0.8rem', color: '#999', textAlign: 'center' }}>Appuie sur une carte pour l'afficher en plein écran</p>
+            </div>
+          </div>
+        )}
+        {fullscreenCard && (
+          <div onClick={() => setFullscreenCard(null)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.95)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', padding: '1rem' }}>
+            <img src={fullscreenCard.image} alt={fullscreenCard.store} style={{ maxWidth: '100%', maxHeight: '85vh', objectFit: 'contain', borderRadius: '8px' }} />
+            <div style={{ color: 'white', marginTop: '1rem', fontSize: '1rem', fontWeight: 600 }}>{fullscreenCard.store}</div>
+            <div style={{ color: '#aaa', fontSize: '0.85rem', marginTop: '0.3rem' }}>Appuie pour fermer</div>
+          </div>
+        )}
         </div>
       </div>
     );
