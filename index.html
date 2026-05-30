@@ -309,6 +309,8 @@ function Kadee() {
   const [dupItemWarning, setDupItemWarning] = useState(false);
   const [dupTemplateWarning, setDupTemplateWarning] = useState(false);
   const [forcedItemName, setForcedItemName] = useState('');
+  const [googlePayEnabled, setGooglePayEnabled] = useState(false);
+  const [showGooglePayPrompt, setShowGooglePayPrompt] = useState(false);
 
   const [showTicketScanner, setShowTicketScanner] = useState(false);
   const [showPriceComparison, setShowPriceComparison] = useState(false);
@@ -342,6 +344,7 @@ function Kadee() {
         setPriceHistory(data.priceHistory || {});
         if (data.apiKey) setApiKey(data.apiKey);
         if (data.stores) setStores(data.stores);
+        if (data.googlePayEnabled) setGooglePayEnabled(data.googlePayEnabled);
         // cloudId legacy supprimé - utilisation pseudo/pass désormais
         setHistoryActions([{ items }]);
         setHistoryIndex(0);
@@ -396,7 +399,7 @@ function Kadee() {
     }
     
     saveTimeoutRef.current = setTimeout(() => {
-      const dataStr = JSON.stringify({ items, templates, history, categories, loyaltyCards, expenses, priceHistory, apiKey, stores, welcomeDone: true });
+      const dataStr = JSON.stringify({ items, templates, history, categories, loyaltyCards, expenses, priceHistory, apiKey, stores, welcomeDone: true, googlePayEnabled });
       localStorage.setItem('kadee_data', dataStr);
       autoSaveToCloud(dataStr);
     }, 500);
@@ -1528,6 +1531,18 @@ function Kadee() {
           </div>
 
           <div style={{ background: cardBg, borderRadius: '12px', padding: '1.5rem', marginTop: '2rem', border: `1px solid ${cardBorder}` }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h3 style={{ margin: '0 0 0.25rem 0', fontSize: '1rem', fontWeight: 600, color: textColor }}>💳 Google Pay</h3>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: '#999' }}>Affiche un bouton pour payer rapidement en caisse</p>
+              </div>
+              <button onClick={() => setGooglePayEnabled(!googlePayEnabled)} style={{ width: '52px', height: '28px', borderRadius: '14px', border: 'none', background: googlePayEnabled ? '#4285F4' : '#ccc', cursor: 'pointer', position: 'relative', transition: 'background 0.3s', flexShrink: 0 }}>
+                <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'white', position: 'absolute', top: '3px', left: googlePayEnabled ? '27px' : '3px', transition: 'left 0.3s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }}></div>
+              </button>
+            </div>
+          </div>
+
+          <div style={{ background: cardBg, borderRadius: '12px', padding: '1.5rem', marginTop: '2rem', border: `1px solid ${cardBorder}` }}>
             <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 600, color: textColor }}>🏪 Mes magasins</h3>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
               {stores.map((s, i) => (
@@ -1745,7 +1760,7 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
           localStorage.setItem('kadee_pseudo', cloudPseudo.trim());
           localStorage.setItem('kadee_pass', cloudPass.trim());
           setShowAuth(false);
-          setShowWelcome(true);
+          setShowGooglePayPrompt(true);
         } else {
           setAuthMsg('err_' + (result.error || 'Erreur'));
         }
@@ -1973,6 +1988,31 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
           <p style={{ textAlign: 'center', fontSize: '0.8rem', color: '#aaa', marginTop: '1rem' }}>
             Tes données sont sauvegardées automatiquement et en sécurité.
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  // PAGE PROMPT GOOGLE PAY (après création de compte)
+  if (showGooglePayPrompt) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Outfit", sans-serif', padding: '1.5rem' }}>
+        <div style={{ width: '100%', maxWidth: '380px', textAlign: 'center' }}>
+          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>💳</div>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#1c1c1e', marginBottom: '0.75rem' }}>Payer avec Google Pay ?</h2>
+          <p style={{ fontSize: '0.95rem', color: '#666', marginBottom: '2rem', lineHeight: 1.5 }}>
+            Ajoute un bouton dans l'app pour ouvrir Google Pay rapidement en caisse. Tu peux activer ou désactiver cette option à tout moment dans les Paramètres.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <button onClick={() => { setGooglePayEnabled(true); setShowGooglePayPrompt(false); setShowWelcome(true); }}
+              style={{ width: '100%', padding: '1rem', background: 'linear-gradient(135deg, #4285F4 0%, #34A853 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem', fontWeight: 600 }}>
+              Oui, activer Google Pay
+            </button>
+            <button onClick={() => { setGooglePayEnabled(false); setShowGooglePayPrompt(false); setShowWelcome(true); }}
+              style={{ width: '100%', padding: '1rem', background: 'white', border: '1px solid #e5e5ea', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem', fontWeight: 500, color: '#666' }}>
+              Non, plus tard
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -2484,6 +2524,12 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
             {loyaltyCards.length > 0 && (
               <button onClick={() => setShowLoyaltyModal(true)} style={{ width: '100%', padding: '1rem', background: inputBg, border: `2px solid #f0c87a`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: '#c4963a', transition: 'all 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>🎫 Carte de fidélité</button>
             )}
+            <button
+              onClick={() => { if (googlePayEnabled) { window.location.href = 'googlepay://'; setTimeout(() => { window.open('https://pay.google.com', '_blank'); }, 300); } else { setShowCategories(true); } }}
+              style={{ width: '100%', padding: '1rem', background: googlePayEnabled ? 'linear-gradient(135deg, #4285F4 0%, #34A853 100%)' : '#e0e0e0', color: googlePayEnabled ? 'white' : '#999', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', transition: 'all 0.3s' }}>
+              <span style={{ fontSize: '1.1rem' }}>💳</span>
+              {googlePayEnabled ? 'Payer avec Google Pay' : 'Payer avec Google Pay (désactivé — Paramètres)'}
+            </button>
             <button onClick={finalizeShopping} style={{ width: '100%', padding: '1rem', background: 'linear-gradient(135deg, #7db89a 0%, #6aab8a 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem', fontWeight: 600, transition: 'all 0.3s' }}>Valider les achats</button>
             <button onClick={() => { setShoppingMode(false); setShowTicketScanner(true); setScanStep('photo'); setTicketPhotos([]); setExtractedProducts([]); }} style={{ width: '100%', padding: '1rem', background: cardBg, border: `2px solid #7db89a`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: '#6a9a7e', transition: 'all 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>🧾 Scanner le ticket de caisse</button>
           </div>
