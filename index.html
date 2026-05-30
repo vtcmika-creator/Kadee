@@ -306,6 +306,9 @@ function Kadee() {
   const saveTimeoutRef = useRef(null);
   const newItemRef = useRef('');
   const newTemplateRef = useRef('');
+  const [dupItemWarning, setDupItemWarning] = useState(false);
+  const [dupTemplateWarning, setDupTemplateWarning] = useState(false);
+  const [forcedItemName, setForcedItemName] = useState('');
 
   const [showTicketScanner, setShowTicketScanner] = useState(false);
   const [showPriceComparison, setShowPriceComparison] = useState(false);
@@ -515,9 +518,16 @@ function Kadee() {
     }
   };
 
-  const addItem = () => {
+  const addItem = (force = false) => {
     const itemName = (newItemRef.current || newItem).trim();
     if (!itemName) return;
+    // Vérifier doublon dans Mes courses
+    if (!force && items.some(i => i.name.toLowerCase() === itemName.toLowerCase())) {
+      setDupItemWarning(true);
+      setForcedItemName(itemName);
+      return;
+    }
+    setDupItemWarning(false);
     const matchingTemplate = templates.find(t => t.name.toLowerCase().trim() === itemName.toLowerCase());
     const category = matchingTemplate?.category || newCategory || getAutoCategoryFromName(itemName);
 
@@ -575,9 +585,15 @@ function Kadee() {
     addAction({ items: newItems });
   };
 
-  const addTemplate = () => {
+  const addTemplate = (force = false) => {
     const templateName = (newTemplateRef.current || newTemplate).trim();
     if (!templateName) return;
+    // Vérifier doublon dans Inventaire
+    if (!force && templates.some(t => t.name.toLowerCase() === templateName.toLowerCase())) {
+      setDupTemplateWarning(true);
+      return;
+    }
+    setDupTemplateWarning(false);
     const category = newTemplateCategory || getAutoCategoryFromName(templateName);
     setTemplates([...templates, {
       id: Date.now(),
@@ -2637,6 +2653,7 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                   <input type="text" placeholder="Nom" value={newItem} onChange={(e) => {
                     setNewItem(e.target.value);
                     newItemRef.current = e.target.value;
+                    setDupItemWarning(false);
                     getSuggestions(e.target.value, 'inventory');
                     if (e.target.value.trim()) {
                       const matchingTemplate = templates.find(t => t.name.toLowerCase().trim() === e.target.value.toLowerCase().trim());
@@ -2706,7 +2723,12 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                   <button onClick={() => setShowInlineCatAdd('inventory')} style={{ padding: '0.5rem 0.8rem', background: inputBg, border: `1px dashed ${cardBorder}`, borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', color: '#6a9a7e', fontWeight: 600 }}>+ Rubrique</button>
                 )}
               </div>
-              <button onClick={addItem} style={{ width: '100%', padding: '0.9rem', background: justAddedItem ? '#b8d4bc' : 'linear-gradient(135deg, #b8d4bc 0%, #a8ccb0 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, transition: 'all 0.3s ease', transform: justAddedItem ? 'scale(1.02)' : 'scale(1)' }}>{justAddedItem ? '✓ Ajouté' : '+ Ajouter'}</button>
+              {dupItemWarning && (
+                <div style={{ background: '#fff8e7', border: '1px solid #f0c87a', borderRadius: '10px', padding: '0.85rem 1rem', marginBottom: '0.75rem', fontSize: '0.9rem', color: '#9a7a30', fontWeight: 500 }}>
+                  ⚠️ Ce produit est déjà dans ta liste de courses.
+                </div>
+              )}
+              <button onClick={() => addItem()} style={{ width: '100%', padding: '0.9rem', background: justAddedItem ? '#b8d4bc' : 'linear-gradient(135deg, #b8d4bc 0%, #a8ccb0 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, transition: 'all 0.3s ease', transform: justAddedItem ? 'scale(1.02)' : 'scale(1)' }}>{justAddedItem ? '✓ Ajouté' : '+ Ajouter'}</button>
             </div>
 
             {confirmClearList && (
@@ -2787,6 +2809,7 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                   <input type="text" placeholder="Nom" value={newTemplate} onChange={(e) => {
                     setNewTemplate(e.target.value);
                     newTemplateRef.current = e.target.value;
+                    setDupTemplateWarning(false);
                     getSuggestions(e.target.value, 'template');
                     if (e.target.value.trim()) {
                       const matchingTemplate = templates.find(t => t.name.toLowerCase().trim() === e.target.value.toLowerCase().trim());
@@ -2849,7 +2872,16 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                   <button onClick={() => setShowInlineCatAdd('template')} style={{ padding: '0.5rem 0.8rem', background: inputBg, border: `1px dashed ${cardBorder}`, borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', color: '#6a9a7e', fontWeight: 600 }}>+ Rubrique</button>
                 )}
               </div>
-              <button onClick={addTemplate} style={{ width: '100%', padding: '0.9rem', background: justAddedTemplate ? '#b8d4bc' : 'linear-gradient(135deg, #b8d4bc 0%, #a8ccb0 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, transition: 'all 0.3s ease', transform: justAddedTemplate ? 'scale(1.02)' : 'scale(1)' }}>{justAddedTemplate ? '✓ Ajouté' : '+ Ajouter'}</button>
+              {dupTemplateWarning && (
+                <div style={{ background: '#fff8e7', border: '1px solid #f0c87a', borderRadius: '10px', padding: '0.85rem 1rem', marginBottom: '0.75rem', fontSize: '0.9rem', color: '#9a7a30', fontWeight: 500 }}>
+                  <div style={{ marginBottom: '0.6rem' }}>⚠️ Ce produit existe déjà dans ton inventaire.</div>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button onClick={() => setDupTemplateWarning(false)} style={{ flex: 1, padding: '0.5rem', background: 'white', border: '1px solid #f0c87a', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, color: '#9a7a30' }}>Annuler</button>
+                    <button onClick={() => addTemplate(true)} style={{ flex: 1, padding: '0.5rem', background: '#f0c87a', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, color: 'white' }}>Ajouter quand même</button>
+                  </div>
+                </div>
+              )}
+              <button onClick={() => addTemplate()} style={{ width: '100%', padding: '0.9rem', background: justAddedTemplate ? '#b8d4bc' : 'linear-gradient(135deg, #b8d4bc 0%, #a8ccb0 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, transition: 'all 0.3s ease', transform: justAddedTemplate ? 'scale(1.02)' : 'scale(1)' }}>{justAddedTemplate ? '✓ Ajouté' : '+ Ajouter'}</button>
             </div>
 
             {favoriteTemplates.length > 0 && (
