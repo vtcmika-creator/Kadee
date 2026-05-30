@@ -213,6 +213,603 @@ const PRODUCT_LIBRARY = [
   { name: 'Ampoules', category: 'Divers', unit: 'paquet' },
 ];
 
+
+const RECIPES = [
+  { id:1, name:'Pâtes carbonara', category:'Pâtes et riz', time:20, difficulty:'Facile',
+    ingredients:[
+      {name:'Spaghetti',quantity:200,unit:'g'},{name:'Lardons',quantity:150,unit:'g'},
+      {name:'Oeufs',quantity:3,unit:'pièce'},{name:'Parmesan râpé',quantity:80,unit:'g'},
+      {name:'Crème fraîche',quantity:100,unit:'g'},{name:'Sel',quantity:1,unit:'pincée'},{name:'Poivre noir',quantity:1,unit:'pincée'}],
+    steps:['Remplis une grande casserole d eau et porte à ébullition. Ajoute du sel.',
+      'Plonge les spaghetti dans l eau bouillante. Remue immédiatement. Fais cuire selon le temps du paquet (8-10 min). Goûte — il doit être souple mais légèrement ferme.',
+      'Fais chauffer une poêle à feu moyen sans matière grasse. Verse les lardons et remue 5 minutes jusqu à ce qu ils soient dorés. Coupe le feu et laisse tiédir.',
+      'Dans un bol, mélange les oeufs, le parmesan et la crème fraîche. Sale et poivre généreusement.',
+      'Garde une tasse d eau de cuisson avant d égoutter les pâtes.',
+      'Verse les pâtes égouttées dans la poêle avec les lardons (feu éteint). Mélange. Ajoute la crème aux oeufs. Mélange rapidement — la chaleur cuit les oeufs doucement. Ajoute de l eau de cuisson si trop épais.',
+      'Sers immédiatement. Ajoute du parmesan et du poivre noir au goût.']},
+  { id:2, name:'Lasagnes bolognaise', category:'Pâtes et riz', time:60, difficulty:'Moyen',
+    ingredients:[
+      {name:'Feuilles de lasagne',quantity:12,unit:'pièce'},{name:'Viande hachée de boeuf',quantity:500,unit:'g'},
+      {name:'Sauce tomate',quantity:400,unit:'g'},{name:'Oignons',quantity:2,unit:'pièce'},
+      {name:'Lait',quantity:500,unit:'ml'},{name:'Beurre',quantity:50,unit:'g'},
+      {name:'Farine',quantity:50,unit:'g'},{name:'Emmental râpé',quantity:150,unit:'g'},
+      {name:'Huile d olive',quantity:2,unit:'c. à soupe'}],
+    steps:['Préchauffe le four à 180°C. Épluche et coupe finement les oignons.',
+      'Fais chauffer l huile dans une casserole. Fais revenir les oignons 3 minutes jusqu à ce qu ils soient translucides.',
+      'Ajoute la viande hachée. Écrase-la avec une spatule. Fais cuire 8 minutes. Ajoute la sauce tomate et laisse mijoter 15 minutes à feu doux.',
+      'Béchamel : fais fondre le beurre à feu doux. Ajoute la farine et remue 1 minute vigoureusement — ça forme une boule.',
+      'Verse le lait progressivement en fouettant sans arrêt. Continue à feu moyen en remuant jusqu à épaississement (5-7 min). Sale et poivre.',
+      'Dans un plat à gratin : béchamel au fond, feuilles de lasagne, bolognaise, béchamel. Recommence jusqu à épuisement des ingrédients.',
+      'Termine par de la béchamel et de l emmental. Enfourne 35-40 minutes jusqu à ce que le dessus soit bien doré. Laisse reposer 5 minutes.']},
+  { id:3, name:'Risotto aux champignons', category:'Pâtes et riz', time:35, difficulty:'Moyen',
+    ingredients:[
+      {name:'Riz arborio',quantity:200,unit:'g'},{name:'Champignons de Paris',quantity:300,unit:'g'},
+      {name:'Bouillon de légumes',quantity:800,unit:'ml'},{name:'Oignon',quantity:1,unit:'pièce'},
+      {name:'Parmesan râpé',quantity:60,unit:'g'},{name:'Beurre',quantity:30,unit:'g'},
+      {name:'Huile d olive',quantity:2,unit:'c. à soupe'},{name:'Vin blanc',quantity:100,unit:'ml'}],
+    steps:['Prépare le bouillon chaud dans une casserole à feu très doux.',
+      'Nettoie les champignons avec un chiffon humide et coupe-les en lamelles. Émince l oignon finement.',
+      'Dans une grande casserole, fais revenir l oignon dans l huile 3 min. Ajoute les champignons et fais cuire 5 min jusqu à ce qu ils soient dorés.',
+      'Ajoute le riz et remue 2 minutes — les grains doivent devenir légèrement nacrés. Verse le vin blanc et remue jusqu à absorption complète.',
+      'Ajoute le bouillon chaud louche par louche en remuant constamment. À chaque fois qu une louche est absorbée, ajoute la suivante (environ 18 minutes).',
+      'Quand le riz est cuit mais légèrement ferme, retire du feu. Ajoute le beurre et le parmesan. Mélange vigoureusement pour rendre le risotto crémeux.',
+      'Sers immédiatement avec du parmesan supplémentaire.']},
+  { id:4, name:'Riz cantonais', category:'Pâtes et riz', time:25, difficulty:'Facile',
+    ingredients:[
+      {name:'Riz cuit',quantity:300,unit:'g'},{name:'Oeufs',quantity:3,unit:'pièce'},
+      {name:'Jambon blanc',quantity:150,unit:'g'},{name:'Petits pois',quantity:150,unit:'g'},
+      {name:'Sauce soja',quantity:3,unit:'c. à soupe'},{name:'Huile',quantity:2,unit:'c. à soupe'},
+      {name:'Oignons verts',quantity:3,unit:'pièce'}],
+    steps:['Laisse refroidir le riz complètement. Coupe le jambon en petits dés. Émince les oignons verts.',
+      'Casse les oeufs dans un bol et bats-les comme pour une omelette. Sale légèrement.',
+      'Fais chauffer 1 cuillère d huile dans un wok à feu fort. Verse les oeufs battus et remue rapidement pour faire des oeufs brouillés en petits morceaux. Retire et réserve.',
+      'Dans la même poêle, fais sauter les petits pois 2 minutes. Ajoute les dés de jambon et remue 1 minute.',
+      'Ajoute le riz froid. Remue énergiquement pendant 3-4 minutes à feu fort.',
+      'Remets les oeufs. Verse la sauce soja et mélange bien. Goûte et ajuste.',
+      'Parsème d oignons verts et sers immédiatement.']},
+  { id:5, name:'Poulet rôti', category:'Viandes', time:90, difficulty:'Facile',
+    ingredients:[
+      {name:'Poulet entier',quantity:1,unit:'pièce'},{name:'Beurre',quantity:50,unit:'g'},
+      {name:'Ail',quantity:4,unit:'gousse'},{name:'Citron',quantity:1,unit:'pièce'},
+      {name:'Thym',quantity:3,unit:'branche'},{name:'Sel',quantity:1,unit:'pincée'},
+      {name:'Poivre',quantity:1,unit:'pincée'},{name:'Huile d olive',quantity:2,unit:'c. à soupe'}],
+    steps:['Sors le poulet 30 minutes avant de le cuisiner. Préchauffe le four à 200°C.',
+      'Mélange le beurre ramolli avec du sel, du poivre et 2 gousses d ail écrasées.',
+      'Glisse tes doigts sous la peau du poulet et étale le beurre aromatisé directement sur la chair.',
+      'Place le citron coupé en deux, le thym et les 2 gousses d ail restantes à l intérieur du poulet. Badigeonne l extérieur d huile d olive. Sale et poivre.',
+      'Enfourne 1h15 à 1h30 selon la taille (45 min par kilo). Arrose de son jus toutes les 20 minutes.',
+      'Vérifie la cuisson : plante un couteau dans la cuisse — le jus doit être clair, jamais rosé.',
+      'Laisse reposer 10 minutes avant de découper.']},
+  { id:6, name:'Boeuf bourguignon', category:'Viandes', time:180, difficulty:'Moyen',
+    ingredients:[
+      {name:'Boeuf à braiser',quantity:800,unit:'g'},{name:'Vin rouge',quantity:500,unit:'ml'},
+      {name:'Lardons',quantity:150,unit:'g'},{name:'Carottes',quantity:3,unit:'pièce'},
+      {name:'Oignons',quantity:2,unit:'pièce'},{name:'Champignons de Paris',quantity:200,unit:'g'},
+      {name:'Bouillon de boeuf',quantity:300,unit:'ml'},{name:'Farine',quantity:2,unit:'c. à soupe'},
+      {name:'Huile',quantity:2,unit:'c. à soupe'},{name:'Thym',quantity:2,unit:'branche'}],
+    steps:['Coupe le boeuf en gros cubes de 5 cm. Coupe les carottes en rondelles et les oignons en quartiers.',
+      'Fais dorer les morceaux de boeuf sur toutes les faces dans une cocotte avec l huile à feu fort (5-7 min). Fais-le en plusieurs fois pour ne pas surcharger. Réserve.',
+      'Dans la même cocotte, fais revenir les lardons 3 min, puis les oignons et carottes 5 min. Saupoudre de farine et remue 1 minute.',
+      'Remets la viande. Verse le vin rouge et le bouillon. Ajoute le thym. Porte à ébullition puis baisse le feu au minimum.',
+      'Couvre et laisse mijoter 2h30 à feu très doux. La viande doit être fondante.',
+      '20 minutes avant la fin, fais revenir les champignons coupés en quatre dans une poêle avec du beurre jusqu à ce qu ils soient dorés. Ajoute-les dans la cocotte.',
+      'Goûte et rectifie l assaisonnement. Sers avec des pommes de terre vapeur ou des pâtes.']},
+  { id:7, name:'Poulet au curry', category:'Viandes', time:40, difficulty:'Facile',
+    ingredients:[
+      {name:'Escalopes de poulet',quantity:4,unit:'pièce'},{name:'Lait de coco',quantity:400,unit:'ml'},
+      {name:'Curry en poudre',quantity:2,unit:'c. à soupe'},{name:'Oignon',quantity:1,unit:'pièce'},
+      {name:'Tomates pelées',quantity:200,unit:'g'},{name:'Huile',quantity:2,unit:'c. à soupe'},
+      {name:'Riz',quantity:200,unit:'g'}],
+    steps:['Coupe les escalopes en morceaux. Coupe finement l oignon.',
+      'Fais revenir l oignon dans l huile 3 minutes à feu moyen.',
+      'Ajoute les morceaux de poulet. Fais-les dorer sur toutes les faces 5 minutes.',
+      'Saupoudre le curry et remue 1 minute pour libérer les arômes.',
+      'Ajoute les tomates pelées et le lait de coco. Mélange. Porte à ébullition puis laisse mijoter 20 minutes à feu doux.',
+      'Fais cuire le riz pendant ce temps. Goûte la sauce et rectifie l assaisonnement.',
+      'Sers le curry sur le riz.']},
+  { id:8, name:'Côtelettes de porc', category:'Viandes', time:20, difficulty:'Facile',
+    ingredients:[
+      {name:'Côtelettes de porc',quantity:4,unit:'pièce'},{name:'Moutarde',quantity:2,unit:'c. à soupe'},
+      {name:'Herbes de Provence',quantity:1,unit:'c. à café'},{name:'Huile',quantity:2,unit:'c. à soupe'},
+      {name:'Sel',quantity:1,unit:'pincée'},{name:'Poivre',quantity:1,unit:'pincée'}],
+    steps:['Sors les côtelettes du réfrigérateur 15 minutes avant la cuisson.',
+      'Badigeonne chaque côtelette de moutarde sur les deux faces. Saupoudre d herbes de Provence.',
+      'Fais chauffer l huile dans une grande poêle à feu moyen-fort.',
+      'Dépose les côtelettes dans la poêle. Fais cuire 4 à 5 minutes sans les bouger pour former une belle croûte.',
+      'Retourne-les et fais cuire encore 4 à 5 minutes. Le porc doit être cuit à coeur — vérifie en coupant au plus épais, il ne doit plus être rose.',
+      'Sale et poivre en fin de cuisson. Laisse reposer 2 minutes avant de servir.']},
+  { id:9, name:'Saumon à la crème', category:'Poissons', time:25, difficulty:'Facile',
+    ingredients:[
+      {name:'Pavés de saumon',quantity:2,unit:'pièce'},{name:'Crème fraîche',quantity:200,unit:'ml'},
+      {name:'Citron',quantity:1,unit:'pièce'},{name:'Aneth',quantity:1,unit:'bouquet'},
+      {name:'Beurre',quantity:20,unit:'g'},{name:'Sel',quantity:1,unit:'pincée'},{name:'Poivre',quantity:1,unit:'pincée'}],
+    steps:['Sors le saumon 15 minutes avant la cuisson. Tamponne-le avec du papier absorbant pour bien le sécher.',
+      'Fais chauffer le beurre dans une poêle à feu moyen-fort. Quand il mousse, pose les pavés côté peau vers le bas. Appuie légèrement dessus les premières secondes.',
+      'Laisse cuire 4 minutes sans bouger. La chair va blanchir en remontant progressivement.',
+      'Quand la moitié de l épaisseur est devenue opaque, retourne délicatement le saumon. Fais cuire encore 3-4 minutes.',
+      'Retire le saumon. Dans la même poêle à feu doux, verse la crème fraîche, le jus du citron et l aneth ciselé. Laisse réduire 2 minutes.',
+      'Remets le saumon dans la poêle et nape-le de sauce. Sers avec du riz ou des légumes vapeur.']},
+  { id:10, name:'Cabillaud au four', category:'Poissons', time:30, difficulty:'Facile',
+    ingredients:[
+      {name:'Filets de cabillaud',quantity:2,unit:'pièce'},{name:'Tomates',quantity:3,unit:'pièce'},
+      {name:'Oignon',quantity:1,unit:'pièce'},{name:'Huile d olive',quantity:3,unit:'c. à soupe'},
+      {name:'Herbes de Provence',quantity:1,unit:'c. à café'},{name:'Citron',quantity:1,unit:'pièce'}],
+    steps:['Préchauffe le four à 180°C. Coupe les tomates en rondelles et l oignon en lamelles.',
+      'Dans un plat allant au four, dispose les tomates et l oignon. Arrose d huile et saupoudre d herbes. Sale et poivre.',
+      'Pose les filets de cabillaud sur les légumes. Arrose d huile et de jus de citron. Sale et poivre.',
+      'Enfourne 20-25 minutes. Le poisson est cuit quand il devient opaque et s émiette facilement.',
+      'Sers avec du pain pour saucer le jus.']},
+  { id:11, name:'Moules marinières', category:'Poissons', time:20, difficulty:'Facile',
+    ingredients:[
+      {name:'Moules',quantity:1000,unit:'g'},{name:'Vin blanc',quantity:200,unit:'ml'},
+      {name:'Échalotes',quantity:3,unit:'pièce'},{name:'Beurre',quantity:40,unit:'g'},
+      {name:'Persil',quantity:1,unit:'bouquet'},{name:'Ail',quantity:2,unit:'gousse'}],
+    steps:['Élimine les moules cassées ou ouvertes. Gratte les coquilles avec un couteau. Rince-les à l eau froide.',
+      'Coupe finement les échalotes et l ail. Coupe le persil.',
+      'Dans une grande cocotte, fais fondre le beurre. Fais revenir les échalotes et l ail 3 minutes.',
+      'Monte le feu au maximum. Verse le vin blanc et porte à ébullition. Verse immédiatement toutes les moules.',
+      'Couvre et laisse cuire 4-5 minutes en secouant la casserole régulièrement. Les moules sont cuites quand elles sont toutes ouvertes. Jette celles qui restent fermées.',
+      'Parsème de persil. Sers avec des frites ou du pain.']},
+  { id:12, name:'Ratatouille', category:'Végétarien', time:60, difficulty:'Facile',
+    ingredients:[
+      {name:'Courgettes',quantity:2,unit:'pièce'},{name:'Aubergines',quantity:2,unit:'pièce'},
+      {name:'Poivrons',quantity:2,unit:'pièce'},{name:'Tomates',quantity:4,unit:'pièce'},
+      {name:'Oignon',quantity:1,unit:'pièce'},{name:'Ail',quantity:3,unit:'gousse'},
+      {name:'Huile d olive',quantity:4,unit:'c. à soupe'},{name:'Herbes de Provence',quantity:1,unit:'c. à soupe'}],
+    steps:['Coupe tous les légumes en morceaux de 2 cm environ. Épluche l oignon et coupe-le en quartiers. Écrase l ail.',
+      'Fais revenir l oignon et l ail dans 2 cuillères d huile dans une grande cocotte 3 minutes.',
+      'Ajoute les poivrons et fais cuire 5 minutes. Puis les aubergines et fais cuire encore 5 minutes.',
+      'Ajoute les courgettes et les tomates. Saupoudre d herbes de Provence. Sale et poivre.',
+      'Baisse le feu au minimum, couvre et laisse mijoter 40 minutes en remuant de temps en temps.',
+      'Encore meilleure réchauffée le lendemain. Sers en accompagnement ou avec du riz.']},
+  { id:13, name:'Gratin dauphinois', category:'Végétarien', time:90, difficulty:'Facile',
+    ingredients:[
+      {name:'Pommes de terre',quantity:1000,unit:'g'},{name:'Crème fraîche liquide',quantity:400,unit:'ml'},
+      {name:'Lait',quantity:200,unit:'ml'},{name:'Ail',quantity:2,unit:'gousse'},
+      {name:'Noix de muscade',quantity:1,unit:'pincée'},{name:'Sel',quantity:1,unit:'pincée'},
+      {name:'Beurre',quantity:20,unit:'g'}],
+    steps:['Préchauffe le four à 160°C. Épluche les pommes de terre et coupe-les en rondelles très fines (3 mm). Ne les rince pas.',
+      'Frotte le plat à gratin avec une gousse d ail coupée. Beurre généreusement le plat.',
+      'Dans une casserole, fais chauffer la crème et le lait avec l ail écrasé, la muscade, du sel et du poivre jusqu à frémissement.',
+      'Dispose les rondelles de pommes de terre en couches dans le plat. Sale et poivre chaque couche.',
+      'Verse le mélange crème-lait chaud sur les pommes de terre.',
+      'Enfourne 1h15 à 1h30. Prêt quand les pommes de terre sont tendres et le dessus doré.',
+      'Laisse reposer 10 minutes avant de servir.']},
+  { id:14, name:'Curry de légumes', category:'Végétarien', time:35, difficulty:'Facile',
+    ingredients:[
+      {name:'Pois chiches',quantity:400,unit:'g'},{name:'Tomates pelées',quantity:400,unit:'g'},
+      {name:'Lait de coco',quantity:400,unit:'ml'},{name:'Épinards',quantity:200,unit:'g'},
+      {name:'Oignon',quantity:1,unit:'pièce'},{name:'Curry en poudre',quantity:2,unit:'c. à soupe'},
+      {name:'Ail',quantity:2,unit:'gousse'},{name:'Huile',quantity:2,unit:'c. à soupe'},{name:'Riz',quantity:200,unit:'g'}],
+    steps:['Coupe finement l oignon et l ail. Égoutte et rince les pois chiches.',
+      'Fais revenir l oignon et l ail dans l huile 3 minutes à feu moyen.',
+      'Ajoute la poudre de curry et remue 1 minute pour libérer les arômes.',
+      'Verse les tomates pelées écrasées grossièrement, les pois chiches et le lait de coco. Mélange et laisse mijoter 20 minutes.',
+      'Ajoute les épinards et mélange — ils fondent en 2 minutes.',
+      'Fais cuire le riz. Goûte et rectifie l assaisonnement.',
+      'Sers le curry sur le riz.']},
+  { id:15, name:'Omelette aux herbes', category:'Végétarien', time:10, difficulty:'Facile',
+    ingredients:[
+      {name:'Oeufs',quantity:4,unit:'pièce'},{name:'Beurre',quantity:20,unit:'g'},
+      {name:'Ciboulette',quantity:1,unit:'bouquet'},{name:'Persil',quantity:1,unit:'bouquet'},
+      {name:'Sel',quantity:1,unit:'pincée'},{name:'Poivre',quantity:1,unit:'pincée'}],
+    steps:['Casse les oeufs dans un bol. Bats-les vigoureusement 30 secondes. Sale et poivre. Ajoute la ciboulette et le persil ciselés.',
+      'Fais fondre le beurre dans une poêle antiadhésive à feu moyen. Quand il mousse, verse les oeufs.',
+      'Remue les oeufs avec une fourchette en faisant des cercles tout en secouant la poêle.',
+      'Arrête de remuer quand les oeufs commencent à prendre mais sont encore légèrement liquides sur le dessus.',
+      'Plie l omelette en deux ou en trois et fais-la glisser dans l assiette. Elle doit être dorée à l extérieur et baveuse à l intérieur.']},
+  { id:16, name:'Quiche lorraine', category:'Pizzas et tartes', time:50, difficulty:'Facile',
+    ingredients:[
+      {name:'Pâte brisée',quantity:1,unit:'rouleau'},{name:'Lardons',quantity:200,unit:'g'},
+      {name:'Oeufs',quantity:3,unit:'pièce'},{name:'Crème fraîche',quantity:200,unit:'ml'},
+      {name:'Lait',quantity:100,unit:'ml'},{name:'Emmental râpé',quantity:100,unit:'g'},
+      {name:'Noix de muscade',quantity:1,unit:'pincée'}],
+    steps:['Préchauffe le four à 180°C. Étale la pâte dans un moule à tarte. Pique le fond avec une fourchette.',
+      'Couvre la pâte de papier sulfurisé avec des haricots secs dessus. Enfourne 10 minutes — c est la cuisson à blanc.',
+      'Fais revenir les lardons dans une poêle sans matière grasse 3 minutes. Égoutte-les sur du papier absorbant.',
+      'Mélange les oeufs, la crème et le lait dans un bol. Ajoute la muscade, du sel et du poivre.',
+      'Retire le papier et les haricots. Répartis les lardons sur le fond. Saupoudre d emmental. Verse l appareil.',
+      'Enfourne 30-35 minutes. Prête quand le centre ne tremble plus et le dessus est doré.']},
+  { id:17, name:'Pizza margherita', category:'Pizzas et tartes', time:30, difficulty:'Facile',
+    ingredients:[
+      {name:'Pâte à pizza',quantity:1,unit:'rouleau'},{name:'Sauce tomate',quantity:150,unit:'g'},
+      {name:'Mozzarella',quantity:125,unit:'g'},{name:'Basilic frais',quantity:10,unit:'feuille'},
+      {name:'Huile d olive',quantity:2,unit:'c. à soupe'}],
+    steps:['Préchauffe le four à 220°C (ou au maximum).',
+      'Étale la pâte sur du papier sulfurisé. Garde un bord de 2 cm sans garniture.',
+      'Étale la sauce tomate avec le dos d une cuillère en mouvements circulaires. Ne mets pas trop de sauce.',
+      'Répartis la mozzarella coupée en morceaux. Arrose d un filet d huile d olive.',
+      'Enfourne 12-15 minutes jusqu à ce que la croûte soit dorée et la mozzarella fondue.',
+      'À la sortie du four, ajoute les feuilles de basilic frais et un filet d huile d olive. Sers immédiatement.']},
+  { id:18, name:'Tarte flambée', category:'Pizzas et tartes', time:25, difficulty:'Facile',
+    ingredients:[
+      {name:'Pâte à pizza',quantity:1,unit:'rouleau'},{name:'Crème fraîche épaisse',quantity:200,unit:'g'},
+      {name:'Lardons',quantity:150,unit:'g'},{name:'Oignon',quantity:2,unit:'pièce'},
+      {name:'Sel',quantity:1,unit:'pincée'},{name:'Poivre noir',quantity:1,unit:'pincée'}],
+    steps:['Préchauffe le four à 230°C. Épluche et coupe les oignons en fines rondelles.',
+      'Étale la pâte très finement sur du papier sulfurisé — plus elle est fine, meilleure sera la tarte flambée.',
+      'Étale la crème fraîche sur toute la surface de la pâte jusqu aux bords.',
+      'Répartis les rondelles d oignon et les lardons uniformément. Poivre généreusement.',
+      'Enfourne 12-15 minutes jusqu à ce que les bords soient bien croustillants et les lardons grillés.',
+      'Sers immédiatement, coupée en rectangles.']},
+  { id:19, name:'Soupe à l oignon', category:'Entrées', time:50, difficulty:'Facile',
+    ingredients:[
+      {name:'Oignons',quantity:6,unit:'pièce'},{name:'Bouillon de boeuf',quantity:1000,unit:'ml'},
+      {name:'Beurre',quantity:50,unit:'g'},{name:'Vin blanc',quantity:100,unit:'ml'},
+      {name:'Pain',quantity:4,unit:'tranche'},{name:'Emmental râpé',quantity:150,unit:'g'}],
+    steps:['Épluche et émince finement les oignons en demi-lunes.',
+      'Fais fondre le beurre dans une grande casserole à feu doux. Ajoute les oignons et une pincée de sel. Laisse cuire 30-40 minutes en remuant régulièrement jusqu à ce qu ils soient dorés et caramélisés.',
+      'Verse le vin blanc et gratte le fond de la casserole. Laisse évaporer 2 minutes.',
+      'Ajoute le bouillon chaud. Laisse mijoter 15 minutes. Sale et poivre.',
+      'Préchauffe le gril du four. Fais griller les tranches de pain.',
+      'Verse la soupe dans des bols allant au four. Pose le pain grillé dessus et recouvre d emmental râpé.',
+      'Passe sous le gril 5 minutes jusqu à ce que le fromage soit gratiné. Sers immédiatement.']},
+  { id:20, name:'Velouté de potiron', category:'Entrées', time:35, difficulty:'Facile',
+    ingredients:[
+      {name:'Potiron',quantity:800,unit:'g'},{name:'Oignon',quantity:1,unit:'pièce'},
+      {name:'Bouillon de légumes',quantity:600,unit:'ml'},{name:'Crème fraîche',quantity:100,unit:'ml'},
+      {name:'Beurre',quantity:20,unit:'g'},{name:'Noix de muscade',quantity:1,unit:'pincée'}],
+    steps:['Épluche et coupe le potiron en gros cubes. Coupe l oignon en quartiers.',
+      'Fais revenir l oignon dans le beurre 3 minutes.',
+      'Ajoute le potiron. Verse le bouillon — il doit couvrir les légumes. Fais cuire 20 minutes jusqu à ce que le potiron soit très tendre.',
+      'Mixe avec un mixeur plongeant jusqu à obtenir un velouté lisse.',
+      'Ajoute la crème fraîche et la muscade. Goûte et rectifie l assaisonnement.',
+      'Sers avec un filet de crème et des graines de courge.']},
+  { id:21, name:'Taboulé', category:'Salades', time:20, difficulty:'Facile',
+    ingredients:[
+      {name:'Semoule fine',quantity:200,unit:'g'},{name:'Tomates',quantity:3,unit:'pièce'},
+      {name:'Concombre',quantity:1,unit:'pièce'},{name:'Persil',quantity:1,unit:'bouquet'},
+      {name:'Menthe',quantity:1,unit:'bouquet'},{name:'Citron',quantity:2,unit:'pièce'},
+      {name:'Huile d olive',quantity:4,unit:'c. à soupe'}],
+    steps:['Verse la semoule dans un saladier. Verse dessus le même volume d eau bouillante (200 ml). Couvre et laisse gonfler 5 minutes.',
+      'Égrène la semoule avec une fourchette. Ajoute l huile d olive et le jus des 2 citrons. Laisse refroidir complètement.',
+      'Coupe les tomates en petits dés (sans les graines). Coupe le concombre en petits dés.',
+      'Cisèle finement le persil et la menthe. N utilise que les feuilles.',
+      'Ajoute les légumes et herbes à la semoule froide. Mélange délicatement. Rectifie l assaisonnement.',
+      'Réfrigère au moins 1 heure avant de servir.']},
+  { id:22, name:'Salade niçoise', category:'Salades', time:20, difficulty:'Facile',
+    ingredients:[
+      {name:'Salade verte',quantity:1,unit:'pièce'},{name:'Thon en boîte',quantity:200,unit:'g'},
+      {name:'Oeufs',quantity:4,unit:'pièce'},{name:'Tomates',quantity:3,unit:'pièce'},
+      {name:'Haricots verts',quantity:200,unit:'g'},{name:'Olives noires',quantity:80,unit:'g'},
+      {name:'Huile d olive',quantity:4,unit:'c. à soupe'},{name:'Vinaigre',quantity:1,unit:'c. à soupe'}],
+    steps:['Fais cuire les oeufs durs 10 minutes dans l eau bouillante. Refroidis-les, écale-les et coupe-les en quartiers.',
+      'Fais cuire les haricots verts dans l eau bouillante salée 5 minutes — ils doivent rester croquants. Égoutte et passe sous l eau froide.',
+      'Lave et essore la salade. Coupe les tomates en quartiers.',
+      'Prépare la vinaigrette : mélange huile, vinaigre, sel et poivre.',
+      'Sur un plat, dispose la salade en base. Arrange dessus les tomates, haricots, oeufs, thon émietté, olives.',
+      'Verse la vinaigrette juste avant de servir.']},
+  { id:23, name:'Salade César', category:'Salades', time:20, difficulty:'Facile',
+    ingredients:[
+      {name:'Salade romaine',quantity:1,unit:'pièce'},{name:'Escalope de poulet',quantity:2,unit:'pièce'},
+      {name:'Parmesan',quantity:50,unit:'g'},{name:'Pain',quantity:2,unit:'tranche'},
+      {name:'Huile d olive',quantity:3,unit:'c. à soupe'},{name:'Jus de citron',quantity:1,unit:'c. à soupe'},
+      {name:'Moutarde',quantity:1,unit:'c. à café'},{name:'Ail',quantity:1,unit:'gousse'}],
+    steps:['Coupe le pain en petits cubes. Fais-les dorer dans une poêle avec un filet d huile et une gousse d ail écrasée jusqu à ce qu ils soient croustillants — ce sont les croûtons. Réserve.',
+      'Fais griller les escalopes de poulet dans la même poêle 4-5 minutes de chaque côté. Laisse refroidir puis coupe en lanières.',
+      'Prépare la sauce : mélange l huile d olive, le jus de citron et la moutarde. Sale et poivre.',
+      'Lave et coupe la salade romaine en morceaux. Mets dans un grand bol.',
+      'Ajoute les lanières de poulet, les croûtons et le parmesan râpé ou en copeaux.',
+      'Verse la sauce et mélange bien. Sers immédiatement.']},
+  { id:24, name:'Tarte aux pommes', category:'Desserts', time:50, difficulty:'Facile',
+    ingredients:[
+      {name:'Pâte brisée',quantity:1,unit:'rouleau'},{name:'Pommes',quantity:4,unit:'pièce'},
+      {name:'Sucre',quantity:60,unit:'g'},{name:'Beurre',quantity:30,unit:'g'},
+      {name:'Cannelle',quantity:1,unit:'pincée'},{name:'Confiture d abricot',quantity:2,unit:'c. à soupe'}],
+    steps:['Préchauffe le four à 180°C. Étale la pâte dans un moule à tarte et pique le fond avec une fourchette.',
+      'Épluche les pommes, coupe-les en quatre, enlève le coeur. Coupe en lamelles fines de 3 mm.',
+      'Dispose les lamelles en rosace sur le fond de tarte. Commence par l extérieur.',
+      'Saupoudre de sucre et de cannelle. Répartis le beurre en petits morceaux.',
+      'Enfourne 35-40 minutes jusqu à ce que les pommes soient dorées.',
+      'Badigeonne avec la confiture d abricot légèrement chauffée pour un beau brillant.']},
+  { id:25, name:'Mousse au chocolat', category:'Desserts', time:20, difficulty:'Facile',
+    ingredients:[
+      {name:'Chocolat noir',quantity:200,unit:'g'},{name:'Oeufs',quantity:6,unit:'pièce'},
+      {name:'Beurre',quantity:30,unit:'g'},{name:'Sucre',quantity:40,unit:'g'},{name:'Sel',quantity:1,unit:'pincée'}],
+    steps:['Fais fondre le chocolat et le beurre au bain-marie en remuant. Laisse tiédir.',
+      'Sépare les blancs des jaunes. Fouette les jaunes avec le sucre jusqu à ce qu ils blanchissent et moussent.',
+      'Verse le chocolat tiède sur les jaunes sucrés et mélange bien.',
+      'Ajoute une pincée de sel aux blancs. Monte-les en neige ferme au batteur.',
+      'Incorpore les blancs au chocolat en trois fois, en soulevant délicatement de bas en haut.',
+      'Verse dans des ramequins. Réfrigère au moins 2 heures avant de servir.']},
+  { id:26, name:'Fondant au chocolat', category:'Desserts', time:25, difficulty:'Facile',
+    ingredients:[
+      {name:'Chocolat noir',quantity:200,unit:'g'},{name:'Beurre',quantity:150,unit:'g'},
+      {name:'Oeufs',quantity:4,unit:'pièce'},{name:'Sucre',quantity:100,unit:'g'},{name:'Farine',quantity:50,unit:'g'}],
+    steps:['Préchauffe le four à 200°C. Beurre et farine 6 ramequins.',
+      'Fais fondre le chocolat avec le beurre au micro-ondes (par tranches de 30 secondes). Mélange jusqu à lisse. Laisse tiédir.',
+      'Fouette les oeufs entiers avec le sucre 3 minutes jusqu à ce que le mélange soit mousseux.',
+      'Verse le chocolat sur les oeufs et mélange. Ajoute la farine tamisée et mélange juste ce qu il faut.',
+      'Verse dans les ramequins. (Tu peux réfrigérer jusqu à 24h avant cuisson.)',
+      'Enfourne 10-12 minutes. Le dessus doit être cuit mais le coeur fondant.',
+      'Démoule délicatement et sers immédiatement avec une boule de glace.']},
+  { id:27, name:'Crème brûlée', category:'Desserts', time:40, difficulty:'Moyen',
+    ingredients:[
+      {name:'Crème fraîche liquide',quantity:500,unit:'ml'},{name:'Jaunes d oeufs',quantity:6,unit:'pièce'},
+      {name:'Sucre',quantity:100,unit:'g'},{name:'Extrait de vanille',quantity:1,unit:'c. à café'},
+      {name:'Cassonade',quantity:6,unit:'c. à café'}],
+    steps:['Préchauffe le four à 150°C. Fais chauffer la crème avec la vanille jusqu à frémissement.',
+      'Fouette les jaunes avec le sucre jusqu à ce que le mélange blanchisse.',
+      'Verse la crème chaude progressivement sur les oeufs en fouettant doucement.',
+      'Filtre à travers une passoire fine. Verse dans des ramequins.',
+      'Place les ramequins dans un plat. Verse de l eau chaude jusqu à mi-hauteur. Enfourne 30-40 minutes.',
+      'Laisse refroidir puis réfrigère 4 heures minimum.',
+      'Avant de servir, saupoudre de cassonade et caramélise avec un chalumeau.']},
+  { id:28, name:'Crêpes', category:'Petit déjeuner', time:30, difficulty:'Facile',
+    ingredients:[
+      {name:'Farine',quantity:250,unit:'g'},{name:'Oeufs',quantity:3,unit:'pièce'},
+      {name:'Lait',quantity:500,unit:'ml'},{name:'Beurre fondu',quantity:30,unit:'g'},
+      {name:'Sucre',quantity:30,unit:'g'},{name:'Sel',quantity:1,unit:'pincée'}],
+    steps:['Verse la farine dans un bol, creuse un puit. Ajoute les oeufs et mélange en incorporant la farine depuis les bords.',
+      'Ajoute le lait progressivement en fouettant. La pâte doit être lisse. Ajoute le beurre fondu, le sucre et le sel.',
+      'Laisse reposer 30 minutes au réfrigérateur (facultatif mais recommandé).',
+      'Fais chauffer une crêpière légèrement beurrée à feu moyen-fort.',
+      'Verse une petite louche et incline la poêle dans tous les sens pour étaler finement.',
+      'Laisse cuire 1-2 minutes jusqu à ce que les bords se décollent. Retourne et laisse 30 secondes.',
+      'Empile et sers avec sucre, confiture ou Nutella.']},
+  { id:29, name:'Pancakes américains', category:'Petit déjeuner', time:20, difficulty:'Facile',
+    ingredients:[
+      {name:'Farine',quantity:200,unit:'g'},{name:'Oeufs',quantity:2,unit:'pièce'},
+      {name:'Lait',quantity:200,unit:'ml'},{name:'Levure chimique',quantity:1,unit:'sachet'},
+      {name:'Sucre',quantity:30,unit:'g'},{name:'Beurre',quantity:30,unit:'g'}],
+    steps:['Dans un grand bol, mélange la farine, la levure, le sucre et le sel.',
+      'Dans un autre bol, fouette les oeufs avec le lait et le beurre fondu.',
+      'Verse les liquides sur les solides et mélange juste ce qu il faut. La pâte doit rester un peu grumeleuse — c est normal.',
+      'Fais chauffer une poêle légèrement beurrée à feu moyen.',
+      'Verse une louche pour former un disque de 10 cm. Quand des bulles apparaissent en surface (environ 2 min), retourne.',
+      'Laisse cuire encore 1 minute. Le pancake doit être doré des deux côtés.',
+      'Sers empilés avec du sirop d érable ou des fruits.']},
+  { id:30, name:'Pain perdu', category:'Petit déjeuner', time:15, difficulty:'Facile',
+    ingredients:[
+      {name:'Pain rassis',quantity:4,unit:'tranche'},{name:'Oeufs',quantity:2,unit:'pièce'},
+      {name:'Lait',quantity:100,unit:'ml'},{name:'Sucre',quantity:30,unit:'g'},
+      {name:'Beurre',quantity:20,unit:'g'},{name:'Extrait de vanille',quantity:1,unit:'c. à café'}],
+    steps:['Dans un bol large, fouette les oeufs avec le lait, le sucre et la vanille.',
+      'Trempe les tranches de pain dans ce mélange en les retournant — elles doivent bien s imprégner.',
+      'Fais fondre le beurre dans une grande poêle à feu moyen.',
+      'Dépose les tranches de pain dans la poêle. Fais dorer 2-3 minutes de chaque côté.',
+      'Sers chaud avec du sucre glace, de la confiture ou des fruits frais.']},
+  { id:31, name:'Velouté de courgettes', category:'Soupes', time:30, difficulty:'Facile',
+    ingredients:[
+      {name:'Courgettes',quantity:4,unit:'pièce'},{name:'Oignon',quantity:1,unit:'pièce'},
+      {name:'Bouillon de légumes',quantity:600,unit:'ml'},{name:'Crème fraîche',quantity:100,unit:'ml'},
+      {name:'Beurre',quantity:20,unit:'g'}],
+    steps:['Coupe les courgettes en rondelles. Coupe l oignon.',
+      'Fais fondre le beurre dans une casserole. Fais revenir l oignon 3 minutes.',
+      'Ajoute les courgettes. Verse le bouillon. Fais cuire 15 minutes jusqu à ce que les courgettes soient très tendres.',
+      'Mixe avec un mixeur plongeant jusqu à obtenir un velouté lisse.',
+      'Ajoute la crème fraîche. Goûte et rectifie l assaisonnement.',
+      'Sers chaud avec des croûtons.']},
+  { id:32, name:'Soupe minestrone', category:'Soupes', time:45, difficulty:'Facile',
+    ingredients:[
+      {name:'Tomates pelées',quantity:400,unit:'g'},{name:'Carottes',quantity:2,unit:'pièce'},
+      {name:'Courgettes',quantity:2,unit:'pièce'},{name:'Oignon',quantity:1,unit:'pièce'},
+      {name:'Haricots blancs',quantity:200,unit:'g'},{name:'Petites pâtes',quantity:80,unit:'g'},
+      {name:'Bouillon de légumes',quantity:1200,unit:'ml'},{name:'Huile d olive',quantity:3,unit:'c. à soupe'}],
+    steps:['Coupe l oignon et les carottes en petits dés. Coupe les courgettes en dés.',
+      'Fais revenir l oignon dans l huile 3 minutes. Ajoute les carottes et fais cuire 5 minutes.',
+      'Ajoute les tomates pelées écrasées grossièrement. Verse le bouillon. Porte à ébullition.',
+      'Ajoute les courgettes et les haricots blancs égouttés. Laisse mijoter 20 minutes.',
+      'Ajoute les petites pâtes et fais cuire selon le temps du paquet.',
+      'Goûte, rectifie. Arrose d un filet d huile d olive avant de servir.']},
+  // ========== PÂTES ET RIZ (suite) ==========
+  { id:33, name:'Pâtes à la bolognaise', category:'Pâtes et riz', time:45, difficulty:'Facile',
+    ingredients:[{name:'Pâtes',quantity:200,unit:'g'},{name:'Viande hachée',quantity:300,unit:'g'},{name:'Sauce tomate',quantity:400,unit:'g'},{name:'Oignon',quantity:1,unit:'pièce'},{name:'Ail',quantity:2,unit:'gousse'},{name:'Huile d olive',quantity:2,unit:'c. à soupe'},{name:'Parmesan',quantity:40,unit:'g'}],
+    steps:['Fais revenir l oignon et l ail dans l huile 3 minutes.','Ajoute la viande hachée et fais cuire 8 minutes en écrasant avec une spatule.','Ajoute la sauce tomate. Laisse mijoter 20 minutes à feu doux.','Fais cuire les pâtes selon le paquet. Égoutte.','Mélange les pâtes avec la sauce. Sers avec du parmesan râpé.']},
+  { id:34, name:'Pâtes au pesto', category:'Pâtes et riz', time:15, difficulty:'Facile',
+    ingredients:[{name:'Pâtes',quantity:200,unit:'g'},{name:'Pesto',quantity:4,unit:'c. à soupe'},{name:'Parmesan',quantity:40,unit:'g'},{name:'Pignons de pin',quantity:30,unit:'g'},{name:'Sel',quantity:1,unit:'pincée'}],
+    steps:['Fais cuire les pâtes selon le paquet dans une grande casserole d eau salée.','Égoutte les pâtes en gardant une tasse d eau de cuisson.','Verse le pesto sur les pâtes et mélange. Ajoute un peu d eau de cuisson si nécessaire pour assouplir.','Sers avec le parmesan râpé et les pignons de pin légèrement grillés dans une poêle sèche.']},
+  { id:35, name:'Gratin de pâtes', category:'Pâtes et riz', time:40, difficulty:'Facile',
+    ingredients:[{name:'Pâtes',quantity:200,unit:'g'},{name:'Lardons',quantity:150,unit:'g'},{name:'Crème fraîche',quantity:200,unit:'ml'},{name:'Emmental râpé',quantity:150,unit:'g'},{name:'Oeufs',quantity:2,unit:'pièce'},{name:'Sel',quantity:1,unit:'pincée'}],
+    steps:['Préchauffe le four à 180°C. Fais cuire les pâtes selon le paquet. Égoutte.','Fais revenir les lardons dans une poêle sans matière grasse jusqu à dorure.','Dans un bol, mélange les oeufs et la crème fraîche. Sale et poivre.','Mélange les pâtes, les lardons et la préparation aux oeufs. Verse dans un plat à gratin.','Recouvre d emmental râpé. Enfourne 20-25 minutes jusqu à gratinage.']},
+  { id:36, name:'Paëlla au poulet', category:'Pâtes et riz', time:50, difficulty:'Moyen',
+    ingredients:[{name:'Riz à paëlla',quantity:200,unit:'g'},{name:'Poulet',quantity:4,unit:'morceau'},{name:'Poivrons',quantity:2,unit:'pièce'},{name:'Tomates pelées',quantity:200,unit:'g'},{name:'Bouillon',quantity:600,unit:'ml'},{name:'Paprika',quantity:1,unit:'c. à café'},{name:'Safran',quantity:1,unit:'pincée'},{name:'Huile d olive',quantity:3,unit:'c. à soupe'}],
+    steps:['Fais dorer les morceaux de poulet dans l huile dans une grande poêle ou paëllera.','Ajoute les poivrons coupés en lanières. Fais revenir 5 minutes.','Ajoute le paprika, le safran, les tomates. Mélange bien.','Verse le riz et remue 2 minutes. Verse le bouillon chaud.','Laisse cuire à feu moyen sans remuer pendant 20 minutes jusqu à absorption du bouillon.','Laisse reposer 5 minutes avant de servir.']},
+  // ========== VIANDES (suite) ==========
+  { id:37, name:'Hachis parmentier', category:'Viandes', time:60, difficulty:'Facile',
+    ingredients:[{name:'Viande hachée',quantity:500,unit:'g'},{name:'Pommes de terre',quantity:800,unit:'g'},{name:'Oignon',quantity:1,unit:'pièce'},{name:'Sauce tomate',quantity:200,unit:'g'},{name:'Lait',quantity:100,unit:'ml'},{name:'Beurre',quantity:40,unit:'g'},{name:'Emmental râpé',quantity:100,unit:'g'}],
+    steps:['Préchauffe le four à 180°C. Épluche et coupe les pommes de terre en morceaux. Fais-les cuire dans l eau bouillante salée 20 minutes.','Fais revenir l oignon dans un peu d huile. Ajoute la viande hachée et fais cuire 8 minutes. Ajoute la sauce tomate et laisse mijoter 10 minutes.','Égoutte les pommes de terre et écrase-les avec le beurre et le lait chaud jusqu à obtenir une purée lisse. Sale et poivre.','Dans un plat à gratin, dispose la viande au fond. Recouvre de purée. Saupoudre d emmental râpé.','Enfourne 25-30 minutes jusqu à gratinage.']},
+  { id:38, name:'Blanquette de veau', category:'Viandes', time:90, difficulty:'Moyen',
+    ingredients:[{name:'Veau à braiser',quantity:600,unit:'g'},{name:'Carottes',quantity:3,unit:'pièce'},{name:'Oignon',quantity:1,unit:'pièce'},{name:'Bouillon',quantity:800,unit:'ml'},{name:'Crème fraîche',quantity:200,unit:'ml'},{name:'Farine',quantity:2,unit:'c. à soupe'},{name:'Beurre',quantity:40,unit:'g'},{name:'Thym',quantity:2,unit:'branche'}],
+    steps:['Coupe le veau en cubes. Épluche les carottes et coupe-les en rondelles.','Dans une cocotte, fais fondre le beurre. Ajoute le veau sans le faire colorer — remue juste pour le raidir.','Saupoudre de farine et remue 2 minutes. Verse le bouillon, ajoute les carottes, l oignon entier et le thym.','Porte à ébullition puis laisse mijoter 1h15 à feu doux à couvert.','Retire la viande et les légumes. Fais réduire le bouillon 5 minutes. Ajoute la crème fraîche.','Remets la viande et les légumes. Goûte et rectifie l assaisonnement. Sers avec du riz.']},
+  { id:39, name:'Pot-au-feu', category:'Viandes', time:180, difficulty:'Facile',
+    ingredients:[{name:'Boeuf à pot-au-feu',quantity:800,unit:'g'},{name:'Carottes',quantity:4,unit:'pièce'},{name:'Navets',quantity:3,unit:'pièce'},{name:'Poireaux',quantity:2,unit:'pièce'},{name:'Pommes de terre',quantity:4,unit:'pièce'},{name:'Céleri',quantity:2,unit:'branche'},{name:'Bouquet garni',quantity:1,unit:'pièce'},{name:'Sel',quantity:1,unit:'pincée'}],
+    steps:['Place la viande dans une grande marmite. Couvre d eau froide. Porte à ébullition et écume la mousse qui se forme en surface.','Ajoute les légumes épluchés et le bouquet garni. Sale.','Baisse le feu et laisse mijoter 2h30 à 3h à feu très doux — la viande doit être fondante.','Sers le bouillon dans des bols, puis la viande et les légumes séparément avec de la moutarde et des cornichons.']},
+  { id:40, name:'Sauté de porc aux légumes', category:'Viandes', time:35, difficulty:'Facile',
+    ingredients:[{name:'Filet de porc',quantity:500,unit:'g'},{name:'Courgettes',quantity:2,unit:'pièce'},{name:'Poivrons',quantity:2,unit:'pièce'},{name:'Sauce soja',quantity:3,unit:'c. à soupe'},{name:'Huile',quantity:2,unit:'c. à soupe'},{name:'Ail',quantity:2,unit:'gousse'}],
+    steps:['Coupe le porc en fines lamelles. Coupe les légumes en morceaux similaires.','Fais chauffer l huile dans un wok ou grande poêle à feu fort. Fais sauter le porc 4-5 minutes jusqu à dorure. Réserve.','Dans la même poêle, fais sauter les légumes 5 minutes à feu fort.','Remets le porc. Ajoute l ail écrasé et la sauce soja. Mélange bien 2 minutes.','Sers avec du riz.']},
+  { id:41, name:'Poulet à la moutarde', category:'Viandes', time:45, difficulty:'Facile',
+    ingredients:[{name:'Escalopes de poulet',quantity:4,unit:'pièce'},{name:'Moutarde',quantity:3,unit:'c. à soupe'},{name:'Crème fraîche',quantity:200,unit:'ml'},{name:'Oignon',quantity:1,unit:'pièce'},{name:'Beurre',quantity:20,unit:'g'},{name:'Thym',quantity:2,unit:'branche'}],
+    steps:['Badigeonne généreusement les escalopes de moutarde sur les deux faces.','Fais fondre le beurre dans une poêle à feu moyen. Fais dorer les escalopes 4-5 minutes de chaque côté. Réserve.','Fais revenir l oignon coupé finement dans la même poêle 3 minutes.','Verse la crème fraîche et ajoute le thym. Remue et laisse réduire 5 minutes.','Remets le poulet dans la sauce et laisse mijoter 5 minutes. Sers avec des pommes de terre vapeur.']},
+  { id:42, name:'Merguez grillées et frites', category:'Viandes', time:30, difficulty:'Facile',
+    ingredients:[{name:'Merguez',quantity:8,unit:'pièce'},{name:'Pommes de terre',quantity:600,unit:'g'},{name:'Huile',quantity:3,unit:'c. à soupe'},{name:'Sel',quantity:1,unit:'pincée'},{name:'Paprika',quantity:1,unit:'c. à café'}],
+    steps:['Préchauffe le four à 200°C. Épluche et coupe les pommes de terre en frites.','Mélange les frites avec l huile, le sel et le paprika. Dispose sur une plaque allant au four.','Enfourne les frites 25-30 minutes en les retournant à mi-cuisson.','10 minutes avant la fin, fais griller les merguez dans une poêle grill ou à la poêle à feu moyen en les retournant régulièrement jusqu à cuisson complète.','Sers les merguez avec les frites et une salade verte.']},
+  // ========== POISSONS (suite) ==========
+  { id:43, name:'Crevettes à l ail', category:'Poissons', time:15, difficulty:'Facile',
+    ingredients:[{name:'Crevettes',quantity:300,unit:'g'},{name:'Ail',quantity:4,unit:'gousse'},{name:'Beurre',quantity:30,unit:'g'},{name:'Persil',quantity:1,unit:'bouquet'},{name:'Citron',quantity:1,unit:'pièce'},{name:'Sel',quantity:1,unit:'pincée'}],
+    steps:['Décortique les crevettes si nécessaire. Écrase finement l ail.','Fais fondre le beurre dans une grande poêle à feu moyen-fort.','Ajoute l ail et fais revenir 1 minute sans le laisser brûler.','Ajoute les crevettes et fais sauter 2-3 minutes de chaque côté jusqu à ce qu elles soient roses et cuites.','Ajoute le jus du citron et le persil ciselé. Mélange et sers immédiatement avec du pain.']},
+  { id:44, name:'Daurade au four', category:'Poissons', time:35, difficulty:'Facile',
+    ingredients:[{name:'Daurade',quantity:1,unit:'pièce'},{name:'Citron',quantity:2,unit:'pièce'},{name:'Tomates',quantity:3,unit:'pièce'},{name:'Olives',quantity:60,unit:'g'},{name:'Huile d olive',quantity:3,unit:'c. à soupe'},{name:'Herbes de Provence',quantity:1,unit:'c. à soupe'},{name:'Ail',quantity:3,unit:'gousse'}],
+    steps:['Préchauffe le four à 200°C. Demande à ton poissonnier de vider et écailler la daurade.','Incise le poisson de 3 entailles de chaque côté. Glisse des rondelles de citron dans les entailles.','Place le poisson dans un plat huilé. Dispose les tomates en rondelles, les olives et l ail écrasé autour.','Arrose d huile d olive. Saupoudre d herbes de Provence. Sale et poivre.','Enfourne 25-30 minutes selon la taille. Arrose avec le jus en cours de cuisson.']},
+  { id:45, name:'Coquilles Saint-Jacques poêlées', category:'Poissons', time:15, difficulty:'Facile',
+    ingredients:[{name:'Noix de Saint-Jacques',quantity:12,unit:'pièce'},{name:'Beurre',quantity:40,unit:'g'},{name:'Citron',quantity:1,unit:'pièce'},{name:'Persil',quantity:1,unit:'bouquet'},{name:'Sel',quantity:1,unit:'pincée'},{name:'Poivre',quantity:1,unit:'pincée'}],
+    steps:['Taponne les noix de Saint-Jacques avec du papier absorbant — elles doivent être bien sèches pour bien dorer.','Fais chauffer le beurre dans une poêle à feu fort jusqu à ce qu il soit mousseux et commence à colorer.','Pose les noix de Saint-Jacques dans la poêle. Ne les déplace pas pendant 1 minute 30.','Retourne-les et fais cuire 1 minute de l autre côté. Elles doivent être dorées mais encore nacrées à coeur.','Ajoute le jus de citron et le persil. Sers immédiatement — elles refroidissent vite.']},
+  { id:46, name:'Sardines grillées', category:'Poissons', time:20, difficulty:'Facile',
+    ingredients:[{name:'Sardines fraîches',quantity:8,unit:'pièce'},{name:'Huile d olive',quantity:3,unit:'c. à soupe'},{name:'Citron',quantity:2,unit:'pièce'},{name:'Ail',quantity:2,unit:'gousse'},{name:'Persil',quantity:1,unit:'bouquet'},{name:'Sel',quantity:1,unit:'pincée'}],
+    steps:['Fais vider et rincer les sardines par ton poissonnier. Sèche-les avec du papier absorbant.','Badigeonne les sardines d huile d olive. Sale et poivre.','Fais chauffer un gril ou une poêle grill à feu fort. Fais griller les sardines 3-4 minutes de chaque côté.','Prépare la persillade : mélange le persil ciselé, l ail écrasé et un filet d huile d olive.','Sers les sardines avec la persillade et des quartiers de citron.']},
+  // ========== VÉGÉTARIEN (suite) ==========
+  { id:47, name:'Tian de légumes', category:'Végétarien', time:60, difficulty:'Facile',
+    ingredients:[{name:'Courgettes',quantity:3,unit:'pièce'},{name:'Tomates',quantity:4,unit:'pièce'},{name:'Aubergines',quantity:2,unit:'pièce'},{name:'Oignons',quantity:2,unit:'pièce'},{name:'Huile d olive',quantity:4,unit:'c. à soupe'},{name:'Thym',quantity:3,unit:'branche'},{name:'Ail',quantity:3,unit:'gousse'}],
+    steps:['Préchauffe le four à 180°C. Coupe tous les légumes en rondelles de 5 mm d épaisseur.','Fais revenir les oignons et l ail dans l huile 5 minutes.','Étale les oignons au fond d un plat à gratin huilé.','Dispose les rondelles de légumes en alternant courgettes, tomates et aubergines en les faisant se chevaucher légèrement.','Arrose d huile d olive, saupoudre de thym, sale et poivre.','Enfourne 45-50 minutes. Les légumes doivent être tendres et légèrement dorés.']},
+  { id:48, name:'Soufflé au fromage', category:'Végétarien', time:40, difficulty:'Moyen',
+    ingredients:[{name:'Emmental râpé',quantity:150,unit:'g'},{name:'Oeufs',quantity:4,unit:'pièce'},{name:'Lait',quantity:250,unit:'ml'},{name:'Beurre',quantity:40,unit:'g'},{name:'Farine',quantity:40,unit:'g'},{name:'Noix de muscade',quantity:1,unit:'pincée'},{name:'Sel',quantity:1,unit:'pincée'}],
+    steps:['Préchauffe le four à 180°C. Beurre et farine un moule à soufflé.','Fais la béchamel : fais fondre le beurre, ajoute la farine en remuant 1 minute, puis verse le lait progressivement en fouettant. Fais épaissir 3 minutes.','Hors du feu, ajoute les jaunes d oeufs un par un en mélangeant bien. Ajoute l emmental, la muscade, le sel et le poivre.','Monte les blancs en neige ferme. Incorpore-les délicatement à la béchamel en soulevant de bas en haut.','Verse dans le moule. Enfourne 25-30 minutes. N ouvre surtout pas le four pendant la cuisson — le soufflé tomberait. Sers immédiatement.']},
+  { id:49, name:'Poêlée de légumes', category:'Végétarien', time:20, difficulty:'Facile',
+    ingredients:[{name:'Courgettes',quantity:2,unit:'pièce'},{name:'Poivrons',quantity:2,unit:'pièce'},{name:'Champignons',quantity:200,unit:'g'},{name:'Oignon',quantity:1,unit:'pièce'},{name:'Ail',quantity:2,unit:'gousse'},{name:'Huile d olive',quantity:3,unit:'c. à soupe'},{name:'Herbes de Provence',quantity:1,unit:'c. à café'}],
+    steps:['Coupe tous les légumes en morceaux similaires. Émince l oignon et l ail.','Fais chauffer l huile dans une grande poêle à feu fort.','Commence par l oignon 2 minutes, puis les poivrons 3 minutes, les courgettes 3 minutes, enfin les champignons 3 minutes.','Ajoute l ail et les herbes. Fais sauter encore 2 minutes.','Goûte, rectifie l assaisonnement. Sers en accompagnement ou avec du riz.']},
+  { id:50, name:'Galettes de légumes', category:'Végétarien', time:30, difficulty:'Facile',
+    ingredients:[{name:'Courgettes',quantity:2,unit:'pièce'},{name:'Carottes',quantity:2,unit:'pièce'},{name:'Oeufs',quantity:2,unit:'pièce'},{name:'Farine',quantity:4,unit:'c. à soupe'},{name:'Emmental râpé',quantity:60,unit:'g'},{name:'Huile',quantity:2,unit:'c. à soupe'},{name:'Sel',quantity:1,unit:'pincée'}],
+    steps:['Râpe les courgettes et les carottes. Place-les dans un torchon propre et presse fort pour éliminer l excès d eau.','Dans un bol, mélange les légumes râpés, les oeufs battus, la farine et l emmental. Sale et poivre.','Fais chauffer l huile dans une poêle à feu moyen.','Forme des galettes avec 2 cuillères à soupe de mélange. Dépose dans la poêle et aplatit légèrement.','Fais cuire 3-4 minutes de chaque côté jusqu à ce qu elles soient bien dorées. Sers avec une salade.']},
+  // ========== SALADES (suite) ==========
+  { id:51, name:'Salade de lentilles', category:'Salades', time:30, difficulty:'Facile',
+    ingredients:[{name:'Lentilles vertes',quantity:200,unit:'g'},{name:'Carottes',quantity:2,unit:'pièce'},{name:'Oignon rouge',quantity:1,unit:'pièce'},{name:'Persil',quantity:1,unit:'bouquet'},{name:'Huile d olive',quantity:3,unit:'c. à soupe'},{name:'Vinaigre',quantity:1,unit:'c. à soupe'},{name:'Moutarde',quantity:1,unit:'c. à café'}],
+    steps:['Rince les lentilles à l eau froide. Mets-les dans une casserole avec de l eau froide (2 fois leur volume). Porte à ébullition puis laisse mijoter 20-25 minutes jusqu à ce qu elles soient tendres mais non défaites.','Épluche et coupe les carottes en petits dés. Coupe l oignon rouge finement.','Prépare la vinaigrette : mélange l huile d olive, le vinaigre et la moutarde. Sale et poivre.','Égoutte les lentilles et passe-les sous l eau froide. Mets dans un saladier.','Ajoute les carottes, l oignon et le persil ciselé. Verse la vinaigrette. Mélange bien.']},
+  { id:52, name:'Salade de pâtes', category:'Salades', time:20, difficulty:'Facile',
+    ingredients:[{name:'Pâtes',quantity:200,unit:'g'},{name:'Thon',quantity:150,unit:'g'},{name:'Tomates cerises',quantity:150,unit:'g'},{name:'Maïs',quantity:100,unit:'g'},{name:'Cornichons',quantity:60,unit:'g'},{name:'Mayonnaise',quantity:3,unit:'c. à soupe'},{name:'Citron',quantity:1,unit:'pièce'}],
+    steps:['Fais cuire les pâtes selon le paquet. Égoutte et passe sous l eau froide pour les refroidir.','Coupe les tomates cerises en deux. Coupe les cornichons en rondelles.','Dans un grand bol, mélange les pâtes, le thon émietté, les tomates, le maïs et les cornichons.','Ajoute la mayonnaise et le jus de citron. Mélange bien. Goûte et rectifie l assaisonnement.','Réfrigère au moins 30 minutes avant de servir.']},
+  { id:53, name:'Salade de roquette et parmesan', category:'Salades', time:10, difficulty:'Facile',
+    ingredients:[{name:'Roquette',quantity:100,unit:'g'},{name:'Parmesan',quantity:60,unit:'g'},{name:'Tomates cerises',quantity:150,unit:'g'},{name:'Pignons de pin',quantity:30,unit:'g'},{name:'Huile d olive',quantity:3,unit:'c. à soupe'},{name:'Citron',quantity:1,unit:'pièce'}],
+    steps:['Fais griller les pignons de pin à sec dans une petite poêle 2-3 minutes en remuant souvent jusqu à ce qu ils soient dorés. Réserve.','Coupe les tomates cerises en deux. Fais des copeaux de parmesan avec un économe.','Prépare la vinaigrette : mélange l huile d olive, le jus de citron, du sel et du poivre.','Dispose la roquette dans un saladier. Ajoute les tomates, les pignons et les copeaux de parmesan.','Arrose de vinaigrette juste avant de servir.']},
+  // ========== DESSERTS (suite) ==========
+  { id:54, name:'Tiramisu', category:'Desserts', time:30, difficulty:'Moyen',
+    ingredients:[{name:'Mascarpone',quantity:250,unit:'g'},{name:'Oeufs',quantity:3,unit:'pièce'},{name:'Sucre',quantity:80,unit:'g'},{name:'Biscuits à la cuillère',quantity:24,unit:'pièce'},{name:'Café fort',quantity:200,unit:'ml'},{name:'Cacao en poudre',quantity:2,unit:'c. à soupe'}],
+    steps:['Prépare un café fort et laisse-le refroidir complètement.','Sépare les blancs des jaunes. Fouette les jaunes avec le sucre jusqu à ce qu ils blanchissent. Ajoute le mascarpone et mélange jusqu à obtenir une crème lisse.','Monte les blancs en neige ferme. Incorpore-les délicatement à la crème au mascarpone.','Trempe rapidement les biscuits dans le café froid (pas trop longtemps sinon ils se défont) et dispose-en une couche au fond d un plat.','Recouvre d une couche de crème au mascarpone. Recommence avec une deuxième couche de biscuits et de crème.','Saupoudre de cacao. Réfrigère au moins 4 heures (idéalement une nuit) avant de servir.']},
+  { id:55, name:'Clafoutis aux cerises', category:'Desserts', time:45, difficulty:'Facile',
+    ingredients:[{name:'Cerises',quantity:400,unit:'g'},{name:'Oeufs',quantity:3,unit:'pièce'},{name:'Sucre',quantity:80,unit:'g'},{name:'Lait',quantity:250,unit:'ml'},{name:'Farine',quantity:80,unit:'g'},{name:'Beurre',quantity:20,unit:'g'},{name:'Extrait de vanille',quantity:1,unit:'c. à café'}],
+    steps:['Préchauffe le four à 180°C. Beurre un plat à gratin ou une tarte.','Dénoyaute les cerises (ou laisse les noyaux pour plus de saveur — préviens les convives).','Dans un bol, fouette les oeufs avec le sucre. Ajoute la farine tamisée et mélange. Verse le lait progressivement en remuant. Ajoute la vanille.','Répartis les cerises dans le plat. Verse la pâte par-dessus.','Enfourne 35-40 minutes. Le clafoutis doit être doré et ferme. Sers tiède ou froid, saupoudré de sucre glace.']},
+  { id:56, name:'Compote de pommes', category:'Desserts', time:20, difficulty:'Facile',
+    ingredients:[{name:'Pommes',quantity:6,unit:'pièce'},{name:'Sucre',quantity:50,unit:'g'},{name:'Cannelle',quantity:1,unit:'pincée'},{name:'Jus de citron',quantity:1,unit:'c. à soupe'},{name:'Eau',quantity:50,unit:'ml'}],
+    steps:['Épluche et coupe les pommes en morceaux. Enlève les pépins et le coeur.','Mets les morceaux dans une casserole avec le sucre, l eau, le jus de citron et la cannelle.','Fais cuire à feu moyen 15-20 minutes en remuant de temps en temps jusqu à ce que les pommes soient très tendres.','Écrase avec une fourchette ou un mixeur selon la texture souhaitée — lisse ou avec des morceaux.','Goûte et ajoute du sucre si nécessaire. Sers chaud ou froid.']},
+  { id:57, name:'Ile flottante', category:'Desserts', time:30, difficulty:'Moyen',
+    ingredients:[{name:'Oeufs',quantity:4,unit:'pièce'},{name:'Lait',quantity:500,unit:'ml'},{name:'Sucre',quantity:150,unit:'g'},{name:'Extrait de vanille',quantity:1,unit:'c. à café'},{name:'Sel',quantity:1,unit:'pincée'}],
+    steps:['Prépare la crème anglaise : fais chauffer le lait avec la vanille. Fouette les jaunes d oeufs avec 100g de sucre. Verse le lait chaud dessus en fouettant. Remets sur feu doux en remuant constamment jusqu à ce que la crème nappe le dos d une cuillère. Laisse refroidir.','Monte les blancs en neige avec une pincée de sel. Quand ils sont fermes, ajoute 30g de sucre.','Forme des boules avec une cuillère à soupe et fais-les pocher 2 minutes dans de l eau frémissante. Retourne et fais cuire encore 1 minute. Égoutte.','Verse la crème anglaise dans des assiettes creuses. Pose les îles flottantes dessus.','Caramélise 20g de sucre dans une casserole jusqu à obtenir un caramel doré. Verse en filet sur les îles flottantes.']},
+  { id:58, name:'Beignets', category:'Desserts', time:30, difficulty:'Facile',
+    ingredients:[{name:'Farine',quantity:250,unit:'g'},{name:'Oeufs',quantity:2,unit:'pièce'},{name:'Lait',quantity:150,unit:'ml'},{name:'Levure chimique',quantity:1,unit:'sachet'},{name:'Sucre',quantity:40,unit:'g'},{name:'Huile de friture',quantity:500,unit:'ml'},{name:'Sucre glace',quantity:2,unit:'c. à soupe'}],
+    steps:['Mélange la farine, la levure et le sucre dans un bol. Creuse un puit.','Ajoute les oeufs et commence à mélanger. Verse le lait progressivement jusqu à obtenir une pâte épaisse.','Chauffe l huile dans une casserole à 170°C (mets un peu de pâte dedans — si elle remonte et dore, l huile est à la bonne température).','Dépose des cuillères de pâte dans l huile chaude. Fais cuire 3-4 minutes en retournant à mi-cuisson jusqu à dorure.','Égoutte sur du papier absorbant. Saupoudre de sucre glace. Sers chaud.']},
+  // ========== PETIT DÉJEUNER (suite) ==========
+  { id:59, name:'Granola maison', category:'Petit déjeuner', time:30, difficulty:'Facile',
+    ingredients:[{name:'Flocons d avoine',quantity:300,unit:'g'},{name:'Miel',quantity:60,unit:'g'},{name:'Huile de tournesol',quantity:40,unit:'ml'},{name:'Amandes effilées',quantity:80,unit:'g'},{name:'Noix',quantity:60,unit:'g'},{name:'Raisins secs',quantity:80,unit:'g'},{name:'Cannelle',quantity:1,unit:'c. à café'}],
+    steps:['Préchauffe le four à 160°C. Dans un grand bol, mélange les flocons d avoine, les amandes, les noix grossièrement concassées et la cannelle.','Chauffe doucement le miel avec l huile pour les rendre liquides. Verse sur les céréales et mélange bien pour enrober uniformément.','Étale sur une plaque recouverte de papier sulfurisé en une couche uniforme.','Enfourne 20-25 minutes en remuant à mi-cuisson. Le granola doit être doré et sentir le caramel.','Laisse refroidir complètement — il croustille en refroidissant. Ajoute les raisins secs. Conserve dans une boîte hermétique.']},
+  { id:60, name:'Oeufs brouillés', category:'Petit déjeuner', time:10, difficulty:'Facile',
+    ingredients:[{name:'Oeufs',quantity:4,unit:'pièce'},{name:'Beurre',quantity:20,unit:'g'},{name:'Crème fraîche',quantity:2,unit:'c. à soupe'},{name:'Ciboulette',quantity:1,unit:'bouquet'},{name:'Sel',quantity:1,unit:'pincée'},{name:'Poivre',quantity:1,unit:'pincée'}],
+    steps:['Casse les oeufs dans un bol. Bats-les à la fourchette avec le sel et le poivre.','Fais fondre le beurre dans une petite casserole à feu très doux.','Verse les oeufs battus. Remue CONSTAMMENT et DOUCEMENT avec une spatule en faisant des mouvements circulaires. Ne quitte pas la casserole des yeux.','Après 3-4 minutes les oeufs vont commencer à former de petits blocs crémeux. C est la cuisson idéale.','Retire du feu AVANT qu ils soient complètement cuits — ils continueront à cuire avec la chaleur résiduelle. Ajoute la crème fraîche pour stopper la cuisson.','Parsème de ciboulette et sers immédiatement sur du pain grillé.']},
+  { id:61, name:'Muffins aux myrtilles', category:'Petit déjeuner', time:35, difficulty:'Facile',
+    ingredients:[{name:'Farine',quantity:250,unit:'g'},{name:'Sucre',quantity:150,unit:'g'},{name:'Oeufs',quantity:2,unit:'pièce'},{name:'Lait',quantity:150,unit:'ml'},{name:'Huile',quantity:80,unit:'ml'},{name:'Levure chimique',quantity:1,unit:'sachet'},{name:'Myrtilles',quantity:150,unit:'g'}],
+    steps:['Préchauffe le four à 180°C. Place des caissettes en papier dans un moule à muffins.','Dans un bol, mélange la farine, le sucre et la levure.','Dans un autre bol, mélange les oeufs, le lait et l huile.','Verse les ingrédients liquides sur les secs et mélange grossièrement — quelques grumeaux sont normaux. Incorpore délicatement les myrtilles.','Remplis les caissettes aux 2/3. Enfourne 20-25 minutes. Vérifie la cuisson en enfonçant un cure-dent — il doit ressortir propre.','Laisse refroidir sur une grille avant de déguster.']},
+  // ========== ENTRÉES (suite) ==========
+  { id:62, name:'Terrine de légumes', category:'Entrées', time:60, difficulty:'Moyen',
+    ingredients:[{name:'Carottes',quantity:4,unit:'pièce'},{name:'Courgettes',quantity:2,unit:'pièce'},{name:'Oeufs',quantity:4,unit:'pièce'},{name:'Crème fraîche',quantity:200,unit:'ml'},{name:'Emmental râpé',quantity:80,unit:'g'},{name:'Herbes de Provence',quantity:1,unit:'c. à café'},{name:'Beurre',quantity:20,unit:'g'}],
+    steps:['Préchauffe le four à 170°C. Beurre un moule à cake.','Épluche et coupe les carottes en rondelles. Fais-les cuire dans l eau bouillante salée 10 minutes. Égoutte.','Coupe les courgettes en rondelles. Fais-les revenir dans un peu de beurre 5 minutes.','Dans un bol, fouette les oeufs avec la crème fraîche. Ajoute l emmental, les herbes, du sel et du poivre.','Dispose les légumes en alternance dans le moule. Verse la préparation aux oeufs par-dessus.','Enfourne au bain-marie 40-45 minutes. Laisse refroidir avant de démouler. Sers froid avec une vinaigrette.']},
+  { id:63, name:'Gaspacho', category:'Entrées', time:15, difficulty:'Facile',
+    ingredients:[{name:'Tomates',quantity:6,unit:'pièce'},{name:'Concombre',quantity:1,unit:'pièce'},{name:'Poivron rouge',quantity:1,unit:'pièce'},{name:'Oignon',quantity:1,unit:'pièce'},{name:'Ail',quantity:1,unit:'gousse'},{name:'Huile d olive',quantity:4,unit:'c. à soupe'},{name:'Vinaigre',quantity:2,unit:'c. à soupe'},{name:'Sel',quantity:1,unit:'pincée'}],
+    steps:['Coupe grossièrement les tomates (sans les éplucher), le concombre pelé, le poivron et l oignon.','Mets tous les légumes dans un blender avec l ail, l huile d olive et le vinaigre. Mixe finement.','Filtre à travers une passoire en pressant bien pour extraire tout le jus.','Sale et poivre. Goûte et ajuste l assaisonnement.','Réfrigère au moins 2 heures — le gaspacho doit être servi bien frais. Sers avec un filet d huile d olive.']},
+  { id:64, name:'Croquettes de fromage', category:'Entrées', time:20, difficulty:'Facile',
+    ingredients:[{name:'Emmental',quantity:200,unit:'g'},{name:'Oeufs',quantity:2,unit:'pièce'},{name:'Chapelure',quantity:100,unit:'g'},{name:'Farine',quantity:50,unit:'g'},{name:'Huile de friture',quantity:400,unit:'ml'},{name:'Sel',quantity:1,unit:'pincée'}],
+    steps:['Coupe l emmental en cubes de 2 cm.','Prépare 3 assiettes : une avec la farine, une avec les oeufs battus, une avec la chapelure.','Passe chaque cube de fromage dans la farine, puis les oeufs, puis la chapelure. Recommence une seconde fois pour une meilleure tenue.','Réfrigère les croquettes 15 minutes — le froid aide le fromage à ne pas s écouler à la friture.','Chauffe l huile à 170°C. Fais frire les croquettes 2-3 minutes jusqu à dorure. Égoutte et sers immédiatement.']},
+  // ========== SOUPES (suite) ==========
+  { id:65, name:'Soupe de tomates', category:'Soupes', time:30, difficulty:'Facile',
+    ingredients:[{name:'Tomates',quantity:1000,unit:'g'},{name:'Oignon',quantity:1,unit:'pièce'},{name:'Ail',quantity:2,unit:'gousse'},{name:'Bouillon de légumes',quantity:400,unit:'ml'},{name:'Crème fraîche',quantity:100,unit:'ml'},{name:'Basilic',quantity:1,unit:'bouquet'},{name:'Huile d olive',quantity:2,unit:'c. à soupe'}],
+    steps:['Coupe les tomates en quartiers. Coupe l oignon.','Fais revenir l oignon et l ail dans l huile 3 minutes.','Ajoute les tomates et le bouillon. Porte à ébullition et laisse mijoter 20 minutes.','Mixe finement avec un mixeur plongeant. Filtre à travers une passoire si tu veux une texture très lisse.','Ajoute la crème fraîche et le basilic ciselé. Goûte et rectifie l assaisonnement. Sers chaud ou froid.']},
+  { id:66, name:'Soupe de lentilles', category:'Soupes', time:40, difficulty:'Facile',
+    ingredients:[{name:'Lentilles corail',quantity:200,unit:'g'},{name:'Oignon',quantity:1,unit:'pièce'},{name:'Carottes',quantity:2,unit:'pièce'},{name:'Bouillon',quantity:1200,unit:'ml'},{name:'Cumin',quantity:1,unit:'c. à café'},{name:'Paprika',quantity:1,unit:'c. à café'},{name:'Huile d olive',quantity:2,unit:'c. à soupe'}],
+    steps:['Rince les lentilles corail à l eau froide. Coupe l oignon et les carottes finement.','Fais revenir l oignon dans l huile 3 minutes. Ajoute les carottes et fais cuire 3 minutes.','Ajoute le cumin et le paprika. Remue 1 minute.','Verse les lentilles et le bouillon. Porte à ébullition et laisse mijoter 25 minutes jusqu à ce que les lentilles soient très tendres.','Mixe finement. Goûte et rectifie l assaisonnement. Sers avec un filet d huile d olive et du pain.']},
+  { id:67, name:'Vichyssoise', category:'Soupes', time:35, difficulty:'Facile',
+    ingredients:[{name:'Poireaux',quantity:4,unit:'pièce'},{name:'Pommes de terre',quantity:400,unit:'g'},{name:'Bouillon de légumes',quantity:800,unit:'ml'},{name:'Crème fraîche',quantity:150,unit:'ml'},{name:'Beurre',quantity:30,unit:'g'},{name:'Ciboulette',quantity:1,unit:'bouquet'}],
+    steps:['Nettoie soigneusement les poireaux — coupe le vert foncé, fends-les en deux et rince bien pour enlever la terre. Coupe-les en tronçons.','Épluche et coupe les pommes de terre en morceaux.','Fais fondre le beurre dans une casserole. Fais revenir les poireaux 5 minutes à feu doux.','Ajoute les pommes de terre et le bouillon. Laisse cuire 20 minutes jusqu à ce que les pommes de terre soient très tendres.','Mixe finement. Ajoute la crème fraîche. Goûte et assaisonne.','La vichyssoise se mange froide ! Réfrigère 2 heures. Sers dans des bols avec la ciboulette ciselée.']},
+  // ========== PIZZAS ET TARTES (suite) ==========
+  { id:68, name:'Tarte aux poireaux', category:'Pizzas et tartes', time:55, difficulty:'Facile',
+    ingredients:[{name:'Pâte brisée',quantity:1,unit:'rouleau'},{name:'Poireaux',quantity:4,unit:'pièce'},{name:'Lardons',quantity:100,unit:'g'},{name:'Oeufs',quantity:2,unit:'pièce'},{name:'Crème fraîche',quantity:200,unit:'ml'},{name:'Emmental râpé',quantity:80,unit:'g'},{name:'Beurre',quantity:20,unit:'g'}],
+    steps:['Préchauffe le four à 180°C. Nettoie les poireaux et coupe-les en rondelles.','Fais fondre le beurre dans une poêle. Fais revenir les poireaux 10 minutes à feu doux en couvrant — ils doivent être fondants. Ajoute les lardons et fais cuire encore 3 minutes.','Étale la pâte dans un moule. Pique le fond avec une fourchette.','Mélange les oeufs et la crème dans un bol. Sale et poivre.','Répartis les poireaux et lardons sur la pâte. Verse l appareil aux oeufs. Saupoudre d emmental.','Enfourne 30-35 minutes jusqu à dorure.']},
+  { id:69, name:'Pissaladière', category:'Pizzas et tartes', time:60, difficulty:'Moyen',
+    ingredients:[{name:'Pâte à pizza',quantity:1,unit:'rouleau'},{name:'Oignons',quantity:8,unit:'pièce'},{name:'Anchois',quantity:1,unit:'boîte'},{name:'Olives noires',quantity:80,unit:'g'},{name:'Huile d olive',quantity:4,unit:'c. à soupe'},{name:'Thym',quantity:2,unit:'branche'}],
+    steps:['Épluche et émince finement les oignons. Fais-les confire dans l huile d olive à feu très doux pendant 40 minutes en remuant souvent. Ils doivent être fondants et légèrement caramelisés mais sans coloration brune.','Préchauffe le four à 200°C.','Étale la pâte à pizza sur une plaque huilée. Étale les oignons confits uniformément.','Dispose les filets d anchois en croisillons. Place les olives dans les espaces.','Saupoudre de thym. Enfourne 20-25 minutes jusqu à ce que les bords soient croustillants.']},
+  { id:70, name:'Flamiche', category:'Pizzas et tartes', time:60, difficulty:'Facile',
+    ingredients:[{name:'Pâte brisée',quantity:1,unit:'rouleau'},{name:'Poireaux',quantity:5,unit:'pièce'},{name:'Beurre',quantity:50,unit:'g'},{name:'Crème fraîche',quantity:200,unit:'ml'},{name:'Oeufs',quantity:3,unit:'pièce'},{name:'Sel',quantity:1,unit:'pincée'}],
+    steps:['Préchauffe le four à 180°C. Nettoie et coupe les poireaux en rondelles.','Fais fondre le beurre dans une grande poêle. Fais cuire les poireaux 15 minutes à feu doux jusqu à ce qu ils soient très fondants. Sale et poivre.','Étale la pâte dans un moule à tarte. Pique le fond.','Fouette les oeufs avec la crème. Mélange avec les poireaux cuits.','Verse sur le fond de tarte. Enfourne 35-40 minutes jusqu à dorure.']},
+  // ========== NOUVELLES CATÉGORIES ==========
+  { id:71, name:'Croque-monsieur', category:'Sandwichs et snacks', time:15, difficulty:'Facile',
+    ingredients:[{name:'Pain de mie',quantity:4,unit:'tranche'},{name:'Jambon blanc',quantity:2,unit:'tranche'},{name:'Emmental râpé',quantity:80,unit:'g'},{name:'Beurre',quantity:20,unit:'g'},{name:'Béchamel',quantity:3,unit:'c. à soupe'}],
+    steps:['Préchauffe ton four en mode gril. Beurre légèrement une face de chaque tranche de pain.','Sur deux tranches (côté non beurré vers le haut), étale une cuillère de béchamel, pose une tranche de jambon et saupoudre d emmental.','Referme avec les autres tranches de pain côté beurré vers l extérieur.','Étale de la béchamel sur le dessus et saupoudre d emmental.','Fais cuire dans une poêle 2-3 minutes de chaque côté, ou passe 5 minutes sous le gril jusqu à gratinage.']},
+  { id:72, name:'Wrap au poulet', category:'Sandwichs et snacks', time:15, difficulty:'Facile',
+    ingredients:[{name:'Tortillas',quantity:4,unit:'pièce'},{name:'Escalopes de poulet',quantity:2,unit:'pièce'},{name:'Salade verte',quantity:1,unit:'poignée'},{name:'Tomates',quantity:2,unit:'pièce'},{name:'Sauce yaourt',quantity:4,unit:'c. à soupe'},{name:'Paprika',quantity:1,unit:'c. à café'}],
+    steps:['Fais cuire les escalopes dans une poêle avec un peu d huile 4-5 minutes de chaque côté. Coupe en lanières. Saupoudre de paprika.','Coupe les tomates en dés. Lave la salade.','Réchauffe les tortillas 30 secondes au micro-ondes pour les assouplir.','Sur chaque tortilla, étale la sauce yaourt. Dispose la salade, les tomates et les lanières de poulet.','Roule fermement la tortilla en pliant les bords. Coupe en deux et sers.']},
+  { id:73, name:'Bruschetta', category:'Sandwichs et snacks', time:10, difficulty:'Facile',
+    ingredients:[{name:'Pain de campagne',quantity:4,unit:'tranche'},{name:'Tomates',quantity:3,unit:'pièce'},{name:'Ail',quantity:2,unit:'gousse'},{name:'Basilic frais',quantity:1,unit:'bouquet'},{name:'Huile d olive',quantity:4,unit:'c. à soupe'},{name:'Sel',quantity:1,unit:'pincée'}],
+    steps:['Fais griller les tranches de pain au grille-pain ou sous le gril du four.','Frotte immédiatement chaque tranche avec une gousse d ail coupée en deux — l ail s imprègne dans le pain chaud.','Coupe les tomates en petits dés. Mélange avec l huile d olive, le sel, le poivre et le basilic ciselé.','Dispose les tomates sur le pain. Arrose d un filet d huile d olive. Sers immédiatement.']},
+  { id:74, name:'Hot-dog maison', category:'Sandwichs et snacks', time:10, difficulty:'Facile',
+    ingredients:[{name:'Saucisses de Francfort',quantity:4,unit:'pièce'},{name:'Pains à hot-dog',quantity:4,unit:'pièce'},{name:'Moutarde',quantity:2,unit:'c. à soupe'},{name:'Ketchup',quantity:2,unit:'c. à soupe'},{name:'Oignon',quantity:1,unit:'pièce'}],
+    steps:['Coupe l oignon finement. Fais-le revenir dans une poêle avec un peu d huile jusqu à dorure.','Fais chauffer les saucisses de Francfort dans de l eau frémissante (pas bouillante) pendant 5 minutes.','Ouvre les pains et fais-les légèrement toaster.','Place une saucisse dans chaque pain. Ajoute les oignons dorés, la moutarde et le ketchup.']},
+  { id:75, name:'Oeufs cocotte', category:'Entrées', time:20, difficulty:'Facile',
+    ingredients:[{name:'Oeufs',quantity:4,unit:'pièce'},{name:'Crème fraîche',quantity:4,unit:'c. à soupe'},{name:'Lardons',quantity:80,unit:'g'},{name:'Emmental râpé',quantity:40,unit:'g'},{name:'Beurre',quantity:10,unit:'g'},{name:'Sel',quantity:1,unit:'pincée'}],
+    steps:['Préchauffe le four à 180°C. Beurre 4 ramequins individuels.','Fais revenir les lardons dans une poêle sans matière grasse 2-3 minutes.','Verse une cuillère de crème au fond de chaque ramequin. Répartis les lardons.','Casse délicatement un oeuf dans chaque ramequin sans crever le jaune. Verse une autre cuillère de crème. Saupoudre d emmental.','Place les ramequins dans un plat. Verse de l eau chaude jusqu à mi-hauteur. Enfourne 12-15 minutes — le blanc doit être cuit mais le jaune encore coulant.']},
+  { id:76, name:'Soupe de poisson', category:'Soupes', time:45, difficulty:'Moyen',
+    ingredients:[{name:'Poisson blanc',quantity:400,unit:'g'},{name:'Tomates pelées',quantity:400,unit:'g'},{name:'Oignons',quantity:2,unit:'pièce'},{name:'Ail',quantity:3,unit:'gousse'},{name:'Safran',quantity:1,unit:'pincée'},{name:'Bouillon de poisson',quantity:800,unit:'ml'},{name:'Huile d olive',quantity:3,unit:'c. à soupe'},{name:'Croutons',quantity:8,unit:'pièce'}],
+    steps:['Fais revenir les oignons et l ail dans l huile 5 minutes.','Ajoute les tomates pelées, le safran et le bouillon. Porte à ébullition.','Ajoute les morceaux de poisson et laisse cuire 15 minutes.','Mixe la soupe finement. Filtre pour enlever les arêtes.','Goûte et rectifie l assaisonnement. Sers avec des croutons et de la rouille si tu en as.']},
+  { id:77, name:'Salade de betteraves', category:'Salades', time:10, difficulty:'Facile',
+    ingredients:[{name:'Betteraves cuites',quantity:4,unit:'pièce'},{name:'Oignon rouge',quantity:1,unit:'pièce'},{name:'Persil',quantity:1,unit:'bouquet'},{name:'Huile d olive',quantity:3,unit:'c. à soupe'},{name:'Vinaigre balsamique',quantity:2,unit:'c. à soupe'},{name:'Moutarde',quantity:1,unit:'c. à café'}],
+    steps:['Coupe les betteraves cuites en dés ou en rondelles.','Coupe finement l oignon rouge. Cisèle le persil.','Prépare la vinaigrette : mélange l huile, le vinaigre balsamique et la moutarde. Sale et poivre.','Mélange les betteraves, l oignon et le persil dans un saladier. Verse la vinaigrette.','Laisse mariner 15 minutes avant de servir — les saveurs se développent.']},
+  { id:78, name:'Pâtes au thon', category:'Pâtes et riz', time:15, difficulty:'Facile',
+    ingredients:[{name:'Pâtes',quantity:200,unit:'g'},{name:'Thon en boîte',quantity:200,unit:'g'},{name:'Tomates cerises',quantity:150,unit:'g'},{name:'Olives',quantity:60,unit:'g'},{name:'Câpres',quantity:1,unit:'c. à soupe'},{name:'Huile d olive',quantity:3,unit:'c. à soupe'},{name:'Ail',quantity:1,unit:'gousse'}],
+    steps:['Fais cuire les pâtes selon le paquet.','Pendant ce temps, fais revenir l ail écrasé dans l huile 1 minute. Ajoute les tomates cerises coupées en deux et fais cuire 3 minutes.','Ajoute le thon émietté, les olives et les câpres. Mélange délicatement.','Égoutte les pâtes et mélange avec la sauce. Goûte et rectifie l assaisonnement.']},
+  { id:79, name:'Poulet aux citrons confits', category:'Viandes', time:60, difficulty:'Moyen',
+    ingredients:[{name:'Poulet',quantity:1,unit:'pièce'},{name:'Citrons confits',quantity:2,unit:'pièce'},{name:'Olives vertes',quantity:80,unit:'g'},{name:'Oignons',quantity:2,unit:'pièce'},{name:'Ail',quantity:3,unit:'gousse'},{name:'Coriandre',quantity:1,unit:'bouquet'},{name:'Cumin',quantity:1,unit:'c. à café'},{name:'Huile d olive',quantity:3,unit:'c. à soupe'}],
+    steps:['Coupe le poulet en morceaux. Fais-les dorer dans l huile à feu fort.','Ajoute les oignons émincés et l ail. Fais revenir 5 minutes.','Ajoute le cumin, les citrons confits coupés en quartiers et les olives.','Verse un peu d eau (200 ml). Couvre et laisse mijoter 40 minutes à feu doux.','Ajoute la coriandre ciselée en fin de cuisson. Sers avec de la semoule.']},
+  { id:80, name:'Tartare de saumon', category:'Poissons', time:20, difficulty:'Facile',
+    ingredients:[{name:'Saumon frais',quantity:300,unit:'g'},{name:'Avocat',quantity:1,unit:'pièce'},{name:'Citron',quantity:2,unit:'pièce'},{name:'Ciboulette',quantity:1,unit:'bouquet'},{name:'Huile d olive',quantity:2,unit:'c. à soupe'},{name:'Sel',quantity:1,unit:'pincée'},{name:'Poivre',quantity:1,unit:'pincée'}],
+    steps:['Important : utilise du saumon ultra-frais ou du saumon "label" prévu pour être consommé cru. Fais-le congeler 48h si tu as un doute.','Coupe le saumon en très petits dés réguliers (environ 5 mm).','Coupe l avocat en dés similaires.','Dans un bol, mélange le saumon et l avocat avec le jus des citrons, l huile d olive et la ciboulette ciselée.','Sale et poivre. Goûte et rectifie. Sers immédiatement ou réfrigère maximum 30 minutes.']},
+  { id:81, name:'Tarte tatin', category:'Desserts', time:50, difficulty:'Moyen',
+    ingredients:[{name:'Pâte feuilletée',quantity:1,unit:'rouleau'},{name:'Pommes',quantity:6,unit:'pièce'},{name:'Sucre',quantity:150,unit:'g'},{name:'Beurre',quantity:80,unit:'g'},{name:'Cannelle',quantity:1,unit:'pincée'}],
+    steps:['Préchauffe le four à 180°C. Épluche et coupe les pommes en quartiers épais.','Dans une poêle allant au four (ou moule à tatin), fais fondre le beurre avec le sucre à feu moyen. Laisse caraméliser doucement sans remuer jusqu à obtenir un caramel doré.','Dispose les quartiers de pommes debout, serrés, dans le caramel. Saupoudre de cannelle.','Fais cuire à feu moyen 10 minutes — les pommes vont absorber le caramel.','Recouvre avec la pâte feuilletée en rentrant les bords à l intérieur du moule. Enfourne 30 minutes.','Laisse reposer 5 minutes puis retourne rapidement sur un plat. Sers tiède avec de la crème fraîche.']},
+  { id:82, name:'Quatre-quarts', category:'Desserts', time:55, difficulty:'Facile',
+    ingredients:[{name:'Oeufs',quantity:4,unit:'pièce'},{name:'Beurre',quantity:200,unit:'g'},{name:'Sucre',quantity:200,unit:'g'},{name:'Farine',quantity:200,unit:'g'},{name:'Levure chimique',quantity:1,unit:'sachet'},{name:'Sel',quantity:1,unit:'pincée'}],
+    steps:['Préchauffe le four à 180°C. Beurre et farine un moule à cake.','Fais ramollir le beurre à température ambiante (ou 20 secondes au micro-ondes). Il doit être mou mais pas fondu.','Fouette le beurre mou avec le sucre jusqu à obtenir un mélange crémeux et pâle.','Ajoute les oeufs un par un en fouettant bien entre chaque.','Incorpore la farine tamisée et la levure. Mélange juste ce qu il faut — ne travaille pas trop la pâte.','Verse dans le moule. Enfourne 40-45 minutes. Vérifie la cuisson avec un couteau — il doit ressortir propre. Laisse refroidir avant de démouler.']},
+  { id:83, name:'Riz au lait', category:'Desserts', time:40, difficulty:'Facile',
+    ingredients:[{name:'Riz rond',quantity:100,unit:'g'},{name:'Lait',quantity:750,unit:'ml'},{name:'Sucre',quantity:80,unit:'g'},{name:'Extrait de vanille',quantity:1,unit:'c. à café'},{name:'Beurre',quantity:20,unit:'g'}],
+    steps:['Rince le riz à l eau froide. Mets-le dans une casserole avec de l eau froide. Porte à ébullition 2 minutes puis égoutte — ça enlève l amidon en excès.','Remets le riz dans la casserole avec le lait et la vanille. Porte à ébullition en remuant.','Baisse le feu au minimum et laisse cuire 30-35 minutes en remuant régulièrement. Le riz absorbe le lait progressivement.','Quand le riz est tendre et la préparation crémeuse, ajoute le sucre et le beurre. Mélange bien.','Sers chaud ou froid dans des ramequins. Saupoudre de cannelle si tu le souhaites.']},
+  { id:84, name:'Churros', category:'Petit déjeuner', time:25, difficulty:'Facile',
+    ingredients:[{name:'Farine',quantity:200,unit:'g'},{name:'Eau bouillante',quantity:250,unit:'ml'},{name:'Sel',quantity:1,unit:'pincée'},{name:'Huile de friture',quantity:500,unit:'ml'},{name:'Sucre',quantity:50,unit:'g'},{name:'Cannelle',quantity:1,unit:'c. à café'}],
+    steps:['Dans un bol, verse l eau bouillante sur la farine et le sel d un coup. Mélange vigoureusement avec une spatule jusqu à obtenir une pâte lisse.','Laisse tiédir 5 minutes. Mets la pâte dans une poche à douille avec une douille étoilée.','Chauffe l huile à 180°C dans une casserole profonde.','Presse des boudins de pâte de 10-15 cm directement dans l huile chaude. Coupe avec des ciseaux. Fais cuire 3-4 minutes en retournant à mi-cuisson.','Égoutte sur du papier absorbant. Roule dans le mélange sucre-cannelle. Sers immédiatement avec du chocolat fondu.']},
+  { id:85, name:'Smoothie bowl', category:'Petit déjeuner', time:10, difficulty:'Facile',
+    ingredients:[{name:'Bananes',quantity:2,unit:'pièce'},{name:'Fruits rouges surgelés',quantity:200,unit:'g'},{name:'Lait',quantity:100,unit:'ml'},{name:'Flocons d avoine',quantity:3,unit:'c. à soupe'},{name:'Miel',quantity:1,unit:'c. à soupe'},{name:'Fruits frais',quantity:1,unit:'poignée'}],
+    steps:['Mets les bananes coupées en morceaux et les fruits rouges surgelés dans un blender.','Ajoute le lait et mixe jusqu à obtenir une consistance épaisse et crémeuse — comme une glace. Si trop épais, ajoute un peu de lait.','Verse dans un bol. Le smoothie doit être assez épais pour tenir une cuillère.','Dispose joliment dessus les flocons d avoine, les fruits frais, un filet de miel.','Sers immédiatement avant que ça décongèle.']},
+  { id:86, name:'Soupe miso', category:'Soupes', time:15, difficulty:'Facile',
+    ingredients:[{name:'Pâte miso',quantity:3,unit:'c. à soupe'},{name:'Tofu',quantity:150,unit:'g'},{name:'Algues séchées',quantity:1,unit:'c. à soupe'},{name:'Oignons verts',quantity:3,unit:'pièce'},{name:'Bouillon de légumes',quantity:800,unit:'ml'}],
+    steps:['Chauffe le bouillon à feu doux sans le faire bouillir.','Réhydrate les algues dans de l eau froide pendant 5 minutes. Égoutte.','Coupe le tofu en petits dés.','Délaye la pâte miso dans un peu de bouillon chaud dans un bol à part — ça évite les grumeaux.','Verse le miso dans le bouillon. Ajoute le tofu et les algues. Ne fais pas bouillir la soupe après ajout du miso — ça détruit les bonnes bactéries.','Sers dans des bols avec les oignons verts émincés.']},
+  { id:87, name:'Falafels', category:'Végétarien', time:30, difficulty:'Moyen',
+    ingredients:[{name:'Pois chiches',quantity:400,unit:'g'},{name:'Oignon',quantity:1,unit:'pièce'},{name:'Ail',quantity:3,unit:'gousse'},{name:'Persil',quantity:1,unit:'bouquet'},{name:'Cumin',quantity:1,unit:'c. à café'},{name:'Coriandre',quantity:1,unit:'c. à café'},{name:'Farine',quantity:3,unit:'c. à soupe'},{name:'Huile de friture',quantity:400,unit:'ml'}],
+    steps:['Égoutte et rince les pois chiches. Mets-les dans un robot avec l oignon, l ail, le persil, le cumin et la coriandre.','Mixe jusqu à obtenir une pâte grossière — pas trop fine, il faut des petits morceaux.','Ajoute la farine et mélange. Sale et poivre. Si la pâte est trop molle, ajoute plus de farine.','Forme des boulettes de la taille d une balle de golf. Réfrigère 15 minutes.','Chauffe l huile à 170°C. Fais frire les falafels 3-4 minutes jusqu à ce qu ils soient bien dorés.','Sers dans du pain pita avec de la salade, des tomates et de la sauce tahini.']},
+  { id:88, name:'Börek aux épinards', category:'Végétarien', time:45, difficulty:'Moyen',
+    ingredients:[{name:'Feuilles de filo',quantity:8,unit:'pièce'},{name:'Épinards',quantity:400,unit:'g'},{name:'Feta',quantity:200,unit:'g'},{name:'Oignons',quantity:2,unit:'pièce'},{name:'Oeufs',quantity:2,unit:'pièce'},{name:'Beurre',quantity:60,unit:'g'}],
+    steps:['Préchauffe le four à 180°C. Fais revenir les oignons émincés dans un peu de beurre.','Ajoute les épinards et fais cuire jusqu à ce qu ils rendent leur eau et qu elle s évapore.','Dans un bol, mélange les épinards, la feta émiettée et les oeufs battus. Sale et poivre.','Beurre un plat à gratin. Dispose 2 feuilles de filo en les beurrant légèrement entre chaque.','Verse la garniture. Recouvre avec les 6 feuilles restantes en beurrant entre chaque.','Enfourne 30-35 minutes jusqu à ce que le dessus soit bien doré et croustillant.']},
+  { id:89, name:'Gnocchis sauce gorgonzola', category:'Pâtes et riz', time:20, difficulty:'Facile',
+    ingredients:[{name:'Gnocchis',quantity:500,unit:'g'},{name:'Gorgonzola',quantity:150,unit:'g'},{name:'Crème fraîche',quantity:200,unit:'ml'},{name:'Noix',quantity:60,unit:'g'},{name:'Beurre',quantity:20,unit:'g'},{name:'Sel',quantity:1,unit:'pincée'}],
+    steps:['Concasse grossièrement les noix dans un sachet à l aide d un rouleau à pâtisserie.','Fais fondre le beurre dans une grande poêle à feu doux. Ajoute le gorgonzola émietté et la crème fraîche. Remue doucement jusqu à ce que le fromage soit fondu et la sauce lisse.','Fais cuire les gnocchis dans une grande casserole d eau bouillante salée. Ils sont cuits quand ils remontent à la surface (2-3 minutes).','Égoutte les gnocchis et ajoute-les dans la sauce au gorgonzola. Mélange délicatement.','Sers avec les noix concassées et un peu de poivre noir.']},
+  { id:90, name:'Endives au jambon gratinées', category:'Viandes', time:45, difficulty:'Facile',
+    ingredients:[{name:'Endives',quantity:8,unit:'pièce'},{name:'Jambon blanc',quantity:8,unit:'tranche'},{name:'Lait',quantity:500,unit:'ml'},{name:'Beurre',quantity:50,unit:'g'},{name:'Farine',quantity:50,unit:'g'},{name:'Emmental râpé',quantity:150,unit:'g'},{name:'Sel',quantity:1,unit:'pincée'}],
+    steps:['Préchauffe le four à 180°C. Coupe la base des endives et enlève les feuilles abîmées. Fais-les cuire dans l eau bouillante salée 15 minutes. Égoutte bien et tamponne avec du papier absorbant.','Enroule chaque endive dans une tranche de jambon. Dispose dans un plat à gratin beurré.','Prépare la béchamel : fais fondre le beurre, ajoute la farine, puis verse le lait progressivement en fouettant. Fais épaissir 5 minutes. Sale et poivre.','Verse la béchamel sur les endives au jambon. Saupoudre d emmental râpé.','Enfourne 25-30 minutes jusqu à gratinage doré.']},
+  { id:91, name:'Crumble aux fruits', category:'Desserts', time:40, difficulty:'Facile',
+    ingredients:[{name:'Pommes',quantity:4,unit:'pièce'},{name:'Poires',quantity:2,unit:'pièce'},{name:'Farine',quantity:150,unit:'g'},{name:'Beurre',quantity:100,unit:'g'},{name:'Sucre',quantity:100,unit:'g'},{name:'Cannelle',quantity:1,unit:'c. à café'}],
+    steps:['Préchauffe le four à 180°C. Épluche et coupe les fruits en morceaux. Dispose dans un plat beurré. Saupoudre de 30g de sucre et de cannelle.','Prépare le crumble : dans un bol, mélange la farine, 70g de sucre et le beurre froid coupé en petits dés.','Émiette du bout des doigts le beurre dans la farine en frottant rapidement — tu dois obtenir une texture sableuse avec des petits grumeaux.','Répartis le crumble uniformément sur les fruits.','Enfourne 30-35 minutes jusqu à ce que le crumble soit doré. Sers tiède avec de la crème fraîche ou une boule de glace.']},
+  { id:92, name:'Crème caramel', category:'Desserts', time:50, difficulty:'Moyen',
+    ingredients:[{name:'Oeufs',quantity:4,unit:'pièce'},{name:'Lait',quantity:500,unit:'ml'},{name:'Sucre',quantity:150,unit:'g'},{name:'Extrait de vanille',quantity:1,unit:'c. à café'}],
+    steps:['Caramel : fais fondre 80g de sucre dans une casserole à feu moyen sans remuer. Quand il prend une couleur ambrée, verse dans le fond des ramequins en faisant tourner pour couvrir le fond.','Préchauffe le four à 160°C. Fais chauffer le lait avec la vanille.','Fouette les oeufs avec 70g de sucre. Verse le lait chaud progressivement en fouettant.','Filtre à travers une passoire. Verse dans les ramequins sur le caramel.','Place dans un plat avec de l eau chaude à mi-hauteur. Enfourne 35-40 minutes.','Laisse refroidir complètement puis réfrigère 2 heures. Pour démouler, passe un couteau sur le bord et retourne sur une assiette creuse.']},
+  { id:93, name:'Boeuf au gingembre', category:'Viandes', time:25, difficulty:'Facile',
+    ingredients:[{name:'Filet de boeuf',quantity:400,unit:'g'},{name:'Gingembre frais',quantity:30,unit:'g'},{name:'Sauce soja',quantity:3,unit:'c. à soupe'},{name:'Ail',quantity:2,unit:'gousse'},{name:'Poivrons',quantity:2,unit:'pièce'},{name:'Huile de sésame',quantity:1,unit:'c. à soupe'},{name:'Riz',quantity:200,unit:'g'}],
+    steps:['Coupe le boeuf en fines lamelles. Mélange avec la sauce soja, l ail et le gingembre râpé. Laisse mariner 10 minutes.','Fais cuire le riz pendant ce temps.','Fais chauffer un wok à feu très fort. Fais sauter les lamelles de boeuf 2-3 minutes. Réserve.','Dans le même wok, fais sauter les poivrons en lanières 3-4 minutes.','Remets le boeuf avec sa marinade. Mélange bien 1 minute. Ajoute l huile de sésame.','Sers sur le riz.']},
+  { id:94, name:'Maquereaux grillés', category:'Poissons', time:20, difficulty:'Facile',
+    ingredients:[{name:'Maquereaux',quantity:4,unit:'pièce'},{name:'Moutarde',quantity:3,unit:'c. à soupe'},{name:'Citron',quantity:2,unit:'pièce'},{name:'Herbes de Provence',quantity:1,unit:'c. à soupe'},{name:'Huile d olive',quantity:2,unit:'c. à soupe'},{name:'Sel',quantity:1,unit:'pincée'}],
+    steps:['Demande à ton poissonnier de vider et préparer les maquereaux.','Fais 3 incisions de chaque côté de chaque poisson.','Mélange la moutarde, le jus d un citron, les herbes et l huile. Badigeonne les poissons avec ce mélange, en faisant bien pénétrer dans les incisions.','Fais chauffer un gril ou une poêle grill à feu fort. Fais griller les maquereaux 4-5 minutes de chaque côté.','Sers avec des quartiers de citron et une salade verte.']},
+  { id:95, name:'Tajine de légumes', category:'Végétarien', time:50, difficulty:'Facile',
+    ingredients:[{name:'Carottes',quantity:3,unit:'pièce'},{name:'Courgettes',quantity:2,unit:'pièce'},{name:'Pois chiches',quantity:200,unit:'g'},{name:'Tomates pelées',quantity:400,unit:'g'},{name:'Oignons',quantity:2,unit:'pièce'},{name:'Ras el hanout',quantity:2,unit:'c. à café'},{name:'Huile d olive',quantity:3,unit:'c. à soupe'},{name:'Semoule',quantity:200,unit:'g'}],
+    steps:['Coupe tous les légumes en morceaux. Coupe finement les oignons.','Fais revenir les oignons dans l huile 5 minutes. Ajoute le ras el hanout et remue 1 minute.','Ajoute les carottes et les tomates pelées. Verse 200 ml d eau. Laisse cuire 15 minutes.','Ajoute les courgettes et les pois chiches égouttés. Poursuis la cuisson 15 minutes.','Prépare la semoule : verse-la dans un bol, ajoute autant d eau bouillante, couvre et laisse gonfler 5 minutes. Égrène avec une fourchette.','Sers le tajine sur la semoule.']},
+  { id:96, name:'Soupe de pois cassés', category:'Soupes', time:60, difficulty:'Facile',
+    ingredients:[{name:'Pois cassés',quantity:300,unit:'g'},{name:'Lardons',quantity:150,unit:'g'},{name:'Carottes',quantity:2,unit:'pièce'},{name:'Oignon',quantity:1,unit:'pièce'},{name:'Bouillon',quantity:1500,unit:'ml'},{name:'Bouquet garni',quantity:1,unit:'pièce'},{name:'Beurre',quantity:20,unit:'g'}],
+    steps:['Rince les pois cassés. Fais revenir les lardons dans le beurre 3 minutes.','Ajoute l oignon émincé et les carottes en rondelles. Fais revenir 3 minutes.','Ajoute les pois cassés, le bouillon et le bouquet garni. Porte à ébullition.','Baisse le feu, couvre et laisse mijoter 50-60 minutes en remuant régulièrement — les pois cassés vont naturellement se défaire et épaissir la soupe.','Retire le bouquet garni. Goûte et rectifie. La soupe doit être épaisse et crémeuse.']},
+  { id:97, name:'Poulet basquaise', category:'Viandes', time:60, difficulty:'Moyen',
+    ingredients:[{name:'Poulet',quantity:1,unit:'pièce'},{name:'Poivrons rouges',quantity:3,unit:'pièce'},{name:'Tomates pelées',quantity:400,unit:'g'},{name:'Oignons',quantity:2,unit:'pièce'},{name:'Ail',quantity:3,unit:'gousse'},{name:'Piment d Espelette',quantity:1,unit:'c. à café'},{name:'Huile d olive',quantity:3,unit:'c. à soupe'}],
+    steps:['Coupe le poulet en morceaux. Fais-les dorer dans l huile à feu fort 5-7 minutes. Réserve.','Dans la même cocotte, fais revenir les oignons et l ail 5 minutes.','Ajoute les poivrons coupés en lanières. Fais cuire 5 minutes.','Ajoute les tomates pelées et le piment d Espelette. Mélange bien.','Remets les morceaux de poulet. Couvre et laisse mijoter 40 minutes à feu doux.','Goûte et rectifie. Sers avec du riz ou du pain.']},
+  { id:98, name:'Gratin de chou-fleur', category:'Végétarien', time:45, difficulty:'Facile',
+    ingredients:[{name:'Chou-fleur',quantity:1,unit:'pièce'},{name:'Lait',quantity:500,unit:'ml'},{name:'Beurre',quantity:50,unit:'g'},{name:'Farine',quantity:50,unit:'g'},{name:'Emmental râpé',quantity:150,unit:'g'},{name:'Noix de muscade',quantity:1,unit:'pincée'}],
+    steps:['Préchauffe le four à 180°C. Coupe le chou-fleur en bouquets. Fais-les cuire dans l eau bouillante salée 10 minutes — ils doivent rester légèrement croquants. Égoutte.','Prépare la béchamel : fais fondre le beurre, ajoute la farine, puis verse le lait progressivement en fouettant. Fais épaissir 5 minutes. Ajoute la muscade, du sel et du poivre.','Dispose le chou-fleur dans un plat à gratin. Verse la béchamel. Saupoudre d emmental râpé.','Enfourne 25-30 minutes jusqu à gratinage doré.']},
+  { id:99, name:'Lapin à la moutarde', category:'Viandes', time:75, difficulty:'Moyen',
+    ingredients:[{name:'Lapin',quantity:1,unit:'pièce'},{name:'Moutarde',quantity:4,unit:'c. à soupe'},{name:'Crème fraîche',quantity:200,unit:'ml'},{name:'Oignons',quantity:2,unit:'pièce'},{name:'Vin blanc',quantity:150,unit:'ml'},{name:'Thym',quantity:3,unit:'branche'},{name:'Huile',quantity:2,unit:'c. à soupe'}],
+    steps:['Badigeonne généreusement les morceaux de lapin de moutarde sur toutes les faces.','Fais chauffer l huile dans une cocotte. Fais dorer les morceaux de lapin 5 minutes de chaque côté.','Ajoute les oignons émincés et fais revenir 3 minutes.','Verse le vin blanc et laisse évaporer 2 minutes. Ajoute le thym.','Couvre et laisse mijoter 50-60 minutes à feu doux en retournant les morceaux à mi-cuisson.','En fin de cuisson, ajoute la crème fraîche. Mélange et laisse mijoter encore 5 minutes.','Sers avec des pâtes ou du riz.']},
+  { id:100, name:'Tarte au citron meringuée', category:'Desserts', time:60, difficulty:'Moyen',
+    ingredients:[{name:'Pâte sablée',quantity:1,unit:'rouleau'},{name:'Citrons',quantity:3,unit:'pièce'},{name:'Oeufs',quantity:4,unit:'pièce'},{name:'Sucre',quantity:200,unit:'g'},{name:'Beurre',quantity:80,unit:'g'},{name:'Maïzena',quantity:2,unit:'c. à soupe'}],
+    steps:['Préchauffe le four à 180°C. Étale la pâte sablée dans un moule à tarte. Pique le fond. Fais cuire à blanc 15 minutes.','Prépare le curd citron : zeste et jus des 3 citrons dans une casserole avec 150g de sucre et la maïzena. Porte à frémissement.','Bat 3 jaunes d oeufs. Verse le mélange citron chaud dessus en fouettant. Remets sur feu doux et remue jusqu à épaississement. Hors du feu, ajoute le beurre en morceaux.','Verse sur le fond de tarte. Réfrigère 1 heure.','Monte 3 blancs en neige ferme avec 50g de sucre. Dispose sur la tarte. Fais dorer au chalumeau ou sous le gril 3-5 minutes.']},
+];
+
+
 function Kadee() {
   const [darkMode, setDarkMode] = useState(false);
   const [view, setView] = useState('inventory');
@@ -311,6 +908,12 @@ function Kadee() {
   const [forcedItemName, setForcedItemName] = useState('');
   const [googlePayEnabled, setGooglePayEnabled] = useState(false);
   const [showGooglePayPrompt, setShowGooglePayPrompt] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [recipeSearch, setRecipeSearch] = useState('');
+  const [recipePortions, setRecipePortions] = useState(2);
+  const [recipeFavorites, setRecipeFavorites] = useState([]);
+  const [activeRecipeCategory, setActiveRecipeCategory] = useState('Toutes');
+  const [recipeSelectedIngredients, setRecipeSelectedIngredients] = useState({});
 
   const [showTicketScanner, setShowTicketScanner] = useState(false);
   const [showPriceComparison, setShowPriceComparison] = useState(false);
@@ -495,7 +1098,10 @@ function Kadee() {
   };
 
   const isTemplateInInventory = (templateName) => {
-    return items.some(item => item.name.toLowerCase().trim() === templateName.toLowerCase().trim());
+    return items.some(item => 
+      item.name.toLowerCase().trim() === templateName.toLowerCase().trim() &&
+      !item.fromRecipe
+    );
   };
 
   const addAction = (newState) => {
@@ -524,8 +1130,8 @@ function Kadee() {
   const addItem = (force = false) => {
     const itemName = (newItemRef.current || newItem).trim();
     if (!itemName) return;
-    // Vérifier doublon dans Mes courses
-    if (!force && items.some(i => i.name.toLowerCase() === itemName.toLowerCase())) {
+    // Vérifier doublon dans Mes courses (ignorer les items de recette)
+    if (!force && items.some(i => i.name.toLowerCase() === itemName.toLowerCase() && !i.fromRecipe)) {
       setDupItemWarning(true);
       setForcedItemName(itemName);
       return;
@@ -649,7 +1255,11 @@ function Kadee() {
   const quickAddFromTemplate = (template) => {
     const quantity = parseFloat(quickAddQuantities[template.id]) || 1;
     
-    const existingItem = items.find(item => item.name.toLowerCase().trim() === template.name.toLowerCase().trim());
+    // Ne pas matcher les items de recette
+    const existingItem = items.find(item => 
+      item.name.toLowerCase().trim() === template.name.toLowerCase().trim() &&
+      !item.fromRecipe
+    );
     
     let newItems;
     if (existingItem) {
@@ -2676,6 +3286,7 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', background: cardBg, borderRadius: '10px', padding: '0.4rem', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)', border: `1px solid ${cardBorder}` }}>
           <button onClick={() => setView('inventory')} style={{ flex: 1, padding: '0.75rem', border: 'none', background: view === 'inventory' ? 'linear-gradient(135deg, #f5ede5 0%, #ede6df 100%)' : 'transparent', cursor: 'pointer', fontSize: '0.95rem', fontWeight: view === 'inventory' ? 600 : 500, color: view === 'inventory' ? '#6a9a7e' : '#999', borderRadius: '8px', borderBottom: view === 'inventory' ? '3px solid #85b8d0' : 'none', transition: 'all 0.3s' }}>Mes courses</button>
           <button onClick={() => setView('templates')} style={{ flex: 1, padding: '0.75rem', border: 'none', background: view === 'templates' ? 'linear-gradient(135deg, #f5ede5 0%, #ede6df 100%)' : 'transparent', cursor: 'pointer', fontSize: '0.95rem', fontWeight: view === 'templates' ? 600 : 500, color: view === 'templates' ? '#6a9a7e' : '#999', borderRadius: '8px', borderBottom: view === 'templates' ? '3px solid #f0c87a' : 'none', transition: 'all 0.3s' }}>Inventaire</button>
+          <button onClick={() => { setView('recipes'); setSelectedRecipe(null); setRecipeSelectedIngredients({}); }} style={{ flex: 1, padding: '0.75rem', border: 'none', background: view === 'recipes' ? 'linear-gradient(135deg, #f5ede5 0%, #ede6df 100%)' : 'transparent', cursor: 'pointer', fontSize: '0.95rem', fontWeight: view === 'recipes' ? 600 : 500, color: view === 'recipes' ? '#e8a090' : '#999', borderRadius: '8px', borderBottom: view === 'recipes' ? '3px solid #e8a090' : 'none', transition: 'all 0.3s' }}>Recettes</button>
         </div>
 
         {view === 'inventory' && (
@@ -3067,6 +3678,134 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
               <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#999', animation: 'fadeIn 0.3s' }}>
                 <p style={{ fontSize: '1rem', margin: 0 }}>Ajoute tes produits habituels</p>
               </div>
+            )}
+          </>
+        )}
+
+        {view === 'recipes' && (
+          <>
+            {!selectedRecipe ? (
+              <>
+                {/* LISTE DES RECETTES */}
+                <div style={{ marginBottom: '1rem' }}>
+                  <input type="search" placeholder="Rechercher une recette..." value={recipeSearch} onChange={e => setRecipeSearch(e.target.value)} style={{ width: '100%', padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '10px', fontSize: '0.95rem', background: inputBg, color: textColor, boxSizing: 'border-box' }} />
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+                  {['Toutes', ...new Set(RECIPES.map(r => r.category))].map(cat => (
+                    <button key={cat} onClick={() => setActiveRecipeCategory(cat)} style={{ padding: '0.4rem 0.9rem', borderRadius: '20px', border: activeRecipeCategory === cat ? 'none' : `1px solid ${cardBorder}`, background: activeRecipeCategory === cat ? '#e8a090' : inputBg, color: activeRecipeCategory === cat ? 'white' : textColor, cursor: 'pointer', fontSize: '0.82rem', fontWeight: activeRecipeCategory === cat ? 600 : 400 }}>{cat}</button>
+                  ))}
+                </div>
+                {recipeFavorites.length > 0 && activeRecipeCategory === 'Toutes' && recipeSearch.length < 2 && (
+                  <div style={{ marginBottom: '2rem' }}>
+                    <h2 style={{ fontSize: '1rem', fontWeight: 600, color: '#f0c87a', marginBottom: '0.75rem' }}>Mes favoris</h2>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '0.75rem' }}>
+                      {RECIPES.filter(r => recipeFavorites.includes(r.id)).map(recipe => (
+                        <div key={recipe.id} onClick={() => { setSelectedRecipe(recipe); setRecipePortions(2); setRecipeSelectedIngredients(Object.fromEntries(recipe.ingredients.map((ing, i) => [i, true]))); }} style={{ background: cardBg, borderRadius: '12px', padding: '1rem', border: `2px solid #f0c87a`, cursor: 'pointer', position: 'relative' }}>
+                          <button onClick={e => { e.stopPropagation(); setRecipeFavorites(prev => prev.filter(id => id !== recipe.id)); }} style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', color: '#f0c87a' }}>★</button>
+                          <div style={{ fontSize: '0.9rem', fontWeight: 600, color: textColor, marginBottom: '0.3rem', paddingRight: '1.5rem' }}>{recipe.name}</div>
+                          <div style={{ fontSize: '0.72rem', color: '#e8a090', fontWeight: 500, marginBottom: '0.2rem' }}>{recipe.category}</div>
+                          <div style={{ fontSize: '0.75rem', color: '#999' }}>⏱ {recipe.time} min · {recipe.difficulty}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '0.75rem' }}>
+                  {RECIPES.filter(r => {
+                    const matchSearch = recipeSearch.length < 2 || r.name.toLowerCase().includes(recipeSearch.toLowerCase());
+                    const matchCat = activeRecipeCategory === 'Toutes' || r.category === activeRecipeCategory;
+                    return matchSearch && matchCat;
+                  }).map(recipe => {
+                    const isFav = recipeFavorites.includes(recipe.id);
+                    return (
+                      <div key={recipe.id} onClick={() => { setSelectedRecipe(recipe); setRecipePortions(2); setRecipeSelectedIngredients(Object.fromEntries(recipe.ingredients.map((ing, i) => [i, true]))); }} style={{ background: cardBg, borderRadius: '12px', padding: '1rem', border: `1px solid ${cardBorder}`, cursor: 'pointer', position: 'relative' }}>
+                        <button onClick={e => { e.stopPropagation(); setRecipeFavorites(prev => isFav ? prev.filter(id => id !== recipe.id) : [...prev, recipe.id]); }} style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1rem', color: isFav ? '#f0c87a' : '#ccc' }}>★</button>
+                        <div style={{ fontSize: '0.9rem', fontWeight: 600, color: textColor, marginBottom: '0.3rem', paddingRight: '1.5rem' }}>{recipe.name}</div>
+                        <div style={{ fontSize: '0.72rem', color: '#e8a090', fontWeight: 500, marginBottom: '0.2rem' }}>{recipe.category}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#999' }}>⏱ {recipe.time} min · {recipe.difficulty}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <>
+                {/* DÉTAIL D'UNE RECETTE */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                  <button onClick={() => { setSelectedRecipe(null); setRecipeSelectedIngredients({}); }} style={{ background: inputBg, border: `1px solid ${cardBorder}`, padding: '0.6rem 0.9rem', borderRadius: '10px', cursor: 'pointer', fontSize: '0.9rem', color: textColor, fontWeight: 600 }}>← Retour</button>
+                  <h2 style={{ fontSize: '1.2rem', margin: 0, color: textColor, fontWeight: 700, flex: 1 }}>{selectedRecipe.name}</h2>
+                  <button onClick={() => setRecipeFavorites(prev => recipeFavorites.includes(selectedRecipe.id) ? prev.filter(id => id !== selectedRecipe.id) : [...prev, selectedRecipe.id])} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.4rem', color: recipeFavorites.includes(selectedRecipe.id) ? '#f0c87a' : '#ccc' }}>★</button>
+                </div>
+                <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                  <div style={{ background: inputBg, borderRadius: '8px', padding: '0.5rem 1rem', border: `1px solid ${cardBorder}`, fontSize: '0.85rem', color: '#999' }}>⏱ {selectedRecipe.time} min</div>
+                  <div style={{ background: inputBg, borderRadius: '8px', padding: '0.5rem 1rem', border: `1px solid ${cardBorder}`, fontSize: '0.85rem', color: '#999' }}>{selectedRecipe.difficulty}</div>
+                  <div style={{ background: inputBg, borderRadius: '8px', padding: '0.4rem 0.75rem', border: `1px solid ${cardBorder}`, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#999' }}>Portions :</span>
+                    <button onClick={() => { const p = Math.max(1, recipePortions - 1); setRecipePortions(p); }} style={{ background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '6px', padding: '0.15rem 0.5rem', cursor: 'pointer', fontWeight: 700, color: textColor }}>−</button>
+                    <span style={{ fontWeight: 700, minWidth: '20px', textAlign: 'center', color: textColor }}>{recipePortions}</span>
+                    <button onClick={() => setRecipePortions(p => p + 1)} style={{ background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '6px', padding: '0.15rem 0.5rem', cursor: 'pointer', fontWeight: 700, color: textColor }}>+</button>
+                  </div>
+                </div>
+
+                {/* INGRÉDIENTS AVEC SÉLECTION */}
+                <div style={{ background: cardBg, borderRadius: '12px', padding: '1.5rem', border: `1px solid ${cardBorder}`, marginBottom: '1.5rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: textColor }}>Ingrédients</h3>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button onClick={() => setRecipeSelectedIngredients(Object.fromEntries(selectedRecipe.ingredients.map((ing, i) => [i, true])))} style={{ fontSize: '0.78rem', padding: '0.3rem 0.6rem', background: inputBg, border: `1px solid ${cardBorder}`, borderRadius: '6px', cursor: 'pointer', color: textColor }}>Tout sélectionner</button>
+                      <button onClick={() => setRecipeSelectedIngredients({})} style={{ fontSize: '0.78rem', padding: '0.3rem 0.6rem', background: inputBg, border: `1px solid ${cardBorder}`, borderRadius: '6px', cursor: 'pointer', color: textColor }}>Tout désélectionner</button>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: '#999', marginBottom: '0.75rem' }}>
+                    Coche les ingrédients à acheter. Les produits en vert sont déjà dans ton inventaire.
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                    {selectedRecipe.ingredients.map((ing, idx) => {
+                      const ratio = recipePortions / 2;
+                      const qty = Math.round(ing.quantity * ratio * 10) / 10;
+                      const inInv = templates.some(t => t.name.toLowerCase() === ing.name.toLowerCase());
+                      const isSelected = recipeSelectedIngredients[idx] !== false;
+                      return (
+                        <div key={idx} onClick={() => setRecipeSelectedIngredients(prev => ({ ...prev, [idx]: !isSelected }))} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.6rem 0.5rem', borderBottom: idx < selectedRecipe.ingredients.length - 1 ? `1px solid ${cardBorder}` : 'none', cursor: 'pointer', background: isSelected ? 'transparent' : '#f9f9f9', borderRadius: idx === 0 ? '4px 4px 0 0' : idx === selectedRecipe.ingredients.length - 1 ? '0 0 4px 4px' : '0' }}>
+                          <div style={{ width: '20px', height: '20px', borderRadius: '4px', border: `2px solid ${isSelected ? '#6a9a7e' : '#ccc'}`, background: isSelected ? '#6a9a7e' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            {isSelected && <span style={{ color: 'white', fontSize: '0.7rem', fontWeight: 700 }}>✓</span>}
+                          </div>
+                          <span style={{ flex: 1, fontSize: '0.9rem', color: inInv ? '#6a9a7e' : textColor, fontWeight: inInv ? 600 : 400, textDecoration: !isSelected ? 'line-through' : 'none' }}>{ing.name}{inInv ? ' ✓' : ''}</span>
+                          <span style={{ fontSize: '0.85rem', color: '#999', whiteSpace: 'nowrap' }}>{qty} {ing.unit}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <button onClick={() => {
+                    const toAdd = selectedRecipe.ingredients.filter((ing, idx) => recipeSelectedIngredients[idx] !== false);
+                    if (toAdd.length === 0) return;
+                    const ratio = recipePortions / 2;
+                    const recipeCat = '🍽️ ' + selectedRecipe.name;
+                    const newIngredients = toAdd.map((ing, idx) => ({ id: Date.now() + idx, name: ing.name, category: recipeCat, quantity: Math.round(ing.quantity * ratio * 10) / 10, unit: ing.unit, note: '', favorite: false, fromRecipe: true }));
+                    const newItems2 = [...items, ...newIngredients];
+                    setItems(newItems2);
+                    addAction({ items: newItems2 });
+                    setView('inventory');
+                    setSelectedRecipe(null);
+                    setRecipeSelectedIngredients({});
+                  }} style={{ width: '100%', marginTop: '1rem', padding: '0.9rem', background: 'linear-gradient(135deg, #7db89a 0%, #6aab8a 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600 }}>
+                    Ajouter les ingrédients sélectionnés à mes courses
+                  </button>
+                </div>
+
+                {/* ÉTAPES DE PRÉPARATION */}
+                <div style={{ background: cardBg, borderRadius: '12px', padding: '1.5rem', border: `1px solid ${cardBorder}` }}>
+                  <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 700, color: textColor }}>Préparation</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {selectedRecipe.steps.map((step, idx) => (
+                      <div key={idx} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                        <div style={{ width: '26px', height: '26px', borderRadius: '50%', background: '#e8a090', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.78rem', fontWeight: 700, flexShrink: 0 }}>{idx + 1}</div>
+                        <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.6, color: textColor }}>{step}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
             )}
           </>
         )}
