@@ -2375,9 +2375,9 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
     setKadeeIARecipe(null);
     try {
       const systemPrompt = 'Tu es Kadee IA, un assistant culinaire intégré à une application de courses. Tu aides les utilisateurs à trouver des recettes simples et à planifier leurs repas. Quand tu proposes une recette, structure TOUJOURS ta réponse ainsi : commence par le nom de la recette en gras, puis les ingrédients pour 2 personnes avec quantités, puis les étapes numérotées. Réponds toujours en français. Sois concis et pratique. Pour un menu de la semaine, propose 7 repas variés (midi ou soir) avec une liste de courses consolidée à la fin.';
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch(WORKER_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 1500,
