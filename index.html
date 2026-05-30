@@ -2375,22 +2375,26 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
     setKadeeIARecipe(null);
     try {
       const systemPrompt = 'Tu es Kadee IA, un assistant culinaire intégré à une application de courses. Tu aides les utilisateurs à trouver des recettes simples et à planifier leurs repas. Quand tu proposes une recette, structure TOUJOURS ta réponse ainsi : commence par le nom de la recette en gras, puis les ingrédients pour 2 personnes avec quantités, puis les étapes numérotées. Réponds toujours en français. Sois concis et pratique. Pour un menu de la semaine, propose 7 repas variés (midi ou soir) avec une liste de courses consolidée à la fin.';
+      // Passer par le Worker comme le scanner de tickets
+      const firstMsg = systemPrompt + ' Question : ' + newMessages[0].content;
+      var apiMessages = newMessages.map(function(m, idx) {
+        return { role: m.role, content: idx === 0 ? firstMsg : m.content };
+      });
       const res = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 1500,
-          system: systemPrompt,
-          messages: newMessages.map(m => ({ role: m.role, content: m.content }))
-        })
+        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1500, messages: apiMessages })
       });
-      const data = await res.json();
-      if (data.content && data.content[0]) {
-        const reply = data.content[0].text;
-        setKadeeIAMessages(prev => [...prev, { role: 'assistant', content: reply }]);
+      var rawText = '';
+      try { rawText = await res.text(); } catch(te) { rawText = ''; }
+      var data = {};
+      try { data = JSON.parse(rawText); } catch(pe) { data = {}; }
+      if (data.content && data.content[0] && data.content[0].text) {
+        setKadeeIAMessages(function(prev) { return [...prev, { role: 'assistant', content: data.content[0].text }]; });
+      } else if (data.error && data.error.message) {
+        setKadeeIAMessages(function(prev) { return [...prev, { role: 'assistant', content: 'Erreur API : ' + data.error.message }]; });
       } else {
-        setKadeeIAMessages(prev => [...prev, { role: 'assistant', content: 'Désolé, une erreur est survenue. Vérifie ta clé API dans les Paramètres.' }]);
+        setKadeeIAMessages(function(prev) { return [...prev, { role: 'assistant', content: 'Reponse inattendue : ' + rawText.substring(0, 150) }]; });
       }
     } catch(e) {
       setKadeeIAMessages(prev => [...prev, { role: 'assistant', content: 'Désolé, une erreur est survenue : ' + (e && e.message ? e.message : 'erreur inconnue') + '. Vérifie ta clé API dans les Paramètres.' }]);
