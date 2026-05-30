@@ -304,6 +304,8 @@ function Kadee() {
 
   const [hasLoaded, setHasLoaded] = useState(false);
   const saveTimeoutRef = useRef(null);
+  const newItemRef = useRef('');
+  const newTemplateRef = useRef('');
 
   const [showTicketScanner, setShowTicketScanner] = useState(false);
   const [showPriceComparison, setShowPriceComparison] = useState(false);
@@ -514,8 +516,8 @@ function Kadee() {
   };
 
   const addItem = () => {
-    if (!newItem.trim()) return;
-    const itemName = newItem.trim();
+    const itemName = (newItemRef.current || newItem).trim();
+    if (!itemName) return;
     const matchingTemplate = templates.find(t => t.name.toLowerCase().trim() === itemName.toLowerCase());
     const category = matchingTemplate?.category || newCategory || getAutoCategoryFromName(itemName);
 
@@ -536,6 +538,7 @@ function Kadee() {
     setTimeout(() => setJustAddedItem(false), 1500);
 
     setNewItem('');
+    newItemRef.current = '';
     setNewItemNote('');
     setNewQuantity('1');
     setNewUnit('kilogramme');
@@ -573,8 +576,8 @@ function Kadee() {
   };
 
   const addTemplate = () => {
-    if (!newTemplate.trim()) return;
-    const templateName = newTemplate.trim();
+    const templateName = (newTemplateRef.current || newTemplate).trim();
+    if (!templateName) return;
     const category = newTemplateCategory || getAutoCategoryFromName(templateName);
     setTemplates([...templates, {
       id: Date.now(),
@@ -2633,6 +2636,7 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                 <div style={{ position: 'relative' }}>
                   <input type="text" placeholder="Nom" value={newItem} onChange={(e) => {
                     setNewItem(e.target.value);
+                    newItemRef.current = e.target.value;
                     getSuggestions(e.target.value, 'inventory');
                     if (e.target.value.trim()) {
                       const matchingTemplate = templates.find(t => t.name.toLowerCase().trim() === e.target.value.toLowerCase().trim());
@@ -2644,7 +2648,15 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                   {showSuggestionsFor === 'inventory' && suggestions.length > 0 && (
                     <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '8px', zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
                       {suggestions.map((s, i) => (
-                        <div key={i} onClick={() => { setNewItem(s.name); setNewCategory(s.category); setNewUnit(s.unit); setSuggestions([]); setShowSuggestionsFor(null); }}
+                        <div key={i} onMouseDown={e => {
+                            e.preventDefault();
+                            setNewItem(s.name);
+                            newItemRef.current = s.name;
+                            setNewCategory(s.category);
+                            setNewUnit(s.unit);
+                            setSuggestions([]);
+                            setShowSuggestionsFor(null);
+                          }}
                           style={{ padding: '0.75rem 1rem', cursor: 'pointer', borderBottom: i < suggestions.length-1 ? `1px solid ${cardBorder}` : 'none', fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between' }}>
                           <span>{s.name}</span>
                           <span style={{ fontSize: '0.75rem', color: '#999' }}>{s.category}</span>
@@ -2774,6 +2786,7 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                 <div style={{ position: 'relative' }}>
                   <input type="text" placeholder="Nom" value={newTemplate} onChange={(e) => {
                     setNewTemplate(e.target.value);
+                    newTemplateRef.current = e.target.value;
                     getSuggestions(e.target.value, 'template');
                     if (e.target.value.trim()) {
                       const matchingTemplate = templates.find(t => t.name.toLowerCase().trim() === e.target.value.toLowerCase().trim());
@@ -2785,7 +2798,15 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                   {showSuggestionsFor === 'template' && suggestions.length > 0 && (
                     <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '8px', zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
                       {suggestions.map((s, i) => (
-                        <div key={i} onClick={() => { setNewTemplate(s.name); setNewTemplateCategory(s.category); setNewTemplateUnit(s.unit); setSuggestions([]); setShowSuggestionsFor(null); }}
+                        <div key={i} onMouseDown={e => {
+                            e.preventDefault();
+                            setNewTemplate(s.name);
+                            newTemplateRef.current = s.name;
+                            setNewTemplateCategory(s.category);
+                            setNewTemplateUnit(s.unit);
+                            setSuggestions([]);
+                            setShowSuggestionsFor(null);
+                          }}
                           style={{ padding: '0.75rem 1rem', cursor: 'pointer', borderBottom: i < suggestions.length-1 ? `1px solid ${cardBorder}` : 'none', fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between' }}>
                           <span>{s.name}</span>
                           <span style={{ fontSize: '0.75rem', color: '#999' }}>{s.category} · {s.unit}</span>
