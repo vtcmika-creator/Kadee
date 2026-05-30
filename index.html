@@ -227,6 +227,7 @@ function Kadee() {
   const [justCopied, setJustCopied] = useState(false);
   const [showProductStats, setShowProductStats] = useState(false);
   const [fullscreenCard, setFullscreenCard] = useState(null);
+  const [showLoyaltyModal, setShowLoyaltyModal] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState({});
   const [loyaltyCards, setLoyaltyCards] = useState([]);
   const [showLoyaltyCards, setShowLoyaltyCards] = useState(false);
@@ -303,6 +304,13 @@ function Kadee() {
 
   const [hasLoaded, setHasLoaded] = useState(false);
   const saveTimeoutRef = useRef(null);
+  const newItemRef = useRef('');
+  const newTemplateRef = useRef('');
+  const [dupItemWarning, setDupItemWarning] = useState(false);
+  const [dupTemplateWarning, setDupTemplateWarning] = useState(false);
+  const [forcedItemName, setForcedItemName] = useState('');
+  const [googlePayEnabled, setGooglePayEnabled] = useState(false);
+  const [showGooglePayPrompt, setShowGooglePayPrompt] = useState(false);
 
   const [showTicketScanner, setShowTicketScanner] = useState(false);
   const [showPriceComparison, setShowPriceComparison] = useState(false);
@@ -336,6 +344,7 @@ function Kadee() {
         setPriceHistory(data.priceHistory || {});
         if (data.apiKey) setApiKey(data.apiKey);
         if (data.stores) setStores(data.stores);
+        if (data.googlePayEnabled) setGooglePayEnabled(data.googlePayEnabled);
         // cloudId legacy supprimé - utilisation pseudo/pass désormais
         setHistoryActions([{ items }]);
         setHistoryIndex(0);
@@ -390,7 +399,7 @@ function Kadee() {
     }
     
     saveTimeoutRef.current = setTimeout(() => {
-      const dataStr = JSON.stringify({ items, templates, history, categories, loyaltyCards, expenses, priceHistory, apiKey, stores, welcomeDone: true });
+      const dataStr = JSON.stringify({ items, templates, history, categories, loyaltyCards, expenses, priceHistory, apiKey, stores, welcomeDone: true, googlePayEnabled });
       localStorage.setItem('kadee_data', dataStr);
       autoSaveToCloud(dataStr);
     }, 500);
@@ -512,9 +521,16 @@ function Kadee() {
     }
   };
 
-  const addItem = () => {
-    if (!newItem.trim()) return;
-    const itemName = newItem.trim();
+  const addItem = (force = false) => {
+    const itemName = (newItemRef.current || newItem).trim();
+    if (!itemName) return;
+    // Vérifier doublon dans Mes courses
+    if (!force && items.some(i => i.name.toLowerCase() === itemName.toLowerCase())) {
+      setDupItemWarning(true);
+      setForcedItemName(itemName);
+      return;
+    }
+    setDupItemWarning(false);
     const matchingTemplate = templates.find(t => t.name.toLowerCase().trim() === itemName.toLowerCase());
     const category = matchingTemplate?.category || newCategory || getAutoCategoryFromName(itemName);
 
@@ -535,6 +551,7 @@ function Kadee() {
     setTimeout(() => setJustAddedItem(false), 1500);
 
     setNewItem('');
+    newItemRef.current = '';
     setNewItemNote('');
     setNewQuantity('1');
     setNewUnit('kilogramme');
@@ -571,9 +588,15 @@ function Kadee() {
     addAction({ items: newItems });
   };
 
-  const addTemplate = () => {
-    if (!newTemplate.trim()) return;
-    const templateName = newTemplate.trim();
+  const addTemplate = (force = false) => {
+    const templateName = (newTemplateRef.current || newTemplate).trim();
+    if (!templateName) return;
+    // Vérifier doublon dans Inventaire
+    if (!force && templates.some(t => t.name.toLowerCase() === templateName.toLowerCase())) {
+      setDupTemplateWarning(true);
+      return;
+    }
+    setDupTemplateWarning(false);
     const category = newTemplateCategory || getAutoCategoryFromName(templateName);
     setTemplates([...templates, {
       id: Date.now(),
@@ -1508,6 +1531,18 @@ function Kadee() {
           </div>
 
           <div style={{ background: cardBg, borderRadius: '12px', padding: '1.5rem', marginTop: '2rem', border: `1px solid ${cardBorder}` }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h3 style={{ margin: '0 0 0.25rem 0', fontSize: '1rem', fontWeight: 600, color: textColor }}>💳 Google Pay</h3>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: '#999' }}>Affiche un bouton pour payer rapidement en caisse</p>
+              </div>
+              <button onClick={() => setGooglePayEnabled(!googlePayEnabled)} style={{ width: '52px', height: '28px', borderRadius: '14px', border: 'none', background: googlePayEnabled ? '#4285F4' : '#ccc', cursor: 'pointer', position: 'relative', transition: 'background 0.3s', flexShrink: 0 }}>
+                <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'white', position: 'absolute', top: '3px', left: googlePayEnabled ? '27px' : '3px', transition: 'left 0.3s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }}></div>
+              </button>
+            </div>
+          </div>
+
+          <div style={{ background: cardBg, borderRadius: '12px', padding: '1.5rem', marginTop: '2rem', border: `1px solid ${cardBorder}` }}>
             <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontWeight: 600, color: textColor }}>🏪 Mes magasins</h3>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
               {stores.map((s, i) => (
@@ -1725,7 +1760,7 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
           localStorage.setItem('kadee_pseudo', cloudPseudo.trim());
           localStorage.setItem('kadee_pass', cloudPass.trim());
           setShowAuth(false);
-          setShowWelcome(true);
+          setShowGooglePayPrompt(true);
         } else {
           setAuthMsg('err_' + (result.error || 'Erreur'));
         }
@@ -1953,6 +1988,31 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
           <p style={{ textAlign: 'center', fontSize: '0.8rem', color: '#aaa', marginTop: '1rem' }}>
             Tes données sont sauvegardées automatiquement et en sécurité.
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  // PAGE PROMPT GOOGLE PAY (après création de compte)
+  if (showGooglePayPrompt) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Outfit", sans-serif', padding: '1.5rem' }}>
+        <div style={{ width: '100%', maxWidth: '380px', textAlign: 'center' }}>
+          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>💳</div>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: '#1c1c1e', marginBottom: '0.75rem' }}>Payer avec Google Pay ?</h2>
+          <p style={{ fontSize: '0.95rem', color: '#666', marginBottom: '2rem', lineHeight: 1.5 }}>
+            Ajoute un bouton dans l'app pour ouvrir Google Pay rapidement en caisse. Tu peux activer ou désactiver cette option à tout moment dans les Paramètres.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <button onClick={() => { setGooglePayEnabled(true); setShowGooglePayPrompt(false); setShowWelcome(true); }}
+              style={{ width: '100%', padding: '1rem', background: 'linear-gradient(135deg, #4285F4 0%, #34A853 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem', fontWeight: 600 }}>
+              Oui, activer Google Pay
+            </button>
+            <button onClick={() => { setGooglePayEnabled(false); setShowGooglePayPrompt(false); setShowWelcome(true); }}
+              style={{ width: '100%', padding: '1rem', background: 'white', border: '1px solid #e5e5ea', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem', fontWeight: 500, color: '#666' }}>
+              Non, plus tard
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -2461,9 +2521,45 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {loyaltyCards.length > 0 && (
+              <button onClick={() => setShowLoyaltyModal(true)} style={{ width: '100%', padding: '1rem', background: inputBg, border: `2px solid #f0c87a`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: '#c4963a', transition: 'all 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>🎫 Carte de fidélité</button>
+            )}
+            <button
+              onClick={() => { if (googlePayEnabled) { window.location.href = 'googlepay://'; setTimeout(() => { window.open('https://pay.google.com', '_blank'); }, 300); } else { setShowCategories(true); } }}
+              style={{ width: '100%', padding: '1rem', background: googlePayEnabled ? 'linear-gradient(135deg, #4285F4 0%, #34A853 100%)' : '#e0e0e0', color: googlePayEnabled ? 'white' : '#999', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', transition: 'all 0.3s' }}>
+              <span style={{ fontSize: '1.1rem' }}>💳</span>
+              {googlePayEnabled ? 'Payer avec Google Pay' : 'Payer avec Google Pay (désactivé — Paramètres)'}
+            </button>
             <button onClick={finalizeShopping} style={{ width: '100%', padding: '1rem', background: 'linear-gradient(135deg, #7db89a 0%, #6aab8a 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem', fontWeight: 600, transition: 'all 0.3s' }}>Valider les achats</button>
             <button onClick={() => { setShoppingMode(false); setShowTicketScanner(true); setScanStep('photo'); setTicketPhotos([]); setExtractedProducts([]); }} style={{ width: '100%', padding: '1rem', background: cardBg, border: `2px solid #7db89a`, borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: '#6a9a7e', transition: 'all 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>🧾 Scanner le ticket de caisse</button>
           </div>
+        {/* Modal cartes de fidélité en mode courses */}
+        {showLoyaltyModal && (
+          <div onClick={() => setShowLoyaltyModal(false)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 9998, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+            <div onClick={e => e.stopPropagation()} style={{ background: '#ffffff', borderRadius: '16px', padding: '1.5rem', width: '100%', maxWidth: '400px', maxHeight: '80vh', overflowY: 'auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600, color: '#1c1c1e' }}>🎫 Cartes de fidélité</h3>
+                <button onClick={() => setShowLoyaltyModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.4rem', color: '#999' }}>×</button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {loyaltyCards.map(card => (
+                  <div key={card.id} onClick={() => { setFullscreenCard(card); setShowLoyaltyModal(false); }} style={{ borderRadius: '10px', overflow: 'hidden', border: '1px solid #e5e5ea', cursor: 'pointer' }}>
+                    <img src={card.image} alt={card.store} style={{ width: '100%', objectFit: 'contain', display: 'block', background: '#f5f5f5', padding: '0.5rem', boxSizing: 'border-box', maxHeight: '140px' }} />
+                    <div style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem', fontWeight: 600, color: '#1c1c1e', background: '#f9f9f9' }}>{card.store}</div>
+                  </div>
+                ))}
+              </div>
+              <p style={{ margin: '1rem 0 0', fontSize: '0.8rem', color: '#999', textAlign: 'center' }}>Appuie sur une carte pour l'afficher en plein écran</p>
+            </div>
+          </div>
+        )}
+        {fullscreenCard && (
+          <div onClick={() => setFullscreenCard(null)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.95)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', padding: '1rem' }}>
+            <img src={fullscreenCard.image} alt={fullscreenCard.store} style={{ maxWidth: '100%', maxHeight: '85vh', objectFit: 'contain', borderRadius: '8px' }} />
+            <div style={{ color: 'white', marginTop: '1rem', fontSize: '1rem', fontWeight: 600 }}>{fullscreenCard.store}</div>
+            <div style={{ color: '#aaa', fontSize: '0.85rem', marginTop: '0.3rem' }}>Appuie pour fermer</div>
+          </div>
+        )}
         </div>
       </div>
     );
@@ -2602,6 +2698,8 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                 <div style={{ position: 'relative' }}>
                   <input type="text" placeholder="Nom" value={newItem} onChange={(e) => {
                     setNewItem(e.target.value);
+                    newItemRef.current = e.target.value;
+                    setDupItemWarning(false);
                     getSuggestions(e.target.value, 'inventory');
                     if (e.target.value.trim()) {
                       const matchingTemplate = templates.find(t => t.name.toLowerCase().trim() === e.target.value.toLowerCase().trim());
@@ -2613,7 +2711,15 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                   {showSuggestionsFor === 'inventory' && suggestions.length > 0 && (
                     <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '8px', zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
                       {suggestions.map((s, i) => (
-                        <div key={i} onClick={() => { setNewItem(s.name); setNewCategory(s.category); setNewUnit(s.unit); setSuggestions([]); setShowSuggestionsFor(null); }}
+                        <div key={i} onMouseDown={e => {
+                            e.preventDefault();
+                            setNewItem(s.name);
+                            newItemRef.current = s.name;
+                            setNewCategory(s.category);
+                            setNewUnit(s.unit);
+                            setSuggestions([]);
+                            setShowSuggestionsFor(null);
+                          }}
                           style={{ padding: '0.75rem 1rem', cursor: 'pointer', borderBottom: i < suggestions.length-1 ? `1px solid ${cardBorder}` : 'none', fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between' }}>
                           <span>{s.name}</span>
                           <span style={{ fontSize: '0.75rem', color: '#999' }}>{s.category}</span>
@@ -2663,7 +2769,12 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                   <button onClick={() => setShowInlineCatAdd('inventory')} style={{ padding: '0.5rem 0.8rem', background: inputBg, border: `1px dashed ${cardBorder}`, borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', color: '#6a9a7e', fontWeight: 600 }}>+ Rubrique</button>
                 )}
               </div>
-              <button onClick={addItem} style={{ width: '100%', padding: '0.9rem', background: justAddedItem ? '#b8d4bc' : 'linear-gradient(135deg, #b8d4bc 0%, #a8ccb0 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, transition: 'all 0.3s ease', transform: justAddedItem ? 'scale(1.02)' : 'scale(1)' }}>{justAddedItem ? '✓ Ajouté' : '+ Ajouter'}</button>
+              {dupItemWarning && (
+                <div style={{ background: '#fff8e7', border: '1px solid #f0c87a', borderRadius: '10px', padding: '0.85rem 1rem', marginBottom: '0.75rem', fontSize: '0.9rem', color: '#9a7a30', fontWeight: 500 }}>
+                  ⚠️ Ce produit est déjà dans ta liste de courses.
+                </div>
+              )}
+              <button onClick={() => addItem()} style={{ width: '100%', padding: '0.9rem', background: justAddedItem ? '#b8d4bc' : 'linear-gradient(135deg, #b8d4bc 0%, #a8ccb0 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, transition: 'all 0.3s ease', transform: justAddedItem ? 'scale(1.02)' : 'scale(1)' }}>{justAddedItem ? '✓ Ajouté' : '+ Ajouter'}</button>
             </div>
 
             {confirmClearList && (
@@ -2743,6 +2854,8 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                 <div style={{ position: 'relative' }}>
                   <input type="text" placeholder="Nom" value={newTemplate} onChange={(e) => {
                     setNewTemplate(e.target.value);
+                    newTemplateRef.current = e.target.value;
+                    setDupTemplateWarning(false);
                     getSuggestions(e.target.value, 'template');
                     if (e.target.value.trim()) {
                       const matchingTemplate = templates.find(t => t.name.toLowerCase().trim() === e.target.value.toLowerCase().trim());
@@ -2754,7 +2867,15 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                   {showSuggestionsFor === 'template' && suggestions.length > 0 && (
                     <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '8px', zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
                       {suggestions.map((s, i) => (
-                        <div key={i} onClick={() => { setNewTemplate(s.name); setNewTemplateCategory(s.category); setNewTemplateUnit(s.unit); setSuggestions([]); setShowSuggestionsFor(null); }}
+                        <div key={i} onMouseDown={e => {
+                            e.preventDefault();
+                            setNewTemplate(s.name);
+                            newTemplateRef.current = s.name;
+                            setNewTemplateCategory(s.category);
+                            setNewTemplateUnit(s.unit);
+                            setSuggestions([]);
+                            setShowSuggestionsFor(null);
+                          }}
                           style={{ padding: '0.75rem 1rem', cursor: 'pointer', borderBottom: i < suggestions.length-1 ? `1px solid ${cardBorder}` : 'none', fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between' }}>
                           <span>{s.name}</span>
                           <span style={{ fontSize: '0.75rem', color: '#999' }}>{s.category} · {s.unit}</span>
@@ -2797,7 +2918,16 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
                   <button onClick={() => setShowInlineCatAdd('template')} style={{ padding: '0.5rem 0.8rem', background: inputBg, border: `1px dashed ${cardBorder}`, borderRadius: '20px', cursor: 'pointer', fontSize: '0.85rem', color: '#6a9a7e', fontWeight: 600 }}>+ Rubrique</button>
                 )}
               </div>
-              <button onClick={addTemplate} style={{ width: '100%', padding: '0.9rem', background: justAddedTemplate ? '#b8d4bc' : 'linear-gradient(135deg, #b8d4bc 0%, #a8ccb0 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, transition: 'all 0.3s ease', transform: justAddedTemplate ? 'scale(1.02)' : 'scale(1)' }}>{justAddedTemplate ? '✓ Ajouté' : '+ Ajouter'}</button>
+              {dupTemplateWarning && (
+                <div style={{ background: '#fff8e7', border: '1px solid #f0c87a', borderRadius: '10px', padding: '0.85rem 1rem', marginBottom: '0.75rem', fontSize: '0.9rem', color: '#9a7a30', fontWeight: 500 }}>
+                  <div style={{ marginBottom: '0.6rem' }}>⚠️ Ce produit existe déjà dans ton inventaire.</div>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button onClick={() => setDupTemplateWarning(false)} style={{ flex: 1, padding: '0.5rem', background: 'white', border: '1px solid #f0c87a', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, color: '#9a7a30' }}>Annuler</button>
+                    <button onClick={() => addTemplate(true)} style={{ flex: 1, padding: '0.5rem', background: '#f0c87a', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, color: 'white' }}>Ajouter quand même</button>
+                  </div>
+                </div>
+              )}
+              <button onClick={() => addTemplate()} style={{ width: '100%', padding: '0.9rem', background: justAddedTemplate ? '#b8d4bc' : 'linear-gradient(135deg, #b8d4bc 0%, #a8ccb0 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, transition: 'all 0.3s ease', transform: justAddedTemplate ? 'scale(1.02)' : 'scale(1)' }}>{justAddedTemplate ? '✓ Ajouté' : '+ Ajouter'}</button>
             </div>
 
             {favoriteTemplates.length > 0 && (
