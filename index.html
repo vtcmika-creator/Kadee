@@ -907,6 +907,13 @@ function Kadee() {
   const [dupTemplateWarning, setDupTemplateWarning] = useState(false);
   const [forcedItemName, setForcedItemName] = useState('');
   const [googlePayEnabled, setGooglePayEnabled] = useState(false);
+  const [showKadeeIA, setShowKadeeIA] = useState(false);
+  const [kadeeIAInput, setKadeeIAInput] = useState('');
+  const [kadeeIAMessages, setKadeeIAMessages] = useState([]);
+  const [kadeeIALoading, setKadeeIALoading] = useState(false);
+  const [kadeeIARecipe, setKadeeIARecipe] = useState(null);
+  const [kadeeIARecipeIngredients, setKadeeIARecipeIngredients] = useState({});
+  const [kadeeIAPortions, setKadeeIAPortions] = useState(2);
   const [showGooglePayPrompt, setShowGooglePayPrompt] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [recipeSearch, setRecipeSearch] = useState('');
@@ -2351,6 +2358,46 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
 
   const WORKER_URL = 'https://kadee-proxy.vtc-mika.workers.dev';
 
+  const sendKadeeIA = async (messageText) => {
+    const msg = messageText || kadeeIAInput.trim();
+    if (!msg) return;
+    if (!apiKey) {
+      setKadeeIAMessages(prev => [...prev,
+        { role: 'user', content: msg },
+        { role: 'assistant', content: 'ERREUR_API' }
+      ]);
+      return;
+    }
+    const newMessages = [...kadeeIAMessages, { role: 'user', content: msg }];
+    setKadeeIAMessages(newMessages);
+    setKadeeIAInput('');
+    setKadeeIALoading(true);
+    setKadeeIARecipe(null);
+    try {
+      const systemPrompt = 'Tu es Kadee IA, un assistant culinaire intégré à une application de courses. Tu aides les utilisateurs à trouver des recettes simples et à planifier leurs repas. Quand tu proposes une recette, structure TOUJOURS ta réponse ainsi : commence par le nom de la recette en gras, puis les ingrédients pour 2 personnes avec quantités, puis les étapes numérotées. Réponds toujours en français. Sois concis et pratique. Pour un menu de la semaine, propose 7 repas variés (midi ou soir) avec une liste de courses consolidée à la fin.';
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1500,
+          system: systemPrompt,
+          messages: newMessages.map(m => ({ role: m.role, content: m.content }))
+        })
+      });
+      const data = await res.json();
+      if (data.content && data.content[0]) {
+        const reply = data.content[0].text;
+        setKadeeIAMessages(prev => [...prev, { role: 'assistant', content: reply }]);
+      } else {
+        setKadeeIAMessages(prev => [...prev, { role: 'assistant', content: 'Désolé, une erreur est survenue. Vérifie ta clé API dans les Paramètres.' }]);
+      }
+    } catch(e) {
+      setKadeeIAMessages(prev => [...prev, { role: 'assistant', content: 'Désolé, une erreur est survenue. Vérifie ta clé API dans les Paramètres.' }]);
+    }
+    setKadeeIALoading(false);
+  };
+
   const handleAuth = async () => {
     if (!cloudPseudo.trim() || !cloudPass.trim()) {
       setAuthMsg('err_Remplis les deux champs.');
@@ -3177,6 +3224,7 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
 
   // PAGE PRINCIPALE
   return (
+    <>
     <div style={{ minHeight: '100vh', background: bgGradient, fontFamily: '"Outfit", "Segoe UI", sans-serif', padding: '2rem', color: textColor }}>
       <style>{styles}</style>
 
@@ -3811,6 +3859,80 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
         )}
       </div>
     </div>
+
+    {/* ===== BOUTON FLOTTANT KADEE IA ===== */}
+    {!showKadeeIA && (
+      <button onClick={() => setShowKadeeIA(true)} style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', width: '56px', height: '56px', borderRadius: '50%', background: 'linear-gradient(135deg, #e8a090 0%, #c47a6a 100%)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '1.4rem', boxShadow: '0 4px 16px rgba(232,160,144,0.5)', zIndex: 8000, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s' }} title="Kadee IA">✨</button>
+    )}
+
+    {/* ===== MODAL KADEE IA ===== */}
+    {showKadeeIA && (
+      <div style={{ position: 'fixed', inset: 0, zIndex: 9000, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+        <div onClick={() => setShowKadeeIA(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)' }} />
+        <div style={{ position: 'relative', background: cardBg, borderRadius: '20px 20px 0 0', padding: '1.25rem', maxHeight: '85vh', display: 'flex', flexDirection: 'column', boxShadow: '0 -4px 24px rgba(0,0,0,0.15)' }}>
+
+          {/* Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '1.3rem' }}>✨</span>
+              <span style={{ fontWeight: 700, fontSize: '1.1rem', color: '#e8a090' }}>Kadee IA</span>
+            </div>
+            <button onClick={() => { setShowKadeeIA(false); setKadeeIAMessages([]); setKadeeIAInput(''); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.3rem', color: '#999' }}>×</button>
+          </div>
+
+          {/* Suggestions rapides (si pas encore de messages) */}
+          {kadeeIAMessages.length === 0 && (
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem', flexShrink: 0 }}>
+              {['Suggère-moi une recette rapide', 'Menu pour la semaine', 'Recette végétarienne facile', 'Dessert simple'].map(s => (
+                <button key={s} onClick={() => sendKadeeIA(s)} style={{ padding: '0.45rem 0.85rem', background: inputBg, border: `1px solid ${cardBorder}`, borderRadius: '20px', cursor: 'pointer', fontSize: '0.82rem', color: textColor, fontWeight: 500 }}>{s}</button>
+              ))}
+            </div>
+          )}
+
+          {/* Messages */}
+          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1rem', minHeight: kadeeIAMessages.length > 0 ? '200px' : '0' }}>
+            {kadeeIAMessages.map((msg, idx) => (
+              <div key={idx} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                {msg.content === 'ERREUR_API' ? (
+                  <div style={{ background: '#fff0f0', border: '1px solid #f0c4c4', borderRadius: '12px', padding: '0.75rem 1rem', maxWidth: '85%', fontSize: '0.875rem', color: '#c04040' }}>
+                    Clé API manquante. Va dans <strong>Paramètres</strong> pour l'ajouter.
+                  </div>
+                ) : (
+                  <div style={{ background: msg.role === 'user' ? '#e8a090' : inputBg, color: msg.role === 'user' ? 'white' : textColor, borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px', padding: '0.75rem 1rem', maxWidth: '85%', fontSize: '0.875rem', lineHeight: 1.6, border: msg.role === 'assistant' ? `1px solid ${cardBorder}` : 'none', whiteSpace: 'pre-wrap' }}>
+                    {msg.content}
+                  </div>
+                )}
+              </div>
+            ))}
+            {kadeeIALoading && (
+              <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                <div style={{ background: inputBg, border: `1px solid ${cardBorder}`, borderRadius: '16px 16px 16px 4px', padding: '0.75rem 1rem', fontSize: '0.875rem', color: '#999' }}>
+                  ✨ Kadee IA réfléchit...
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Saisie */}
+          <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+            <input
+              type="text"
+              placeholder="Pose ta question à Kadee IA..."
+              value={kadeeIAInput}
+              onChange={e => setKadeeIAInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && !kadeeIALoading) sendKadeeIA(); }}
+              style={{ flex: 1, padding: '0.85rem', border: `1px solid ${cardBorder}`, borderRadius: '10px', fontSize: '0.9rem', background: inputBg, color: textColor, outline: 'none' }}
+            />
+            <button
+              onClick={() => { if (!kadeeIALoading) sendKadeeIA(); }}
+              disabled={kadeeIALoading || !kadeeIAInput.trim()}
+              style={{ padding: '0.85rem 1.1rem', background: kadeeIALoading || !kadeeIAInput.trim() ? '#ccc' : 'linear-gradient(135deg, #e8a090 0%, #c47a6a 100%)', color: 'white', border: 'none', borderRadius: '10px', cursor: kadeeIALoading || !kadeeIAInput.trim() ? 'not-allowed' : 'pointer', fontSize: '1.1rem', fontWeight: 700 }}>→</button>
+          </div>
+
+        </div>
+      </div>
+    )}
+    </>
   );
 }
 
