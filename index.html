@@ -2379,7 +2379,7 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
+          model: 'claude-haiku-4-5-20251001',
           max_tokens: 1500,
           system: systemPrompt,
           messages: newMessages.map(m => ({ role: m.role, content: m.content }))
@@ -2393,7 +2393,7 @@ Reponds en JSON UNIQUEMENT sans texte avant ou apres: {"products":[{"raw_name":"
         setKadeeIAMessages(prev => [...prev, { role: 'assistant', content: 'Désolé, une erreur est survenue. Vérifie ta clé API dans les Paramètres.' }]);
       }
     } catch(e) {
-      setKadeeIAMessages(prev => [...prev, { role: 'assistant', content: 'Désolé, une erreur est survenue. Vérifie ta clé API dans les Paramètres.' }]);
+      setKadeeIAMessages(prev => [...prev, { role: 'assistant', content: 'Désolé, une erreur est survenue : ' + (e && e.message ? e.message : 'erreur inconnue') + '. Vérifie ta clé API dans les Paramètres.' }]);
     }
     setKadeeIALoading(false);
   };
